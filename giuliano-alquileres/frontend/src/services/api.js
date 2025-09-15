@@ -31,12 +31,21 @@ api.interceptors.response.use(
     return response;
   },
   (error) => {
+    // Apenas logar o erro, sem redirecionar automaticamente
     if (error.response?.status === 401) {
-      // Token inválido ou expirado
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
-      window.location.href = "/login";
+      console.log("Erro 401 - Não autorizado:", error.config?.url);
+
+      // Opcional: Disparar um evento customizado que outros componentes podem escutar
+      window.dispatchEvent(
+        new CustomEvent("unauthorized", {
+          detail: {
+            url: error.config?.url,
+            message: error.response?.data?.message,
+          },
+        })
+      );
     }
+
     return Promise.reject(error);
   }
 );

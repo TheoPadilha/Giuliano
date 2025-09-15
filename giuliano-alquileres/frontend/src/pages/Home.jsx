@@ -88,7 +88,7 @@ const Home = () => {
           <button
             onClick={() =>
               window.open(
-                `https://wa.me/5547999999999?text=Olá! Tenho interesse no imóvel: ${property.title}`,
+                `https://wa.me/5547989105580?text=Olá! Tenho interesse no imóvel: ${property.title}`,
                 "_blank"
               )
             }
