@@ -7,6 +7,8 @@ import Home from "./pages/Home";
 import Login from "./pages/Login";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminProperties from "./pages/admin/AdminProperties";
+import AdminNewProperty from "./pages/admin/AdminNewProperty"; // CORRIGIDO
+// import EditProperty from "./pages/admin/EditProperty"; // ainda não existe
 
 function App() {
   return (
@@ -16,6 +18,7 @@ function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
+
             <Route
               path="/admin"
               element={
@@ -24,6 +27,7 @@ function App() {
                 </ProtectedRoute>
               }
             />
+
             <Route
               path="/admin/properties"
               element={
@@ -32,6 +36,26 @@ function App() {
                 </ProtectedRoute>
               }
             />
+
+            <Route
+              path="/admin/properties/new"
+              element={
+                <ProtectedRoute adminOnly={true}>
+                  <AdminNewProperty /> {/* CORRIGIDO */}
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Comentado até criarmos o EditProperty
+            <Route
+              path="/admin/properties/:id/edit"
+              element={
+                <ProtectedRoute adminOnly={true}>
+                  <EditProperty />
+                </ProtectedRoute>
+              }
+            />
+            */}
           </Routes>
         </div>
       </Router>
