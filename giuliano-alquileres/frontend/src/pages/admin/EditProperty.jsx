@@ -6,7 +6,7 @@ import Loading from "../../components/common/Loading";
 
 const EditProperty = () => {
   const navigate = useNavigate();
-  const { id } = useParams();
+  const { id } = useParams(); // ID do imóvel a ser editado
   const [loading, setLoading] = useState(false);
   const [loadingData, setLoadingData] = useState(true);
   const [error, setError] = useState("");
@@ -14,191 +14,196 @@ const EditProperty = () => {
 
   // Dados auxiliares
   const [cities, setCities] = useState([]);
-  const [amenities, setAmenities] = useState([]);
-  const [existingPhotos, setExistingPhotos] = useState([]);
-  const [photosToDelete, setPhotosToDelete] = useState([]);
+  const [propertyData, setPropertyData] = useState(null);
 
-  // Estado do formulário
+  // Estado do formulário - igual ao NewProperty
   const [formData, setFormData] = useState({
     title: "",
     description: "",
     type: "apartment",
-    address: "",
-    city_id: "",
-    latitude: "",
-    longitude: "",
-    price_per_night: "",
-    price_per_month: "",
-    cleaning_fee: "",
     max_guests: 2,
     bedrooms: 1,
-    beds: 1,
     bathrooms: 1,
-    size_m2: "",
-    floor: "",
-    has_elevator: false,
-    has_pool: false,
-    has_gym: false,
-    has_parking: false,
-    has_wifi: true,
-    has_air_conditioning: true,
-    has_heating: false,
-    has_kitchen: true,
-    has_tv: true,
-    has_washer: false,
-    has_iron: false,
-    pets_allowed: false,
-    smoking_allowed: false,
-    events_allowed: false,
-    check_in_time: "14:00",
-    check_out_time: "11:00",
-    minimum_stay_nights: 1,
+    city_id: "",
+    address: "",
+    price_per_night: "",
     status: "available",
     featured: false,
-    amenity_ids: [],
   });
 
-  // Estado para novas fotos
-  const [newPhotos, setNewPhotos] = useState([]);
-  const [newPhotoPreviews, setNewPhotoPreviews] = useState([]);
-
-  // Carregar dados do imóvel e auxiliares
+  // Carregar dados do imóvel e cidades
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [propertyRes, citiesRes, amenitiesRes] = await Promise.all([
-          api.get(`/properties/${id}`),
-          api.get("/utilities/cities"),
-          api.get("/utilities/amenities"),
-        ]);
+        setLoadingData(true);
 
-        const property = propertyRes.data;
+        // Primeiro, vamos verificar se o ID é um UUID ou número
+        console.log("Tentando carregar imóvel com ID:", id);
 
-        // Preencher formulário com dados do imóvel
+        let propertyRes;
+        let citiesRes;
+
+        try {
+          // Se parece com UUID (tem hífens), usar endpoint UUID
+          if (id.includes("-")) {
+            console.log(
+              "ID parece ser UUID, usando endpoint /properties/uuid/${id}"
+            );
+            propertyRes = await api.get(`/properties/uuid/${id}`);
+          } else {
+            // Se é número, usar endpoint normal
+            console.log(
+              "ID parece ser numérico, usando endpoint /properties/${id}"
+            );
+            propertyRes = await api.get(`/properties/${id}`);
+          }
+
+          console.log("Sucesso ao carregar imóvel");
+        } catch (error) {
+          console.log("Erro na primeira tentativa:", error.response?.status);
+
+          // Se falhar, tentar buscar na lista
+          try {
+            console.log("Tentando buscar na lista de todos os imóveis...");
+            const allPropertiesRes = await api.get("/properties");
+            const property = allPropertiesRes.data.properties?.find(
+              (p) => p.id == id || p.uuid == id
+            );
+
+            if (property) {
+              propertyRes = { data: { property } };
+              console.log("Encontrado na lista de propriedades");
+            } else {
+              throw new Error("Imóvel não encontrado na lista");
+            }
+          } catch (listError) {
+            console.error("Erro ao buscar na lista:", listError);
+            throw new Error("Imóvel não encontrado");
+          }
+        }
+
+        // Buscar cidades
+        citiesRes = await api.get("/utilities/cities");
+
+        const property = propertyRes.data.property || propertyRes.data;
+        console.log("Estrutura completa da resposta:", propertyRes.data);
+        console.log("Dados do imóvel processado:", property);
+
+        if (!property) {
+          throw new Error("Dados do imóvel não encontrados na resposta da API");
+        }
+
+        // Preencher formulário com dados existentes
         setFormData({
           title: property.title || "",
           description: property.description || "",
           type: property.type || "apartment",
-          address: property.address || "",
-          city_id: property.city_id || "",
-          latitude: property.latitude || "",
-          longitude: property.longitude || "",
-          price_per_night: property.price_per_night || "",
-          price_per_month: property.price_per_month || "",
-          cleaning_fee: property.cleaning_fee || "",
           max_guests: property.max_guests || 2,
           bedrooms: property.bedrooms || 1,
-          beds: property.beds || 1,
           bathrooms: property.bathrooms || 1,
-          size_m2: property.size_m2 || "",
-          floor: property.floor || "",
-          has_elevator: property.has_elevator || false,
-          has_pool: property.has_pool || false,
-          has_gym: property.has_gym || false,
-          has_parking: property.has_parking || false,
-          has_wifi: property.has_wifi || false,
-          has_air_conditioning: property.has_air_conditioning || false,
-          has_heating: property.has_heating || false,
-          has_kitchen: property.has_kitchen || false,
-          has_tv: property.has_tv || false,
-          has_washer: property.has_washer || false,
-          has_iron: property.has_iron || false,
-          pets_allowed: property.pets_allowed || false,
-          smoking_allowed: property.smoking_allowed || false,
-          events_allowed: property.events_allowed || false,
-          check_in_time: property.check_in_time || "14:00",
-          check_out_time: property.check_out_time || "11:00",
-          minimum_stay_nights: property.minimum_stay_nights || 1,
+          city_id: property.city_id || "",
+          address: property.address || "",
+          price_per_night: property.price_per_night || "",
           status: property.status || "available",
-          featured: property.featured || false,
-          amenity_ids: property.amenities?.map((a) => a.id) || [],
+          featured: property.is_featured || false, // Atenção: is_featured no backend
         });
 
-        // Carregar fotos existentes
-        setExistingPhotos(property.photos || []);
-
+        setPropertyData(property);
         setCities(citiesRes.data.cities || []);
-        setAmenities(amenitiesRes.data.amenities || []);
       } catch (err) {
-        console.error("Erro ao carregar dados:", err);
-        setError("Erro ao carregar dados do imóvel");
+        console.error("Erro completo ao carregar dados:", err);
+        console.error("Status:", err.response?.status);
+        console.error("Data:", err.response?.data);
+        console.error("URL tentada:", err.config?.url);
+
+        let errorMessage = "Erro ao carregar dados do imóvel.";
+
+        if (err.response?.status === 404) {
+          errorMessage = `Imóvel com ID ${id} não encontrado. Verifique se o ID está correto.`;
+        } else if (err.response?.status === 500) {
+          errorMessage =
+            "Erro interno do servidor. Verifique se o backend está funcionando.";
+        } else if (err.message) {
+          errorMessage = err.message;
+        }
+
+        setError(errorMessage);
       } finally {
         setLoadingData(false);
       }
     };
 
-    fetchData();
+    if (id) {
+      fetchData();
+    } else {
+      setError("ID do imóvel não fornecido");
+      setLoadingData(false);
+    }
   }, [id]);
 
-  // Handle mudanças no formulário
-  const handleChange = (e) => {
+  const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
+
+    let processedValue = value;
+
+    // Converter valores numéricos
+    if (type === "number") {
+      processedValue = value === "" ? "" : Number(value);
+    }
+
+    // Converter checkbox
+    if (type === "checkbox") {
+      processedValue = checked;
+    }
+
     setFormData((prev) => ({
       ...prev,
-      [name]: type === "checkbox" ? checked : value,
+      [name]: processedValue,
     }));
   };
 
-  // Handle seleção de amenidades
-  const handleAmenityToggle = (amenityId) => {
-    setFormData((prev) => ({
-      ...prev,
-      amenity_ids: prev.amenity_ids.includes(amenityId)
-        ? prev.amenity_ids.filter((id) => id !== amenityId)
-        : [...prev.amenity_ids, amenityId],
-    }));
+  // Validação
+  const validateForm = () => {
+    const errors = [];
+
+    if (!formData.title || formData.title.trim().length < 5) {
+      errors.push("O título deve ter pelo menos 5 caracteres");
+    }
+
+    if (!formData.type) {
+      errors.push("Selecione o tipo de imóvel");
+    }
+
+    if (!formData.city_id) {
+      errors.push("Selecione uma cidade");
+    }
+
+    if (!formData.address || formData.address.trim().length < 5) {
+      errors.push("O endereço deve ter pelo menos 5 caracteres");
+    }
+
+    if (
+      !formData.price_per_night ||
+      parseFloat(formData.price_per_night) <= 0
+    ) {
+      errors.push("O preço por noite deve ser maior que zero");
+    }
+
+    if (formData.max_guests < 1 || formData.max_guests > 20) {
+      errors.push("Deve acomodar entre 1 e 20 hóspedes");
+    }
+
+    if (formData.bedrooms < 0 || formData.bedrooms > 10) {
+      errors.push("Número de quartos deve ser entre 0 e 10");
+    }
+
+    if (formData.bathrooms < 1 || formData.bathrooms > 10) {
+      errors.push("Deve ter entre 1 e 10 banheiros");
+    }
+
+    return errors;
   };
 
-  // Handle upload de novas fotos
-  const handlePhotoChange = (e) => {
-    const files = Array.from(e.target.files);
-
-    // Validar tamanho e tipo
-    const validFiles = files.filter((file) => {
-      if (file.size > 5 * 1024 * 1024) {
-        // 5MB
-        alert(`${file.name} é muito grande. Máximo 5MB.`);
-        return false;
-      }
-      if (!file.type.startsWith("image/")) {
-        alert(`${file.name} não é uma imagem válida.`);
-        return false;
-      }
-      return true;
-    });
-
-    // Adicionar aos arquivos
-    setNewPhotos((prev) => [...prev, ...validFiles]);
-
-    // Criar previews
-    validFiles.forEach((file) => {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setNewPhotoPreviews((prev) => [
-          ...prev,
-          {
-            url: reader.result,
-            name: file.name,
-          },
-        ]);
-      };
-      reader.readAsDataURL(file);
-    });
-  };
-
-  // Remover nova foto
-  const handleRemoveNewPhoto = (index) => {
-    setNewPhotos((prev) => prev.filter((_, i) => i !== index));
-    setNewPhotoPreviews((prev) => prev.filter((_, i) => i !== index));
-  };
-
-  // Marcar foto existente para deletar
-  const handleDeleteExistingPhoto = (photoId) => {
-    setPhotosToDelete((prev) => [...prev, photoId]);
-    setExistingPhotos((prev) => prev.filter((p) => p.id !== photoId));
-  };
-
-  // Submit do formulário
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -206,36 +211,41 @@ const EditProperty = () => {
     setSuccess("");
 
     try {
-      // Criar FormData para enviar com arquivos
-      const formDataToSend = new FormData();
+      // Validar formulário
+      const validationErrors = validateForm();
+      if (validationErrors.length > 0) {
+        throw new Error(validationErrors.join(", "));
+      }
 
-      // Adicionar campos do formulário
-      Object.keys(formData).forEach((key) => {
-        if (key === "amenity_ids") {
-          formData[key].forEach((id) => {
-            formDataToSend.append("amenity_ids[]", id);
-          });
-        } else {
-          formDataToSend.append(key, formData[key]);
-        }
-      });
+      // Preparar dados para envio - igual ao NewProperty
+      const propertyDataToUpdate = {
+        title: formData.title.trim(),
+        description: formData.description.trim() || undefined,
+        type: formData.type,
+        max_guests: parseInt(formData.max_guests),
+        bedrooms: parseInt(formData.bedrooms),
+        bathrooms: parseInt(formData.bathrooms),
+        city_id: parseInt(formData.city_id),
+        address: formData.address.trim(),
+        price_per_night: parseFloat(formData.price_per_night),
+        status: formData.status || "available",
+        is_featured: Boolean(formData.featured),
+        amenities: [], // Array vazio por enquanto
+      };
 
-      // Adicionar IDs de fotos para deletar
-      photosToDelete.forEach((photoId) => {
-        formDataToSend.append("photos_to_delete[]", photoId);
-      });
+      console.log(
+        "Dados sendo enviados para atualização:",
+        propertyDataToUpdate
+      );
 
-      // Adicionar novas fotos
-      newPhotos.forEach((photo) => {
-        formDataToSend.append("photos", photo);
-      });
+      // Usar o UUID do imóvel se disponível, senão usar o ID
+      const propertyId = propertyData?.uuid || id;
+      const response = await api.put(
+        `/properties/${propertyId}`,
+        propertyDataToUpdate
+      );
 
-      // Enviar para API
-      const response = await api.put(`/properties/${id}`, formDataToSend, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
+      console.log("Resposta da atualização:", response.data);
 
       setSuccess("Imóvel atualizado com sucesso!");
 
@@ -244,13 +254,34 @@ const EditProperty = () => {
         navigate("/admin/properties");
       }, 2000);
     } catch (err) {
-      console.error("Erro ao atualizar imóvel:", err);
-      setError(err.response?.data?.error || "Erro ao atualizar imóvel");
+      console.error("Erro completo:", err);
+      console.error("Response data:", err.response?.data);
+
+      let errorMessage = "Erro ao atualizar imóvel";
+
+      if (err.message && !err.response) {
+        errorMessage = err.message;
+      } else if (err.response?.data?.error) {
+        errorMessage = err.response.data.error;
+      } else if (err.response?.data?.details) {
+        errorMessage = err.response.data.details;
+      } else if (err.response?.status === 404) {
+        errorMessage = "Imóvel não encontrado";
+      } else if (err.response?.status === 400) {
+        errorMessage = "Dados inválidos. Verifique os campos obrigatórios.";
+      }
+
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
   };
 
+  const handleCancel = () => {
+    navigate("/admin/properties");
+  };
+
+  // Loading inicial
   if (loadingData) {
     return (
       <AdminLayout>
@@ -259,75 +290,112 @@ const EditProperty = () => {
     );
   }
 
+  // Erro ao carregar
+  if (error && !propertyData) {
+    return (
+      <AdminLayout>
+        <div className="max-w-4xl mx-auto">
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md">
+            <h3 className="font-medium">Erro ao carregar imóvel</h3>
+            <p>{error}</p>
+            <button onClick={handleCancel} className="mt-2 btn-secondary">
+              ← Voltar para lista
+            </button>
+          </div>
+        </div>
+      </AdminLayout>
+    );
+  }
+
   return (
     <AdminLayout>
       <div className="max-w-4xl mx-auto">
+        {/* Header */}
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">Editar Imóvel</h1>
-          <p className="text-gray-600">Atualize as informações do imóvel</p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">
+                Editar Imóvel
+              </h1>
+              <p className="text-gray-600">
+                Atualize as informações de:{" "}
+                <strong>{propertyData?.title}</strong>
+              </p>
+            </div>
+            <button onClick={handleCancel} className="btn-secondary">
+              ← Voltar
+            </button>
+          </div>
         </div>
 
         {/* Mensagens */}
         {error && (
           <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md">
-            {error}
+            <div className="flex">
+              <div className="flex-shrink-0">
+                <span className="text-red-500">⚠️</span>
+              </div>
+              <div className="ml-3">
+                <h3 className="text-sm font-medium text-red-800">
+                  Erro ao atualizar imóvel
+                </h3>
+                <div className="mt-2 text-sm text-red-700">{error}</div>
+              </div>
+            </div>
           </div>
         )}
 
         {success && (
           <div className="mb-6 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-md">
-            {success}
+            <div className="flex">
+              <div className="flex-shrink-0">
+                <span className="text-green-500">✅</span>
+              </div>
+              <div className="ml-3">
+                <p className="text-sm font-medium">{success}</p>
+              </div>
+            </div>
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Informações Básicas - igual ao NewProperty */}
-          <div className="bg-white shadow rounded-lg p-6">
-            <h2 className="text-lg font-medium text-gray-900 mb-4">
-              Informações Básicas
-            </h2>
+        {/* Formulário - Idêntico ao NewProperty */}
+        <div className="bg-white shadow rounded-lg">
+          <form onSubmit={handleSubmit} className="space-y-6 p-6">
+            {/* Informações Básicas */}
+            <div>
+              <h3 className="text-lg font-medium text-gray-900 mb-4">
+                Informações Básicas
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Título */}
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Título do Imóvel *
+                  </label>
+                  <input
+                    type="text"
+                    name="title"
+                    value={formData.title}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Ex: Apartamento vista mar em Balneário Camboriú"
+                    required
+                  />
+                </div>
 
-            <div className="grid grid-cols-1 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Título do Imóvel *
-                </label>
-                <input
-                  type="text"
-                  name="title"
-                  value={formData.title}
-                  onChange={handleChange}
-                  required
-                  className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  placeholder="Ex: Apartamento Vista Mar em Balneário Camboriú"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Descrição
-                </label>
-                <textarea
-                  name="description"
-                  value={formData.description}
-                  onChange={handleChange}
-                  rows={4}
-                  className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  placeholder="Descreva o imóvel, suas características e diferenciais..."
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
+                {/* Tipo */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
                     Tipo de Imóvel *
                   </label>
                   <select
                     name="type"
                     value={formData.type}
-                    onChange={handleChange}
-                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required
                   >
+                    <option value="">Selecione o tipo</option>
                     <option value="apartment">Apartamento</option>
                     <option value="house">Casa</option>
                     <option value="studio">Studio</option>
@@ -335,195 +403,212 @@ const EditProperty = () => {
                   </select>
                 </div>
 
+                {/* Status */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Status *
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Status
                   </label>
                   <select
                     name="status"
                     value={formData.status}
-                    onChange={handleChange}
-                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="available">Disponível</option>
-                    <option value="unavailable">Indisponível</option>
-                    <option value="pending">Pendente</option>
+                    <option value="occupied">Ocupado</option>
+                    <option value="maintenance">Manutenção</option>
+                    <option value="inactive">Inativo</option>
                   </select>
                 </div>
               </div>
+            </div>
 
-              <div className="flex items-center">
-                <input
-                  type="checkbox"
-                  name="featured"
-                  checked={formData.featured}
-                  onChange={handleChange}
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                />
-                <label className="ml-2 block text-sm text-gray-900">
-                  Imóvel em destaque
+            {/* Capacidade */}
+            <div>
+              <h3 className="text-lg font-medium text-gray-900 mb-4">
+                Capacidade e Características
+              </h3>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+                {/* Hóspedes */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Máximo de Hóspedes *
+                  </label>
+                  <input
+                    type="number"
+                    name="max_guests"
+                    value={formData.max_guests}
+                    onChange={handleInputChange}
+                    min="1"
+                    max="20"
+                    required
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+
+                {/* Quartos */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Quartos *
+                  </label>
+                  <input
+                    type="number"
+                    name="bedrooms"
+                    value={formData.bedrooms}
+                    onChange={handleInputChange}
+                    min="0"
+                    max="10"
+                    required
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+
+                {/* Banheiros */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Banheiros *
+                  </label>
+                  <input
+                    type="number"
+                    name="bathrooms"
+                    value={formData.bathrooms}
+                    onChange={handleInputChange}
+                    min="1"
+                    max="10"
+                    required
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+              </div>
+
+              {/* Checkbox para imóvel em destaque */}
+              <div className="mt-6">
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    name="featured"
+                    checked={formData.featured}
+                    onChange={handleInputChange}
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  />
+                  <span className="ml-2 text-sm text-gray-700">
+                    Imóvel em destaque na página inicial
+                  </span>
                 </label>
               </div>
             </div>
-          </div>
 
-          {/* Os outros campos são idênticos ao NewProperty.jsx */}
-          {/* Por brevidade, vou pular para a parte de fotos que é diferente */}
+            {/* Localização */}
+            <div>
+              <h3 className="text-lg font-medium text-gray-900 mb-4">
+                Localização
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Cidade */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Cidade *
+                  </label>
+                  <select
+                    name="city_id"
+                    value={formData.city_id}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required
+                  >
+                    <option value="">Selecione a cidade</option>
+                    {cities.map((city) => (
+                      <option key={city.id} value={city.id}>
+                        {city.name}, {city.state}
+                      </option>
+                    ))}
+                  </select>
+                </div>
 
-          {/* Upload de Fotos - com fotos existentes */}
-          <div className="bg-white shadow rounded-lg p-6">
-            <h2 className="text-lg font-medium text-gray-900 mb-4">Fotos</h2>
-
-            {/* Fotos Existentes */}
-            {existingPhotos.length > 0 && (
-              <div className="mb-6">
-                <h3 className="text-sm font-medium text-gray-700 mb-3">
-                  Fotos Atuais
-                </h3>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  {existingPhotos.map((photo) => (
-                    <div key={photo.id} className="relative group">
-                      <img
-                        src={`http://localhost:3001/api/uploads/properties/${photo.filename}`}
-                        alt={photo.alt_text || "Foto do imóvel"}
-                        className="w-full h-32 object-cover rounded-lg"
-                      />
-
-                      <button
-                        type="button"
-                        onClick={() => handleDeleteExistingPhoto(photo.id)}
-                        className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                        title="Remover foto"
-                      >
-                        <svg
-                          className="w-4 h-4"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M6 18L18 6M6 6l12 12"
-                          />
-                        </svg>
-                      </button>
-                      {photo.is_primary && (
-                        <span className="absolute bottom-2 left-2 bg-blue-500 text-white text-xs px-2 py-1 rounded">
-                          Principal
-                        </span>
-                      )}
-                    </div>
-                  ))}
+                {/* Endereço */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Endereço Completo *
+                  </label>
+                  <input
+                    type="text"
+                    name="address"
+                    value={formData.address}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Rua das Flores, 123 - Centro"
+                    required
+                  />
                 </div>
               </div>
-            )}
-
-            {/* Adicionar Novas Fotos */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Adicionar Novas Fotos
-              </label>
-              <input
-                type="file"
-                accept="image/*"
-                multiple
-                onChange={handlePhotoChange}
-                className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-              />
-              <p className="mt-1 text-sm text-gray-500">
-                Formatos aceitos: JPG, PNG. Máximo 5MB por arquivo.
-              </p>
             </div>
 
-            {/* Preview das novas fotos */}
-            {newPhotoPreviews.length > 0 && (
-              <div className="mt-4">
-                <h3 className="text-sm font-medium text-gray-700 mb-3">
-                  Novas Fotos
-                </h3>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  {newPhotoPreviews.map((preview, index) => (
-                    <div key={index} className="relative group">
-                      <img
-                        src={preview.url}
-                        alt={`Nova foto ${index + 1}`}
-                        className="w-full h-32 object-cover rounded-lg"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveNewPhoto(index)}
-                        className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                      >
-                        <svg
-                          className="w-4 h-4"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M6 18L18 6M6 6l12 12"
-                          />
-                        </svg>
-                      </button>
-                      <p className="text-xs text-gray-500 mt-1 truncate">
-                        {preview.name}
-                      </p>
-                    </div>
-                  ))}
+            {/* Preço */}
+            <div>
+              <h3 className="text-lg font-medium text-gray-900 mb-4">Preço</h3>
+              <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Preço por Noite (R$) *
+                  </label>
+                  <input
+                    type="number"
+                    name="price_per_night"
+                    value={formData.price_per_night}
+                    onChange={handleInputChange}
+                    min="0"
+                    step="0.01"
+                    required
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="250.00"
+                  />
                 </div>
               </div>
-            )}
-          </div>
+            </div>
 
-          {/* Botões de Ação */}
-          <div className="flex justify-between">
-            <button
-              type="button"
-              onClick={() => navigate("/admin/properties")}
-              className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-            >
-              Cancelar
-            </button>
+            {/* Descrição */}
+            <div>
+              <h3 className="text-lg font-medium text-gray-900 mb-4">
+                Descrição
+              </h3>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Descrição Detalhada (Opcional)
+                </label>
+                <textarea
+                  name="description"
+                  value={formData.description}
+                  onChange={handleInputChange}
+                  rows="4"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Descreva o imóvel, suas características, localização e diferenciais..."
+                />
+              </div>
+            </div>
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loading ? (
-                <span className="flex items-center">
-                  <svg
-                    className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    ></circle>
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    ></path>
-                  </svg>
-                  Salvando...
-                </span>
-              ) : (
-                "Atualizar Imóvel"
-              )}
-            </button>
-          </div>
-        </form>
+            {/* Botões */}
+            <div className="flex justify-end space-x-4 pt-6 border-t">
+              <button
+                type="button"
+                onClick={handleCancel}
+                className="btn-secondary"
+                disabled={loading}
+              >
+                Cancelar
+              </button>
+              <button type="submit" disabled={loading} className="btn-primary">
+                {loading ? (
+                  <span className="flex items-center">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    Salvando...
+                  </span>
+                ) : (
+                  "Atualizar Imóvel"
+                )}
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
     </AdminLayout>
   );

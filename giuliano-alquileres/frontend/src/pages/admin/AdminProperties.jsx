@@ -20,6 +20,7 @@ const AdminProperties = () => {
     try {
       setLoading(true);
       const response = await api.get("/properties");
+      console.log("Imóveis carregados:", response.data.properties); // Debug
       setProperties(response.data.properties || []);
     } catch (err) {
       setError("Erro ao carregar imóveis");
@@ -44,9 +45,11 @@ const AdminProperties = () => {
   });
 
   // Ações
-  const handleEdit = (id) => {
-    // Navegar para edição
-    window.location.href = `/admin/properties/${id}/edit`;
+  const handleEdit = (property) => {
+    // Usar UUID se disponível, senão usar ID
+    const propertyId = property.uuid || property.id;
+    console.log("Editando imóvel:", propertyId, property);
+    window.location.href = `/admin/properties/${propertyId}/edit`;
   };
 
   const handleDelete = async (id) => {
@@ -63,7 +66,7 @@ const AdminProperties = () => {
   const handleToggleStatus = async (id, currentStatus) => {
     try {
       const newStatus =
-        currentStatus === "available" ? "unavailable" : "available";
+        currentStatus === "available" ? "inactive" : "available";
       await api.patch(`/properties/${id}`, { status: newStatus });
       setProperties(
         properties.map((p) => (p.id === id ? { ...p, status: newStatus } : p))
@@ -86,8 +89,9 @@ const AdminProperties = () => {
   const getStatusLabel = (status) => {
     const statuses = {
       available: "Disponível",
-      unavailable: "Indisponível",
-      pending: "Pendente",
+      occupied: "Ocupado",
+      maintenance: "Manutenção",
+      inactive: "Inativo",
     };
     return statuses[status] || status;
   };
@@ -95,8 +99,9 @@ const AdminProperties = () => {
   const getStatusColor = (status) => {
     const colors = {
       available: "bg-green-100 text-green-800",
-      unavailable: "bg-red-100 text-red-800",
-      pending: "bg-yellow-100 text-yellow-800",
+      occupied: "bg-blue-100 text-blue-800",
+      maintenance: "bg-yellow-100 text-yellow-800",
+      inactive: "bg-red-100 text-red-800",
     };
     return colors[status] || "bg-gray-100 text-gray-800";
   };
@@ -146,7 +151,7 @@ const AdminProperties = () => {
               />
             </div>
 
-            {/* Filtro por Status */}
+            {/* Filtro por Status - CORRIGIDO */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Status
@@ -158,8 +163,9 @@ const AdminProperties = () => {
               >
                 <option value="all">Todos</option>
                 <option value="available">Disponível</option>
-                <option value="unavailable">Indisponível</option>
-                <option value="pending">Pendente</option>
+                <option value="occupied">Ocupado</option>
+                <option value="maintenance">Manutenção</option>
+                <option value="inactive">Inativo</option>
               </select>
             </div>
 
@@ -306,7 +312,7 @@ const AdminProperties = () => {
                         <div className="flex space-x-3">
                           {/* Botão Editar */}
                           <button
-                            onClick={() => handleEdit(property.id)}
+                            onClick={() => handleEdit(property)}
                             className="text-blue-600 hover:text-blue-900"
                             title="Editar"
                           >
@@ -352,7 +358,7 @@ const AdminProperties = () => {
           )}
         </div>
 
-        {/* Estatísticas rápidas */}
+        {/* Estatísticas rápidas - CORRIGIDAS */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div className="bg-white p-4 rounded-lg shadow-sm border">
             <div className="text-2xl font-bold text-gray-900">
@@ -368,15 +374,15 @@ const AdminProperties = () => {
           </div>
           <div className="bg-white p-4 rounded-lg shadow-sm border">
             <div className="text-2xl font-bold text-yellow-600">
-              {properties.filter((p) => p.status === "pending").length}
+              {properties.filter((p) => p.status === "maintenance").length}
             </div>
-            <div className="text-sm text-gray-600">Pendentes</div>
+            <div className="text-sm text-gray-600">Manutenção</div>
           </div>
           <div className="bg-white p-4 rounded-lg shadow-sm border">
-            <div className="text-2xl font-bold text-red-600">
-              {properties.filter((p) => p.status === "unavailable").length}
+            <div className="text-2xl font-bold text-blue-600">
+              {properties.filter((p) => p.status === "occupied").length}
             </div>
-            <div className="text-sm text-gray-600">Indisponíveis</div>
+            <div className="text-sm text-gray-600">Ocupados</div>
           </div>
         </div>
       </div>

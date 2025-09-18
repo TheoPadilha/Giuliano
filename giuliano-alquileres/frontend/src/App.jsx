@@ -7,8 +7,8 @@ import Home from "./pages/Home";
 import Login from "./pages/Login";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminProperties from "./pages/admin/AdminProperties";
-import AdminNewProperty from "./pages/admin/AdminNewProperty"; // CORRIGIDO
-// import EditProperty from "./pages/admin/EditProperty"; // ainda não existe
+import AdminNewProperty from "./pages/admin/AdminNewProperty";
+import EditProperty from "./pages/admin/EditProperty"; // Importar
 
 function App() {
   return (
@@ -41,12 +41,12 @@ function App() {
               path="/admin/properties/new"
               element={
                 <ProtectedRoute adminOnly={true}>
-                  <AdminNewProperty /> {/* CORRIGIDO */}
+                  <AdminNewProperty />
                 </ProtectedRoute>
               }
             />
 
-            {/* Comentado até criarmos o EditProperty
+            {/* ROTA DE EDIÇÃO ATIVADA */}
             <Route
               path="/admin/properties/:id/edit"
               element={
@@ -55,7 +55,6 @@ function App() {
                 </ProtectedRoute>
               }
             />
-            */}
           </Routes>
         </div>
       </Router>
