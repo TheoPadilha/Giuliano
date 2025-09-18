@@ -151,7 +151,7 @@ const AdminProperties = () => {
               />
             </div>
 
-            {/* Filtro por Status - CORRIGIDO */}
+            {/* Filtro por Status - CORRIGIDO COM TODOS OS STATUS */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Status
@@ -358,7 +358,7 @@ const AdminProperties = () => {
           )}
         </div>
 
-        {/* Estatísticas rápidas - CORRIGIDAS */}
+        {/* Estatísticas rápidas - CORRIGIDAS COM TODOS OS STATUS */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div className="bg-white p-4 rounded-lg shadow-sm border">
             <div className="text-2xl font-bold text-gray-900">

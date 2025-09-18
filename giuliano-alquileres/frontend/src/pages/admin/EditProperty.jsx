@@ -6,7 +6,7 @@ import Loading from "../../components/common/Loading";
 
 const EditProperty = () => {
   const navigate = useNavigate();
-  const { id } = useParams(); // ID do imóvel a ser editado
+  const { id } = useParams();
   const [loading, setLoading] = useState(false);
   const [loadingData, setLoadingData] = useState(true);
   const [error, setError] = useState("");
@@ -14,9 +14,10 @@ const EditProperty = () => {
 
   // Dados auxiliares
   const [cities, setCities] = useState([]);
+  const [amenities, setAmenities] = useState([]);
   const [propertyData, setPropertyData] = useState(null);
 
-  // Estado do formulário - igual ao NewProperty
+  // Estado do formulário completo
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -26,105 +27,226 @@ const EditProperty = () => {
     bathrooms: 1,
     city_id: "",
     address: "",
+    neighborhood: "",
+    latitude: "",
+    longitude: "",
     price_per_night: "",
+    weekend_price: "",
+    high_season_price: "",
     status: "available",
-    featured: false,
+    is_featured: false,
+    amenities: [], // Array de IDs das amenities selecionadas
   });
 
-  // Carregar dados do imóvel e cidades
+  // Função para buscar o imóvel com múltiplas tentativas
+  const fetchProperty = async (propertyId) => {
+    const attempts = [
+      {
+        url: `/properties/uuid/${propertyId}`,
+        method: "get",
+        description: "UUID endpoint",
+      },
+      {
+        url: `/properties/${propertyId}`,
+        method: "get",
+        description: "ID endpoint",
+      },
+      {
+        url: "/properties",
+        method: "get",
+        description: "Lista completa",
+        findInList: true,
+      },
+    ];
+
+    for (const attempt of attempts) {
+      try {
+        console.log(
+          `Tentando carregar imóvel via ${attempt.description}:`,
+          attempt.url
+        );
+
+        const response = await api[attempt.method](attempt.url);
+
+        if (attempt.findInList) {
+          // Buscar na lista
+          const properties = response.data.properties || [];
+          const property = properties.find(
+            (p) =>
+              String(p.id) === String(propertyId) ||
+              String(p.uuid) === String(propertyId)
+          );
+
+          if (property) {
+            console.log("✅ Imóvel encontrado na lista");
+            return { property };
+          } else {
+            console.log("❌ Imóvel não encontrado na lista");
+            continue;
+          }
+        } else {
+          // Resposta direta
+          const property = response.data.property || response.data;
+          if (property && (property.id || property.uuid)) {
+            console.log(`✅ Imóvel encontrado via ${attempt.description}`);
+            return { property };
+          }
+        }
+      } catch (error) {
+        console.log(
+          `❌ Falha na tentativa ${attempt.description}:`,
+          error.response?.status || error.message
+        );
+        continue;
+      }
+    }
+
+    throw new Error(
+      `Imóvel com ID "${propertyId}" não encontrado em nenhuma das tentativas`
+    );
+  };
+
+  // Carregar dados do imóvel e dados auxiliares
   useEffect(() => {
     const fetchData = async () => {
+      if (!id) {
+        setError("ID do imóvel não fornecido");
+        setLoadingData(false);
+        return;
+      }
+
       try {
         setLoadingData(true);
+        setError("");
 
-        // Primeiro, vamos verificar se o ID é um UUID ou número
-        console.log("Tentando carregar imóvel com ID:", id);
+        console.log("🔍 Iniciando busca por imóvel ID:", id);
 
-        let propertyRes;
-        let citiesRes;
+        // Buscar dados em paralelo
+        const [propertyResult, citiesResponse, amenitiesResponse] =
+          await Promise.all([
+            fetchProperty(id),
+            api.get("/utilities/cities").catch((err) => {
+              console.warn("Erro ao carregar cidades:", err);
+              return { data: { cities: [] } };
+            }),
+            api.get("/utilities/amenities").catch((err) => {
+              console.warn("Erro ao carregar amenities:", err);
+              // Fallback para amenities padrão se o endpoint não existir
+              return {
+                data: {
+                  amenities: [
+                    { id: 1, name: "Wi-Fi", icon: "wifi", category: "basic" },
+                    {
+                      id: 2,
+                      name: "Ar Condicionado",
+                      icon: "snowflake",
+                      category: "comfort",
+                    },
+                    {
+                      id: 3,
+                      name: "Piscina",
+                      icon: "waves",
+                      category: "comfort",
+                    },
+                    {
+                      id: 5,
+                      name: "Cozinha",
+                      icon: "chef-hat",
+                      category: "basic",
+                    },
+                    {
+                      id: 6,
+                      name: "TV",
+                      icon: "tv",
+                      category: "entertainment",
+                    },
+                    {
+                      id: 7,
+                      name: "Máquina de Lavar",
+                      icon: "washing-machine",
+                      category: "basic",
+                    },
+                    {
+                      id: 8,
+                      name: "Varanda",
+                      icon: "home",
+                      category: "comfort",
+                    },
+                    {
+                      id: 12,
+                      name: "Churrasqueira",
+                      icon: "flame",
+                      category: "entertainment",
+                    },
+                  ],
+                },
+              };
+            }),
+          ]);
 
-        try {
-          // Se parece com UUID (tem hífens), usar endpoint UUID
-          if (id.includes("-")) {
-            console.log(
-              "ID parece ser UUID, usando endpoint /properties/uuid/${id}"
-            );
-            propertyRes = await api.get(`/properties/uuid/${id}`);
-          } else {
-            // Se é número, usar endpoint normal
-            console.log(
-              "ID parece ser numérico, usando endpoint /properties/${id}"
-            );
-            propertyRes = await api.get(`/properties/${id}`);
-          }
+        const property = propertyResult.property;
+        const cities = citiesResponse.data.cities || [];
+        const availableAmenities = amenitiesResponse.data.amenities || [];
 
-          console.log("Sucesso ao carregar imóvel");
-        } catch (error) {
-          console.log("Erro na primeira tentativa:", error.response?.status);
+        console.log("📋 Dados do imóvel carregados:", property);
+        console.log("🏙️ Cidades carregadas:", cities.length);
+        console.log("⭐ Amenities carregadas:", availableAmenities.length);
 
-          // Se falhar, tentar buscar na lista
-          try {
-            console.log("Tentando buscar na lista de todos os imóveis...");
-            const allPropertiesRes = await api.get("/properties");
-            const property = allPropertiesRes.data.properties?.find(
-              (p) => p.id == id || p.uuid == id
-            );
-
-            if (property) {
-              propertyRes = { data: { property } };
-              console.log("Encontrado na lista de propriedades");
-            } else {
-              throw new Error("Imóvel não encontrado na lista");
-            }
-          } catch (listError) {
-            console.error("Erro ao buscar na lista:", listError);
-            throw new Error("Imóvel não encontrado");
-          }
-        }
-
-        // Buscar cidades
-        citiesRes = await api.get("/utilities/cities");
-
-        const property = propertyRes.data.property || propertyRes.data;
-        console.log("Estrutura completa da resposta:", propertyRes.data);
-        console.log("Dados do imóvel processado:", property);
-
+        // Validar dados essenciais
         if (!property) {
-          throw new Error("Dados do imóvel não encontrados na resposta da API");
+          throw new Error("Dados do imóvel não encontrados");
         }
+
+        // Extrair IDs das amenities do imóvel
+        const propertyAmenityIds = property.amenities
+          ? property.amenities.map((a) => a.id)
+          : [];
 
         // Preencher formulário com dados existentes
         setFormData({
           title: property.title || "",
           description: property.description || "",
           type: property.type || "apartment",
-          max_guests: property.max_guests || 2,
-          bedrooms: property.bedrooms || 1,
-          bathrooms: property.bathrooms || 1,
-          city_id: property.city_id || "",
+          max_guests: Number(property.max_guests) || 2,
+          bedrooms: Number(property.bedrooms) || 1,
+          bathrooms: Number(property.bathrooms) || 1,
+          city_id: property.city_id ? String(property.city_id) : "",
           address: property.address || "",
-          price_per_night: property.price_per_night || "",
+          neighborhood: property.neighborhood || "",
+          latitude: property.latitude ? String(property.latitude) : "",
+          longitude: property.longitude ? String(property.longitude) : "",
+          price_per_night: property.price_per_night
+            ? String(property.price_per_night)
+            : "",
+          weekend_price: property.weekend_price
+            ? String(property.weekend_price)
+            : "",
+          high_season_price: property.high_season_price
+            ? String(property.high_season_price)
+            : "",
           status: property.status || "available",
-          featured: property.is_featured || false, // Atenção: is_featured no backend
+          is_featured: Boolean(property.is_featured),
+          amenities: propertyAmenityIds,
         });
 
         setPropertyData(property);
-        setCities(citiesRes.data.cities || []);
+        setCities(cities);
+        setAmenities(availableAmenities);
+
+        console.log("✅ Dados carregados e formulário preenchido com sucesso");
       } catch (err) {
-        console.error("Erro completo ao carregar dados:", err);
-        console.error("Status:", err.response?.status);
-        console.error("Data:", err.response?.data);
-        console.error("URL tentada:", err.config?.url);
+        console.error("💥 Erro ao carregar dados:", err);
 
         let errorMessage = "Erro ao carregar dados do imóvel.";
 
-        if (err.response?.status === 404) {
-          errorMessage = `Imóvel com ID ${id} não encontrado. Verifique se o ID está correto.`;
-        } else if (err.response?.status === 500) {
-          errorMessage =
-            "Erro interno do servidor. Verifique se o backend está funcionando.";
-        } else if (err.message) {
+        if (err.message.includes("não encontrado")) {
           errorMessage = err.message;
+        } else if (err.response?.status === 404) {
+          errorMessage = `Imóvel com ID "${id}" não encontrado.`;
+        } else if (err.response?.status === 401) {
+          errorMessage = "Não autorizado. Faça login novamente.";
+        } else if (err.response?.status >= 500) {
+          errorMessage = "Erro interno do servidor. Tente novamente.";
         }
 
         setError(errorMessage);
@@ -133,12 +255,7 @@ const EditProperty = () => {
       }
     };
 
-    if (id) {
-      fetchData();
-    } else {
-      setError("ID do imóvel não fornecido");
-      setLoadingData(false);
-    }
+    fetchData();
   }, [id]);
 
   const handleInputChange = (e) => {
@@ -146,12 +263,10 @@ const EditProperty = () => {
 
     let processedValue = value;
 
-    // Converter valores numéricos
     if (type === "number") {
       processedValue = value === "" ? "" : Number(value);
     }
 
-    // Converter checkbox
     if (type === "checkbox") {
       processedValue = checked;
     }
@@ -159,6 +274,16 @@ const EditProperty = () => {
     setFormData((prev) => ({
       ...prev,
       [name]: processedValue,
+    }));
+  };
+
+  // Gerenciar seleção de amenities
+  const handleAmenityToggle = (amenityId) => {
+    setFormData((prev) => ({
+      ...prev,
+      amenities: prev.amenities.includes(amenityId)
+        ? prev.amenities.filter((id) => id !== amenityId)
+        : [...prev.amenities, amenityId],
     }));
   };
 
@@ -189,6 +314,17 @@ const EditProperty = () => {
       errors.push("O preço por noite deve ser maior que zero");
     }
 
+    if (formData.weekend_price && parseFloat(formData.weekend_price) <= 0) {
+      errors.push("O preço de fim de semana deve ser maior que zero");
+    }
+
+    if (
+      formData.high_season_price &&
+      parseFloat(formData.high_season_price) <= 0
+    ) {
+      errors.push("O preço de alta temporada deve ser maior que zero");
+    }
+
     if (formData.max_guests < 1 || formData.max_guests > 20) {
       errors.push("Deve acomodar entre 1 e 20 hóspedes");
     }
@@ -199,6 +335,21 @@ const EditProperty = () => {
 
     if (formData.bathrooms < 1 || formData.bathrooms > 10) {
       errors.push("Deve ter entre 1 e 10 banheiros");
+    }
+
+    // Validação de coordenadas se fornecidas
+    if (
+      formData.latitude &&
+      (isNaN(formData.latitude) || Math.abs(formData.latitude) > 90)
+    ) {
+      errors.push("Latitude deve ser um número entre -90 e 90");
+    }
+
+    if (
+      formData.longitude &&
+      (isNaN(formData.longitude) || Math.abs(formData.longitude) > 180)
+    ) {
+      errors.push("Longitude deve ser um número entre -180 e 180");
     }
 
     return errors;
@@ -217,7 +368,7 @@ const EditProperty = () => {
         throw new Error(validationErrors.join(", "));
       }
 
-      // Preparar dados para envio - igual ao NewProperty
+      // Preparar dados para envio
       const propertyDataToUpdate = {
         title: formData.title.trim(),
         description: formData.description.trim() || undefined,
@@ -227,25 +378,45 @@ const EditProperty = () => {
         bathrooms: parseInt(formData.bathrooms),
         city_id: parseInt(formData.city_id),
         address: formData.address.trim(),
+        neighborhood: formData.neighborhood.trim() || undefined,
+        latitude: formData.latitude ? parseFloat(formData.latitude) : undefined,
+        longitude: formData.longitude
+          ? parseFloat(formData.longitude)
+          : undefined,
         price_per_night: parseFloat(formData.price_per_night),
+        weekend_price: formData.weekend_price
+          ? parseFloat(formData.weekend_price)
+          : undefined,
+        high_season_price: formData.high_season_price
+          ? parseFloat(formData.high_season_price)
+          : undefined,
         status: formData.status || "available",
-        is_featured: Boolean(formData.featured),
-        amenities: [], // Array vazio por enquanto
+        is_featured: Boolean(formData.is_featured),
+        amenities: formData.amenities, // Array de IDs das amenities
       };
 
-      console.log(
-        "Dados sendo enviados para atualização:",
-        propertyDataToUpdate
-      );
+      console.log("📤 Enviando dados para atualização:", propertyDataToUpdate);
 
-      // Usar o UUID do imóvel se disponível, senão usar o ID
-      const propertyId = propertyData?.uuid || id;
-      const response = await api.put(
-        `/properties/${propertyId}`,
-        propertyDataToUpdate
-      );
+      // Usar o ID principal do imóvel
+      const propertyId = propertyData?.uuid || propertyData?.id || id;
 
-      console.log("Resposta da atualização:", response.data);
+      // Tentar múltiplos endpoints para atualização
+      let updateResponse;
+
+      try {
+        updateResponse = await api.put(
+          `/properties/${propertyId}`,
+          propertyDataToUpdate
+        );
+      } catch (putError) {
+        console.log("Erro com PUT, tentando PATCH:", putError.response?.status);
+        updateResponse = await api.patch(
+          `/properties/${propertyId}`,
+          propertyDataToUpdate
+        );
+      }
+
+      console.log("✅ Resposta da atualização:", updateResponse.data);
 
       setSuccess("Imóvel atualizado com sucesso!");
 
@@ -254,8 +425,7 @@ const EditProperty = () => {
         navigate("/admin/properties");
       }, 2000);
     } catch (err) {
-      console.error("Erro completo:", err);
-      console.error("Response data:", err.response?.data);
+      console.error("💥 Erro ao atualizar:", err);
 
       let errorMessage = "Erro ao atualizar imóvel";
 
@@ -266,9 +436,11 @@ const EditProperty = () => {
       } else if (err.response?.data?.details) {
         errorMessage = err.response.data.details;
       } else if (err.response?.status === 404) {
-        errorMessage = "Imóvel não encontrado";
+        errorMessage = "Imóvel não encontrado para atualização";
       } else if (err.response?.status === 400) {
         errorMessage = "Dados inválidos. Verifique os campos obrigatórios.";
+      } else if (err.response?.status === 401) {
+        errorMessage = "Não autorizado. Faça login novamente.";
       }
 
       setError(errorMessage);
@@ -281,11 +453,61 @@ const EditProperty = () => {
     navigate("/admin/properties");
   };
 
+  // Agrupar amenities por categoria
+  const amenitiesByCategory = amenities.reduce((acc, amenity) => {
+    const category = amenity.category || "other";
+    if (!acc[category]) {
+      acc[category] = [];
+    }
+    acc[category].push(amenity);
+    return acc;
+  }, {});
+
+  const getCategoryLabel = (category) => {
+    const labels = {
+      basic: "Básicas",
+      comfort: "Conforto",
+      entertainment: "Entretenimento",
+      safety: "Segurança",
+      other: "Outras",
+    };
+    return labels[category] || "Outras";
+  };
+
+  const getAmenityIcon = (iconName) => {
+    const icons = {
+      wifi: "📶",
+      snowflake: "❄️",
+      waves: "🏊",
+      "chef-hat": "👨‍🍳",
+      tv: "📺",
+      "washing-machine": "🧺",
+      home: "🏠",
+      flame: "🔥",
+      car: "🚗",
+      shield: "🛡️",
+    };
+    return icons[iconName] || "⭐";
+  };
+
   // Loading inicial
   if (loadingData) {
     return (
       <AdminLayout>
-        <Loading text="Carregando dados do imóvel..." />
+        <div className="max-w-6xl mx-auto">
+          <Loading text={`Carregando dados do imóvel (ID: ${id})...`} />
+
+          {/* Debug info */}
+          <div className="mt-4 bg-blue-50 border border-blue-200 rounded-md p-4">
+            <h4 className="text-sm font-medium text-blue-900">
+              Status do Carregamento
+            </h4>
+            <p className="text-sm text-blue-700 mt-1">
+              Buscando imóvel com ID:{" "}
+              <code className="bg-blue-100 px-1 rounded">{id}</code>
+            </p>
+          </div>
+        </div>
       </AdminLayout>
     );
   }
@@ -294,13 +516,24 @@ const EditProperty = () => {
   if (error && !propertyData) {
     return (
       <AdminLayout>
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-6xl mx-auto">
           <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md">
-            <h3 className="font-medium">Erro ao carregar imóvel</h3>
-            <p>{error}</p>
-            <button onClick={handleCancel} className="mt-2 btn-secondary">
-              ← Voltar para lista
-            </button>
+            <h3 className="font-medium text-red-800">
+              Erro ao carregar imóvel
+            </h3>
+            <p className="mt-2">{error}</p>
+
+            <div className="mt-4 flex space-x-3">
+              <button onClick={handleCancel} className="btn-secondary">
+                ← Voltar para lista
+              </button>
+              <button
+                onClick={() => window.location.reload()}
+                className="btn-primary"
+              >
+                🔄 Tentar novamente
+              </button>
+            </div>
           </div>
         </div>
       </AdminLayout>
@@ -309,7 +542,7 @@ const EditProperty = () => {
 
   return (
     <AdminLayout>
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="mb-6">
           <div className="flex items-center justify-between">
@@ -320,6 +553,9 @@ const EditProperty = () => {
               <p className="text-gray-600">
                 Atualize as informações de:{" "}
                 <strong>{propertyData?.title}</strong>
+              </p>
+              <p className="text-sm text-gray-500 mt-1">
+                ID: {propertyData?.uuid || propertyData?.id || id}
               </p>
             </div>
             <button onClick={handleCancel} className="btn-secondary">
@@ -358,9 +594,9 @@ const EditProperty = () => {
           </div>
         )}
 
-        {/* Formulário - Idêntico ao NewProperty */}
+        {/* Formulário - IDÊNTICO AO NEW PROPERTY */}
         <div className="bg-white shadow rounded-lg">
-          <form onSubmit={handleSubmit} className="space-y-6 p-6">
+          <form onSubmit={handleSubmit} className="space-y-8 p-6">
             {/* Informações Básicas */}
             <div>
               <h3 className="text-lg font-medium text-gray-900 mb-4">
@@ -481,13 +717,13 @@ const EditProperty = () => {
                 </div>
               </div>
 
-              {/* Checkbox para imóvel em destaque */}
+              {/* Checkbox para destaque */}
               <div className="mt-6">
                 <label className="flex items-center">
                   <input
                     type="checkbox"
-                    name="featured"
-                    checked={formData.featured}
+                    name="is_featured"
+                    checked={formData.is_featured}
                     onChange={handleInputChange}
                     className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                   />
@@ -525,8 +761,23 @@ const EditProperty = () => {
                   </select>
                 </div>
 
-                {/* Endereço */}
+                {/* Bairro */}
                 <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Bairro
+                  </label>
+                  <input
+                    type="text"
+                    name="neighborhood"
+                    value={formData.neighborhood}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Ex: Centro, Praia Central"
+                  />
+                </div>
+
+                {/* Endereço */}
+                <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Endereço Completo *
                   </label>
@@ -536,17 +787,48 @@ const EditProperty = () => {
                     value={formData.address}
                     onChange={handleInputChange}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="Rua das Flores, 123 - Centro"
+                    placeholder="Rua das Flores, 123"
                     required
+                  />
+                </div>
+
+                {/* Coordenadas */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Latitude (Opcional)
+                  </label>
+                  <input
+                    type="number"
+                    name="latitude"
+                    value={formData.latitude}
+                    onChange={handleInputChange}
+                    step="any"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="-26.997043"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Longitude (Opcional)
+                  </label>
+                  <input
+                    type="number"
+                    name="longitude"
+                    value={formData.longitude}
+                    onChange={handleInputChange}
+                    step="any"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="-48.613837"
                   />
                 </div>
               </div>
             </div>
 
-            {/* Preço */}
+            {/* Preços */}
             <div>
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Preço</h3>
-              <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
+              <h3 className="text-lg font-medium text-gray-900 mb-4">Preços</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Preço por Noite (R$) *
@@ -563,8 +845,81 @@ const EditProperty = () => {
                     placeholder="250.00"
                   />
                 </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Preço Fim de Semana (R$)
+                  </label>
+                  <input
+                    type="number"
+                    name="weekend_price"
+                    value={formData.weekend_price}
+                    onChange={handleInputChange}
+                    min="0"
+                    step="0.01"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="300.00"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Preço Alta Temporada (R$)
+                  </label>
+                  <input
+                    type="number"
+                    name="high_season_price"
+                    value={formData.high_season_price}
+                    onChange={handleInputChange}
+                    min="0"
+                    step="0.01"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="400.00"
+                  />
+                </div>
               </div>
             </div>
+
+            {/* Comodidades */}
+            {amenities.length > 0 && (
+              <div>
+                <h3 className="text-lg font-medium text-gray-900 mb-4">
+                  Comodidades
+                </h3>
+                <p className="text-sm text-gray-600 mb-4">
+                  Selecione as comodidades disponíveis neste imóvel:
+                </p>
+
+                {Object.keys(amenitiesByCategory).map((category) => (
+                  <div key={category} className="mb-6">
+                    <h4 className="text-md font-medium text-gray-800 mb-3">
+                      {getCategoryLabel(category)}
+                    </h4>
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                      {amenitiesByCategory[category].map((amenity) => (
+                        <label
+                          key={amenity.id}
+                          className="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={formData.amenities.includes(amenity.id)}
+                            onChange={() => handleAmenityToggle(amenity.id)}
+                            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                          />
+                          <span className="ml-3 text-lg">
+                            {getAmenityIcon(amenity.icon)}
+                          </span>
+                          <span className="ml-2 text-sm text-gray-700">
+                            {amenity.name}
+                          </span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
 
             {/* Descrição */}
             <div>
