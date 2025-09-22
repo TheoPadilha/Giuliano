@@ -1,3 +1,5 @@
+// backend/controllers/propertyController.js - VERSÃO CORRIGIDA
+
 const { Property, City, PropertyPhoto, Amenity } = require("../models");
 const Joi = require("joi");
 const { Op } = require("sequelize");
@@ -240,20 +242,34 @@ const createProperty = async (req, res) => {
   }
 };
 
-// Atualizar imóvel (admin only)
+// 🛠️ CORREÇÃO: Atualizar imóvel (admin only) - Aceita UUID ou ID
 const updateProperty = async (req, res) => {
   try {
     const { uuid } = req.params;
 
-    // Buscar imóvel
-    const property = await Property.findOne({ where: { uuid } });
+    console.log(`🔍 Buscando imóvel para atualização: ${uuid}`);
+
+    // 🛠️ CORREÇÃO: Buscar por UUID ou ID
+    let property = null;
+
+    // Tentar buscar por UUID primeiro
+    property = await Property.findOne({ where: { uuid } });
+
+    // Se não encontrar por UUID, tentar por ID
+    if (!property && !isNaN(uuid)) {
+      property = await Property.findByPk(parseInt(uuid));
+    }
+
     if (!property) {
+      console.log(`❌ Imóvel não encontrado: ${uuid}`);
       return res.status(404).json({
         error: "Imóvel não encontrado",
       });
     }
 
-    // Validar dados (permitir campos opcionais)
+    console.log(`✅ Imóvel encontrado: ${property.id} (${property.uuid})`);
+
+    // Validar dados (permitir campos opcionais para atualização)
     const updateSchema = propertySchema.fork(
       [
         "title",
@@ -270,6 +286,7 @@ const updateProperty = async (req, res) => {
 
     const { error, value } = updateSchema.validate(req.body);
     if (error) {
+      console.log(`❌ Dados inválidos:`, error.details[0].message);
       return res.status(400).json({
         error: "Dados inválidos",
         details: error.details[0].message,
@@ -288,11 +305,14 @@ const updateProperty = async (req, res) => {
       }
     }
 
+    console.log(`📝 Atualizando imóvel com dados:`, propertyData);
+
     // Atualizar imóvel
     await property.update(propertyData);
 
     // Atualizar comodidades se fornecidas
-    if (amenities) {
+    if (Array.isArray(amenities)) {
+      console.log(`🏷️ Atualizando amenities:`, amenities);
       await property.setAmenities(amenities);
     }
 
@@ -313,12 +333,14 @@ const updateProperty = async (req, res) => {
       ],
     });
 
+    console.log(`✅ Imóvel atualizado com sucesso`);
+
     res.json({
       message: "Imóvel atualizado com sucesso",
       property: updatedProperty,
     });
   } catch (error) {
-    console.error("Erro ao atualizar imóvel:", error);
+    console.error("💥 Erro ao atualizar imóvel:", error);
     res.status(500).json({
       error: "Erro interno do servidor",
       details:
@@ -332,7 +354,13 @@ const deleteProperty = async (req, res) => {
   try {
     const { uuid } = req.params;
 
-    const property = await Property.findOne({ where: { uuid } });
+    // Buscar por UUID ou ID
+    let property = await Property.findOne({ where: { uuid } });
+
+    if (!property && !isNaN(uuid)) {
+      property = await Property.findByPk(parseInt(uuid));
+    }
+
     if (!property) {
       return res.status(404).json({
         error: "Imóvel não encontrado",

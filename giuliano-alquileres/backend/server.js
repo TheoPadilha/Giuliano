@@ -1,7 +1,10 @@
+// backend/server.js - VERIFICAR ESTA PARTE
+
 const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");
 const rateLimit = require("express-rate-limit");
+const path = require("path"); // 🛠️ ADICIONAR ESTA LINHA
 require("dotenv").config();
 
 // Importar configuração do banco e models
@@ -12,14 +15,19 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 
 // Middlewares de segurança
-app.use(helmet());
+app.use(
+  helmet({
+    crossOriginResourcePolicy: { policy: "cross-origin" }, // 🛠️ ADICIONAR PARA IMAGENS
+  })
+);
+
 app.use(
   cors({
     origin: [
       process.env.CORS_ORIGIN || "http://localhost:5173",
       "http://localhost:3000",
-      "http://127.0.0.1:5500", // Live Server do VS Code
-      null, // Para arquivos locais (file://)
+      "http://127.0.0.1:5500",
+      null,
     ],
     credentials: true,
   })
@@ -27,8 +35,8 @@ app.use(
 
 // Rate limiting
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutos
-  max: 100, // limite de 100 requests por IP
+  windowMs: 15 * 60 * 1000,
+  max: 100,
   message: "Muitas tentativas, tente novamente em 15 minutos",
 });
 app.use("/api/", limiter);
@@ -37,8 +45,18 @@ app.use("/api/", limiter);
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
-// Servir arquivos estáticos (uploads)
-app.use("/uploads", express.static("uploads"));
+// 🛠️ SERVIR ARQUIVOS ESTÁTICOS - VERIFICAR SE ESTA LINHA EXISTE
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
+// 🛠️ ADICIONAR LOG PARA DEBUG
+app.use(
+  "/uploads",
+  (req, res, next) => {
+    console.log(`📁 Tentando acessar arquivo: ${req.path}`);
+    next();
+  },
+  express.static(path.join(__dirname, "uploads"))
+);
 
 // Rota de teste
 app.get("/", (req, res) => {
@@ -47,6 +65,38 @@ app.get("/", (req, res) => {
     version: "1.0.0",
     environment: process.env.NODE_ENV,
   });
+});
+
+// 🛠️ ROTA DE TESTE PARA UPLOADS
+app.get("/test-uploads", (req, res) => {
+  const fs = require("fs");
+  const uploadsPath = path.join(__dirname, "uploads");
+  const propertiesPath = path.join(uploadsPath, "properties");
+
+  try {
+    const uploadsExists = fs.existsSync(uploadsPath);
+    const propertiesExists = fs.existsSync(propertiesPath);
+
+    let files = [];
+    if (propertiesExists) {
+      files = fs.readdirSync(propertiesPath);
+    }
+
+    res.json({
+      uploadsPath,
+      propertiesPath,
+      uploadsExists,
+      propertiesExists,
+      filesCount: files.length,
+      sampleFiles: files.slice(0, 5),
+    });
+  } catch (error) {
+    res.status(500).json({
+      error: error.message,
+      uploadsPath,
+      propertiesPath,
+    });
+  }
 });
 
 // Rota de teste do banco e models
@@ -102,6 +152,8 @@ const startServer = async () => {
       console.log(`🚀 Servidor rodando na porta ${PORT}`);
       console.log(`🌐 Acesse: http://localhost:${PORT}`);
       console.log(`🗄️  Banco: ${process.env.DB_NAME}`);
+      console.log(`📁 Uploads: http://localhost:${PORT}/uploads`);
+      console.log(`🧪 Teste uploads: http://localhost:${PORT}/test-uploads`);
       console.log(
         `📊 Models: User, City, Property, PropertyPhoto, Amenity, TouristSpot`
       );
