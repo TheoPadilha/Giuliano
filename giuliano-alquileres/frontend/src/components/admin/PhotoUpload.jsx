@@ -404,7 +404,7 @@ const PhotoUpload = ({ propertyUuid, onUploadComplete }) => {
             Nenhuma foto adicionada
           </h4>
           <p className="text-gray-600">
-            Faça upload das primeiras fotos do imóvel usando a área acima
+            Faça upload das primeiras fotos do imóvel usando a área acima 
           </p>
         </div>
       )}
