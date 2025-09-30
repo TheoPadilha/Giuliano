@@ -1,3 +1,5 @@
+// src/pages/Home.jsx - Design Elegante e Minimalista
+
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import api from "../services/api";
@@ -7,488 +9,346 @@ import Loading from "../components/common/Loading";
 const Home = () => {
   const [properties, setProperties] = useState([]);
   const [featuredProperties, setFeaturedProperties] = useState([]);
-  const [cities, setCities] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [searching, setSearching] = useState(false);
-  const [searchFilters, setSearchFilters] = useState({
-    city_id: "",
-    type: "",
-    max_guests: "",
-    search: "",
-  });
+  const [searchTerm, setSearchTerm] = useState("");
 
-  // Carregar dados iniciais
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchProperties = async () => {
       try {
-        const [propertiesRes, featuredRes, citiesRes] = await Promise.all([
-          api.get("/properties?limit=12"),
-          api.get("/properties/featured?limit=4"),
-          api.get("/utilities/cities?active_only=true"),
-        ]);
+        setLoading(true);
+        const response = await api.get("/properties");
+        const allProperties = response.data.properties || [];
 
-        setProperties(propertiesRes.data.properties || []);
-        setFeaturedProperties(featuredRes.data.properties || []);
-        setCities(citiesRes.data.cities || []);
+        setFeaturedProperties(
+          allProperties.filter((p) => p.is_featured).slice(0, 6)
+        );
+        setProperties(allProperties.slice(0, 12));
       } catch (error) {
-        console.error("Erro ao carregar dados:", error);
+        console.error("Erro ao carregar propriedades:", error);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchData();
+    fetchProperties();
   }, []);
 
-  // Buscar imóveis com filtros
-  const handleSearch = async (e) => {
+  const handleSearch = (e) => {
     e.preventDefault();
-    setSearching(true);
-
-    try {
-      const params = new URLSearchParams();
-      if (searchFilters.city_id)
-        params.append("city_id", searchFilters.city_id);
-      if (searchFilters.type) params.append("type", searchFilters.type);
-      if (searchFilters.max_guests)
-        params.append("max_guests", searchFilters.max_guests);
-      if (searchFilters.search) params.append("search", searchFilters.search);
-
-      const response = await api.get(`/properties?${params.toString()}`);
-      setProperties(response.data.properties || []);
-    } catch (error) {
-      console.error("Erro na busca:", error);
-    } finally {
-      setSearching(false);
+    if (searchTerm.trim()) {
+      window.location.href = `/properties?search=${encodeURIComponent(
+        searchTerm
+      )}`;
     }
   };
 
-  // Limpar filtros
-  const clearFilters = () => {
-    setSearchFilters({
-      city_id: "",
-      type: "",
-      max_guests: "",
-      search: "",
-    });
-
-    // Recarregar propriedades iniciais
-    const fetchInitialProperties = async () => {
-      try {
-        const response = await api.get("/properties?limit=12");
-        setProperties(response.data.properties || []);
-      } catch (error) {
-        console.error("Erro ao recarregar:", error);
-      }
-    };
-
-    fetchInitialProperties();
-  };
-
-  const hasActiveFilters =
-    searchFilters.city_id ||
-    searchFilters.type ||
-    searchFilters.max_guests ||
-    searchFilters.search;
-
   if (loading) {
-    return <Loading text="Carregando imóveis..." />;
+    return <Loading text="Carregando imóveis incríveis..." />;
   }
 
   return (
-    <div className="min-h-screen">
-      {/* Header */}
-      <header className="bg-white shadow-sm sticky top-0 z-30">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <Link
-                to="/"
-                className="text-2xl font-bold text-gray-900 hover:text-blue-600 transition-colors"
-              >
-                Giuliano Alquileres
-              </Link>
-              <p className="text-gray-600 text-sm">
-                Aluguel de temporada em Santa Catarina
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
+      {/* Hero Section - Elegante e Impactante */}
+      <section className="relative h-[85vh] overflow-hidden">
+        {/* Background com Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-transparent z-10"></div>
+        <div
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{
+            backgroundImage:
+              "url('https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=2075')",
+          }}
+        ></div>
+
+        {/* Conteúdo Hero */}
+        <div className="relative z-20 h-full flex items-center">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+            <div className="max-w-3xl">
+              {/* Badge Dourado */}
+              <div className="inline-flex items-center bg-gradient-to-r from-amber-400 to-yellow-500 text-gray-900 px-4 py-2 rounded-full font-bold text-sm mb-6 shadow-lg">
+                <span className="mr-2">✨</span>
+                Imóveis Premium em Balneário Camboriú
+              </div>
+
+              <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight">
+                Encontre seu
+                <span className="block bg-gradient-to-r from-primary-500 to-amber-400 bg-clip-text text-transparent">
+                  Lar dos Sonhos
+                </span>
+              </h1>
+
+              <p className="text-xl text-gray-200 mb-8 leading-relaxed">
+                Descubra os melhores imóveis para compra e aluguel na cidade
+                mais desejada de Santa Catarina. Qualidade, conforto e
+                localização privilegiada.
               </p>
-            </div>
 
-            <div className="flex items-center space-x-4">
-              <select className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm">
-                <option value="pt">🇧🇷 Português</option>
-                <option value="es">🇪🇸 Español</option>
-                <option value="en">🇺🇸 English</option>
-              </select>
+              {/* Search Bar Elegante */}
+              <form onSubmit={handleSearch} className="relative">
+                <div className="flex bg-white rounded-2xl shadow-2xl overflow-hidden border-2 border-amber-400/20">
+                  <input
+                    type="text"
+                    placeholder="Buscar por localização, tipo de imóvel..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="flex-1 px-6 py-5 text-gray-900 placeholder-gray-500 focus:outline-none text-lg"
+                  />
+                  <button
+                    type="submit"
+                    className="bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 text-white px-8 font-bold transition-all duration-300 flex items-center gap-2"
+                  >
+                    <span className="text-xl">🔍</span>
+                    <span className="hidden sm:inline">Buscar</span>
+                  </button>
+                </div>
+              </form>
 
-              <Link to="/login" className="btn-secondary text-sm py-2">
-                Admin
-              </Link>
+              {/* Stats com detalhes dourados */}
+              <div className="grid grid-cols-3 gap-6 mt-12">
+                <div className="text-center">
+                  <div className="text-4xl font-bold text-white mb-1">500+</div>
+                  <div className="text-gray-300 text-sm">Imóveis</div>
+                  <div className="w-12 h-1 bg-gradient-to-r from-amber-400 to-yellow-500 mx-auto mt-2 rounded-full"></div>
+                </div>
+                <div className="text-center">
+                  <div className="text-4xl font-bold text-white mb-1">98%</div>
+                  <div className="text-gray-300 text-sm">Satisfação</div>
+                  <div className="w-12 h-1 bg-gradient-to-r from-amber-400 to-yellow-500 mx-auto mt-2 rounded-full"></div>
+                </div>
+                <div className="text-center">
+                  <div className="text-4xl font-bold text-white mb-1">24/7</div>
+                  <div className="text-gray-300 text-sm">Suporte</div>
+                  <div className="w-12 h-1 bg-gradient-to-r from-amber-400 to-yellow-500 mx-auto mt-2 rounded-full"></div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
-      </header>
 
-      {/* Hero Section com Busca */}
-      <section className="bg-gradient-to-br from-blue-600 via-blue-700 to-blue-800 text-white py-16 lg:py-24">
-        <div className="max-w-7xl mx-auto px-4 text-center">
-          <h1 className="text-4xl lg:text-6xl font-bold mb-6">
-            Encontre sua Casa de Férias Perfeita
-          </h1>
-          <p className="text-xl lg:text-2xl mb-10 text-blue-100">
-            Imóveis selecionados em Balneário Camboriú, Itapema e região
-          </p>
+        {/* Scroll Indicator */}
+        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-20 animate-bounce">
+          <div className="w-6 h-10 border-2 border-white rounded-full flex items-start justify-center p-2">
+            <div className="w-1 h-3 bg-white rounded-full"></div>
+          </div>
+        </div>
+      </section>
 
-          {/* Formulário de Busca Melhorado */}
-          <div className="bg-white rounded-2xl p-8 shadow-2xl max-w-5xl mx-auto">
-            <form onSubmit={handleSearch} className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                {/* Busca por texto */}
-                <div className="lg:col-span-1">
-                  <label className="block text-sm font-medium text-gray-700 mb-2 text-left">
-                    Buscar Imóvel
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="Nome, localização..."
-                    value={searchFilters.search}
-                    onChange={(e) =>
-                      setSearchFilters({
-                        ...searchFilters,
-                        search: e.target.value,
-                      })
-                    }
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                  />
-                </div>
-
-                {/* Cidade */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2 text-left">
-                    Cidade
-                  </label>
-                  <select
-                    value={searchFilters.city_id}
-                    onChange={(e) =>
-                      setSearchFilters({
-                        ...searchFilters,
-                        city_id: e.target.value,
-                      })
-                    }
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                  >
-                    <option value="">Todas as cidades</option>
-                    {cities.map((city) => (
-                      <option key={city.id} value={city.id}>
-                        {city.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Tipo */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2 text-left">
-                    Tipo de Imóvel
-                  </label>
-                  <select
-                    value={searchFilters.type}
-                    onChange={(e) =>
-                      setSearchFilters({
-                        ...searchFilters,
-                        type: e.target.value,
-                      })
-                    }
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                  >
-                    <option value="">Todos os tipos</option>
-                    <option value="apartment">🏢 Apartamento</option>
-                    <option value="house">🏠 Casa</option>
-                    <option value="studio">🏡 Studio</option>
-                    <option value="penthouse">🏰 Cobertura</option>
-                  </select>
-                </div>
-
-                {/* Hóspedes */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2 text-left">
-                    Hóspedes
-                  </label>
-                  <select
-                    value={searchFilters.max_guests}
-                    onChange={(e) =>
-                      setSearchFilters({
-                        ...searchFilters,
-                        max_guests: e.target.value,
-                      })
-                    }
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                  >
-                    <option value="">Qualquer quantidade</option>
-                    <option value="1">1 pessoa</option>
-                    <option value="2">2 pessoas</option>
-                    <option value="4">4 pessoas</option>
-                    <option value="6">6+ pessoas</option>
-                  </select>
-                </div>
+      {/* Categorias Rápidas */}
+      <section className="py-16 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <Link
+              to="/properties?type=apartment"
+              className="group relative overflow-hidden rounded-2xl h-48 shadow-lg hover:shadow-2xl transition-all duration-300"
+            >
+              <div
+                className="absolute inset-0 bg-cover bg-center group-hover:scale-110 transition-transform duration-500"
+                style={{
+                  backgroundImage:
+                    "url('https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?q=80&w=1035')",
+                }}
+              ></div>
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
+              <div className="absolute bottom-4 left-4 right-4 z-10">
+                <div className="text-3xl mb-2">🏢</div>
+                <h3 className="text-white font-bold text-xl">Apartamentos</h3>
+                <div className="w-16 h-1 bg-gradient-to-r from-amber-400 to-yellow-500 mt-2 rounded-full group-hover:w-full transition-all duration-300"></div>
               </div>
+            </Link>
 
-              {/* Botões */}
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <button
-                  type="submit"
-                  disabled={searching}
-                  className="bg-blue-600 hover:bg-blue-700 text-white py-4 px-8 rounded-xl font-bold text-lg transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105 disabled:opacity-50 disabled:transform-none"
-                >
-                  {searching ? (
-                    <span className="flex items-center justify-center">
-                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                      Buscando...
-                    </span>
-                  ) : (
-                    <>🔍 Buscar Imóveis</>
-                  )}
-                </button>
-
-                {hasActiveFilters && (
-                  <button
-                    type="button"
-                    onClick={clearFilters}
-                    className="bg-gray-600 hover:bg-gray-700 text-white py-4 px-8 rounded-xl font-bold text-lg transition-all duration-200 shadow-lg hover:shadow-xl"
-                  >
-                    🔄 Limpar Filtros
-                  </button>
-                )}
+            <Link
+              to="/properties?type=house"
+              className="group relative overflow-hidden rounded-2xl h-48 shadow-lg hover:shadow-2xl transition-all duration-300"
+            >
+              <div
+                className="absolute inset-0 bg-cover bg-center group-hover:scale-110 transition-transform duration-500"
+                style={{
+                  backgroundImage:
+                    "url('https://images.unsplash.com/photo-1568605114967-8130f3a36994?q=80&w=1170')",
+                }}
+              ></div>
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
+              <div className="absolute bottom-4 left-4 right-4 z-10">
+                <div className="text-3xl mb-2">🏠</div>
+                <h3 className="text-white font-bold text-xl">Casas</h3>
+                <div className="w-16 h-1 bg-gradient-to-r from-amber-400 to-yellow-500 mt-2 rounded-full group-hover:w-full transition-all duration-300"></div>
               </div>
+            </Link>
 
-              {/* Indicador de filtros ativos */}
-              {hasActiveFilters && (
-                <div className="text-sm text-gray-600 bg-blue-50 rounded-lg p-3">
-                  <span className="font-medium">Filtros ativos:</span>
-                  {searchFilters.search && (
-                    <span className="ml-2 bg-blue-100 px-2 py-1 rounded">
-                      Busca: "{searchFilters.search}"
-                    </span>
-                  )}
-                  {searchFilters.city_id && (
-                    <span className="ml-2 bg-blue-100 px-2 py-1 rounded">
-                      Cidade selecionada
-                    </span>
-                  )}
-                  {searchFilters.type && (
-                    <span className="ml-2 bg-blue-100 px-2 py-1 rounded">
-                      Tipo selecionado
-                    </span>
-                  )}
-                  {searchFilters.max_guests && (
-                    <span className="ml-2 bg-blue-100 px-2 py-1 rounded">
-                      Hóspedes: {searchFilters.max_guests}+
-                    </span>
-                  )}
-                </div>
-              )}
-            </form>
+            <Link
+              to="/properties?type=penthouse"
+              className="group relative overflow-hidden rounded-2xl h-48 shadow-lg hover:shadow-2xl transition-all duration-300"
+            >
+              <div
+                className="absolute inset-0 bg-cover bg-center group-hover:scale-110 transition-transform duration-500"
+                style={{
+                  backgroundImage:
+                    "url('https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=1170')",
+                }}
+              ></div>
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
+              <div className="absolute bottom-4 left-4 right-4 z-10">
+                <div className="text-3xl mb-2">👑</div>
+                <h3 className="text-white font-bold text-xl">Coberturas</h3>
+                <div className="w-16 h-1 bg-gradient-to-r from-amber-400 to-yellow-500 mt-2 rounded-full group-hover:w-full transition-all duration-300"></div>
+              </div>
+            </Link>
+
+            <Link
+              to="/properties?type=studio"
+              className="group relative overflow-hidden rounded-2xl h-48 shadow-lg hover:shadow-2xl transition-all duration-300"
+            >
+              <div
+                className="absolute inset-0 bg-cover bg-center group-hover:scale-110 transition-transform duration-500"
+                style={{
+                  backgroundImage:
+                    "url('https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?q=80&w=1080')",
+                }}
+              ></div>
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
+              <div className="absolute bottom-4 left-4 right-4 z-10">
+                <div className="text-3xl mb-2">✨</div>
+                <h3 className="text-white font-bold text-xl">Studios</h3>
+                <div className="w-16 h-1 bg-gradient-to-r from-amber-400 to-yellow-500 mt-2 rounded-full group-hover:w-full transition-all duration-300"></div>
+              </div>
+            </Link>
           </div>
         </div>
       </section>
 
       {/* Imóveis em Destaque */}
-      {featuredProperties.length > 0 && !hasActiveFilters && (
-        <section className="py-16 bg-white">
-          <div className="max-w-7xl mx-auto px-4">
+      {featuredProperties.length > 0 && (
+        <section className="py-20 bg-gradient-to-b from-white to-gray-50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
-              <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
-                ⭐ Imóveis em Destaque
+              <div className="inline-flex items-center bg-gradient-to-r from-amber-400 to-yellow-500 text-gray-900 px-4 py-2 rounded-full font-bold text-sm mb-4">
+                <span className="mr-2">⭐</span>
+                Seleção Premium
+              </div>
+              <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+                Imóveis em{" "}
+                <span className="bg-gradient-to-r from-primary-600 to-amber-500 bg-clip-text text-transparent">
+                  Destaque
+                </span>
               </h2>
-              <p className="text-xl text-gray-600">
-                Selecionados especialmente para você
+              <p className="text-gray-600 text-lg max-w-2xl mx-auto">
+                Propriedades cuidadosamente selecionadas com as melhores
+                localizações e comodidades
               </p>
+              <div className="w-24 h-1 bg-gradient-to-r from-primary-600 via-amber-400 to-primary-600 mx-auto mt-6 rounded-full"></div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {featuredProperties.map((property) => (
-                <PropertyCard
-                  key={property.id}
-                  property={property}
-                  className="transform hover:-translate-y-2"
-                />
+                <PropertyCard key={property.uuid} property={property} />
               ))}
+            </div>
+
+            <div className="text-center mt-12">
+              <Link
+                to="/properties"
+                className="inline-flex items-center bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 text-white font-bold py-4 px-8 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:scale-105"
+              >
+                <span>Ver Todos os Imóveis</span>
+                <span className="ml-2 text-xl">→</span>
+              </Link>
             </div>
           </div>
         </section>
       )}
 
-      {/* Todos os Imóveis */}
-      <section className="py-16 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
-              {hasActiveFilters
-                ? "🔍 Resultados da Busca"
-                : "🏠 Todos os Imóveis"}
+      {/* Seção de Benefícios */}
+      <section className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+              Por que escolher{" "}
+              <span className="bg-gradient-to-r from-primary-600 to-amber-500 bg-clip-text text-transparent">
+                nossos imóveis?
+              </span>
             </h2>
-            <p className="text-xl text-gray-600">
-              {properties.length}{" "}
-              {properties.length === 1
-                ? "imóvel encontrado"
-                : "imóveis encontrados"}
-              {hasActiveFilters && " com os filtros aplicados"}
-            </p>
+            <div className="w-24 h-1 bg-gradient-to-r from-primary-600 via-amber-400 to-primary-600 mx-auto mt-6 rounded-full"></div>
           </div>
 
-          {properties.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {properties.map((property) => (
-                <PropertyCard key={property.id} property={property} />
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-16">
-              <div className="text-8xl mb-6">🏠</div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-4">
-                {hasActiveFilters
-                  ? "Nenhum imóvel encontrado"
-                  : "Nenhum imóvel disponível"}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="group text-center p-8 rounded-2xl hover:bg-gradient-to-br hover:from-gray-50 hover:to-white transition-all duration-300 hover:shadow-xl border-2 border-transparent hover:border-amber-400/20">
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-primary-600 to-amber-500 rounded-2xl mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg">
+                <span className="text-3xl">🏆</span>
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-3">
+                Qualidade Garantida
               </h3>
-              <p className="text-gray-600 text-lg mb-8">
-                {hasActiveFilters
-                  ? "Tente ajustar os filtros de busca para encontrar mais opções"
-                  : "Em breve teremos novos imóveis disponíveis"}
+              <p className="text-gray-600 leading-relaxed">
+                Todos os imóveis passam por rigorosa seleção e verificação de
+                qualidade
               </p>
-
-              {hasActiveFilters && (
-                <button
-                  onClick={clearFilters}
-                  className="btn-primary text-lg py-3 px-8"
-                >
-                  🔄 Ver Todos os Imóveis
-                </button>
-              )}
             </div>
-          )}
+
+            <div className="group text-center p-8 rounded-2xl hover:bg-gradient-to-br hover:from-gray-50 hover:to-white transition-all duration-300 hover:shadow-xl border-2 border-transparent hover:border-amber-400/20">
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-primary-600 to-amber-500 rounded-2xl mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg">
+                <span className="text-3xl">📍</span>
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-3">
+                Localização Premium
+              </h3>
+              <p className="text-gray-600 leading-relaxed">
+                Imóveis nas melhores regiões de Balneário Camboriú e arredores
+              </p>
+            </div>
+
+            <div className="group text-center p-8 rounded-2xl hover:bg-gradient-to-br hover:from-gray-50 hover:to-white transition-all duration-300 hover:shadow-xl border-2 border-transparent hover:border-amber-400/20">
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-primary-600 to-amber-500 rounded-2xl mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg">
+                <span className="text-3xl">💬</span>
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-3">
+                Atendimento Exclusivo
+              </h3>
+              <p className="text-gray-600 leading-relaxed">
+                Suporte personalizado 24/7 para auxiliar em todas as suas
+                necessidades
+              </p>
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="bg-gray-900 text-white py-16">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            <div className="md:col-span-2">
-              <h3 className="text-2xl font-bold mb-4">Giuliano Alquileres</h3>
-              <p className="text-gray-400 text-lg mb-6">
-                Sua melhor opção para aluguel de temporada em Santa Catarina.
-                Imóveis selecionados, atendimento personalizado e experiência
-                inesquecível.
-              </p>
+      {/* Call to Action Final */}
+      <section className="py-20 bg-gradient-to-r from-primary-600 via-primary-700 to-primary-600 relative overflow-hidden">
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute top-0 left-0 w-96 h-96 bg-amber-400 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-0 right-0 w-96 h-96 bg-amber-400 rounded-full blur-3xl"></div>
+        </div>
 
-              {/* Redes Sociais */}
-              <div className="flex space-x-4">
-                <a
-                  href="#"
-                  className="bg-blue-600 hover:bg-blue-700 p-3 rounded-full transition-colors"
-                >
-                  📘
-                </a>
-                <a
-                  href="#"
-                  className="bg-pink-600 hover:bg-pink-700 p-3 rounded-full transition-colors"
-                >
-                  📷
-                </a>
-                <a
-                  href="https://wa.me/5547989105580"
-                  className="bg-green-600 hover:bg-green-700 p-3 rounded-full transition-colors"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  💬
-                </a>
-              </div>
-            </div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
+          <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
+            Pronto para encontrar seu próximo lar?
+          </h2>
+          <p className="text-xl text-gray-100 mb-10 max-w-2xl mx-auto">
+            Entre em contato conosco e descubra as melhores oportunidades em
+            imóveis
+          </p>
 
-            <div>
-              <h4 className="text-lg font-semibold mb-4">📞 Contato</h4>
-              <div className="space-y-3 text-gray-400">
-                <p className="flex items-center">
-                  <span className="mr-2">💬</span>
-                  <a
-                    href="https://wa.me/5547989105580"
-                    className="hover:text-white transition-colors"
-                  >
-                    (47) 98910-5580
-                  </a>
-                </p>
-                <p className="flex items-center">
-                  <span className="mr-2">📧</span>
-                  <a
-                    href="mailto:contato@giulianoalquileres.com"
-                    className="hover:text-white transition-colors"
-                  >
-                    contato@giuliano.com
-                  </a>
-                </p>
-                <p className="flex items-center">
-                  <span className="mr-2">📍</span>
-                  <span>Balneário Camboriú, SC</span>
-                </p>
-              </div>
-            </div>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link
+              to="/properties"
+              className="inline-flex items-center justify-center bg-white text-primary-700 font-bold py-4 px-8 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:scale-105"
+            >
+              <span>Explorar Imóveis</span>
+              <span className="ml-2">🏠</span>
+            </Link>
 
-            <div>
-              <h4 className="text-lg font-semibold mb-4">🏙️ Cidades</h4>
-              <div className="space-y-2 text-gray-400">
-                {cities.slice(0, 6).map((city) => (
-                  <p
-                    key={city.id}
-                    className="hover:text-white transition-colors cursor-pointer"
-                  >
-                    {city.name}
-                  </p>
-                ))}
-                {cities.length > 6 && (
-                  <p className="text-blue-400">+{cities.length - 6} cidades</p>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Informações Legais */}
-          <div className="border-t border-gray-800 mt-12 pt-8">
-            <div className="flex flex-col md:flex-row justify-between items-center">
-              <div className="text-gray-400 text-sm">
-                <p>
-                  &copy; 2025 Giuliano Alquileres. Todos os direitos reservados.
-                </p>
-                <p className="mt-1">
-                  CNPJ: XX.XXX.XXX/XXXX-XX • Registro de Turismo: XXXXXX
-                </p>
-              </div>
-
-              <div className="mt-4 md:mt-0 flex space-x-6 text-sm text-gray-400">
-                <a href="#" className="hover:text-white transition-colors">
-                  Termos de Uso
-                </a>
-                <a href="#" className="hover:text-white transition-colors">
-                  Política de Privacidade
-                </a>
-                <a href="#" className="hover:text-white transition-colors">
-                  Cancelamento
-                </a>
-              </div>
-            </div>
+            <a
+              href="https://wa.me/5547989105580"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center bg-gradient-to-r from-amber-400 to-yellow-500 text-gray-900 font-bold py-4 px-8 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:scale-105"
+            >
+              <span>Falar no WhatsApp</span>
+              <span className="ml-2">💬</span>
+            </a>
           </div>
         </div>
-      </footer>
-
-      {/* WhatsApp Flutuante */}
-      <a
-        href="https://wa.me/5547989105580?text=Olá! Gostaria de mais informações sobre os imóveis disponíveis."
-        target="_blank"
-        rel="noopener noreferrer"
-        className="fixed bottom-6 right-6 bg-green-500 hover:bg-green-600 text-white p-4 rounded-full shadow-2xl hover:shadow-3xl transition-all duration-200 transform hover:scale-110 z-50 animate-bounce"
-        title="Contato via WhatsApp"
-      >
-        <div className="text-2xl">💬</div>
-      </a>
+      </section>
     </div>
   );
 };

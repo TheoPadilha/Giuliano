@@ -1,26 +1,36 @@
 /** @type {import('tailwindcss').Config} */
 export default {
-  content: [
-    "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx}",
-    "./src/**/*.{vue,svelte}",
-    "./public/**/*.html",
-  ],
+  content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
   theme: {
     extend: {
       colors: {
+        // NOVA PALETA VERMELHA - Tema Principal
         primary: {
-          50: "#eff6ff",
-          100: "#dbeafe",
-          200: "#bfdbfe",
-          300: "#93c5fd",
-          400: "#60a5fa",
-          500: "#3b82f6",
-          600: "#2563eb",
-          700: "#1d4ed8",
-          800: "#1e40af",
-          900: "#1e3a8a",
+          50: "#fef2f2",
+          100: "#fee2e2",
+          200: "#fecaca",
+          300: "#fca5a5",
+          400: "#f87171",
+          500: "#ef4444", // Vermelho principal
+          600: "#dc2626", // Vermelho mais escuro (hover)
+          700: "#b91c1c",
+          800: "#991b1b",
+          900: "#7f1d1d",
         },
+        // Vermelho vibrante para destaques
+        accent: {
+          50: "#fff1f2",
+          100: "#ffe4e6",
+          200: "#fecdd3",
+          300: "#fda4af",
+          400: "#fb7185",
+          500: "#f43f5e", // Rosa-vermelho vibrante
+          600: "#e11d48",
+          700: "#be123c",
+          800: "#9f1239",
+          900: "#881337",
+        },
+        // Cinzas neutros
         gray: {
           50: "#f9fafb",
           100: "#f3f4f6",
@@ -42,52 +52,19 @@ export default {
           "BlinkMacSystemFont",
           "Segoe UI",
           "Roboto",
-          "Helvetica Neue",
-          "Arial",
           "sans-serif",
         ],
-        mono: [
-          "JetBrains Mono",
-          "Monaco",
-          "Cascadia Code",
-          "Roboto Mono",
-          "monospace",
-        ],
       },
-      animation: {
-        "fade-in": "fadeIn 0.3s ease-out",
-        "slide-in": "slideIn 0.3s ease-out",
-        "bounce-in": "bounceIn 0.5s ease-out",
-      },
-      keyframes: {
-        fadeIn: {
-          "0%": { opacity: "0", transform: "translateY(10px)" },
-          "100%": { opacity: "1", transform: "translateY(0)" },
-        },
-        slideIn: {
-          "0%": { opacity: "0", transform: "translateX(-20px)" },
-          "100%": { opacity: "1", transform: "translateX(0)" },
-        },
-        bounceIn: {
-          "0%": { opacity: "0", transform: "scale(0.3)" },
-          "50%": { opacity: "1", transform: "scale(1.05)" },
-          "70%": { transform: "scale(0.9)" },
-          "100%": { opacity: "1", transform: "scale(1)" },
-        },
+      backgroundImage: {
+        "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
+        "gradient-primary": "linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)",
+        "gradient-accent": "linear-gradient(135deg, #f43f5e 0%, #e11d48 100%)",
       },
       boxShadow: {
-        soft: "0 2px 15px -3px rgba(0, 0, 0, 0.07), 0 10px 20px -2px rgba(0, 0, 0, 0.04)",
-        medium:
-          "0 4px 25px -2px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)",
-        strong:
-          "0 10px 40px -4px rgba(0, 0, 0, 0.2), 0 4px 25px -5px rgba(0, 0, 0, 0.1)",
+        "red-glow": "0 0 20px rgba(220, 38, 38, 0.3)",
+        "red-strong": "0 10px 40px -4px rgba(220, 38, 38, 0.4)",
       },
     },
   },
-  plugins: [
-    // Adicione plugins se necessário:
-    // require('@tailwindcss/forms'),
-    // require('@tailwindcss/typography'),
-    // require('@tailwindcss/aspect-ratio'),
-  ],
+  plugins: [],
 };

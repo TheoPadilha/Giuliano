@@ -1,5 +1,3 @@
-// src/pages/admin/AdminNewProperty.jsx - VERSÃO ATUALIZADA COM FOTOS
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import AdminLayout from "../../components/admin/AdminLayout";
@@ -17,7 +15,6 @@ const AdminNewProperty = () => {
   const [createdPropertyUuid, setCreatedPropertyUuid] = useState(null);
   const [showPhotos, setShowPhotos] = useState(false);
 
-  // Form data completo
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -38,7 +35,6 @@ const AdminNewProperty = () => {
     amenities: [],
   });
 
-  // Carregar dados auxiliares
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -159,7 +155,6 @@ const AdminNewProperty = () => {
       setSuccess("Imóvel criado com sucesso! Agora você pode adicionar fotos.");
       setShowPhotos(true);
 
-      // Scroll para a seção de fotos
       setTimeout(() => {
         const photosSection = document.getElementById("photos-section");
         if (photosSection) {
@@ -176,10 +171,6 @@ const AdminNewProperty = () => {
         errorMessage = err.response.data.error;
       } else if (err.response?.data?.details) {
         errorMessage = err.response.data.details;
-      } else if (err.response?.status === 400) {
-        errorMessage = "Dados inválidos. Verifique os campos obrigatórios.";
-      } else if (err.response?.status === 401) {
-        errorMessage = "Não autorizado. Faça login novamente.";
       }
 
       setError(errorMessage);
@@ -196,7 +187,6 @@ const AdminNewProperty = () => {
     navigate("/admin/properties");
   };
 
-  // Agrupar amenities por categoria
   const amenitiesByCategory = amenities.reduce((acc, amenity) => {
     const category = amenity.category || "other";
     if (!acc[category]) acc[category] = [];
@@ -233,130 +223,126 @@ const AdminNewProperty = () => {
 
   return (
     <AdminLayout>
-      <div className="max-w-6xl mx-auto">
+      <div className="max-w-6xl mx-auto py-8 px-4 sm:px-6 lg:px-8 bg-white rounded-lg shadow-md">
         {/* Header */}
-        <div className="mb-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">
-                {showPhotos
-                  ? "📸 Novo Imóvel - Adicionar Fotos"
-                  : "➕ Novo Imóvel"}
-              </h1>
-              <p className="text-gray-600">
-                {showPhotos
-                  ? "Adicione fotos para completar o cadastro do imóvel"
-                  : "Adicione um novo imóvel ao sistema"}
-              </p>
-            </div>
-            <button onClick={handleCancel} className="btn-secondary">
-              ← Voltar
-            </button>
+        <div className="mb-8 border-b pb-4 border-gray-200 flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">
+              {showPhotos
+                ? "📸 Novo Imóvel - Adicionar Fotos"
+                : "➕ Novo Imóvel"}
+            </h1>
+            <p className="text-gray-600 mt-1">
+              {showPhotos
+                ? "Adicione fotos para completar o cadastro do imóvel"
+                : "Adicione um novo imóvel ao sistema"}
+            </p>
           </div>
+          <button
+            onClick={handleCancel}
+            className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors"
+          >
+            ← Voltar
+          </button>
         </div>
 
         {/* Progress Indicator */}
         <div className="mb-8">
-          <div className="flex items-center">
+          <div className="flex items-center justify-center">
             <div
-              className={`flex items-center ${
-                showPhotos ? "text-green-600" : "text-blue-600"
+              className={`flex items-center relative ${
+                showPhotos ? "text-primary-600" : "text-gray-500"
               }`}
             >
               <div
-                className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-bold ${
-                  showPhotos ? "bg-green-500" : "bg-blue-500"
+                className={`w-10 h-10 rounded-full flex items-center justify-center text-white text-lg font-bold transition-all duration-300 ${
+                  showPhotos ? "bg-primary-600" : "bg-gray-400"
                 }`}
               >
                 {showPhotos ? "✓" : "1"}
               </div>
-              <span className="ml-2 font-medium">Informações Básicas</span>
+              <span className="ml-3 font-medium text-lg">
+                Informações Básicas
+              </span>
             </div>
 
             <div
-              className={`ml-4 w-16 h-1 ${
-                showPhotos ? "bg-green-500" : "bg-gray-300"
+              className={`flex-1 h-1 mx-4 transition-all duration-300 ${
+                showPhotos ? "bg-primary-600" : "bg-gray-300"
               }`}
             ></div>
 
             <div
-              className={`ml-4 flex items-center ${
-                showPhotos ? "text-blue-600" : "text-gray-400"
+              className={`flex items-center relative ${
+                showPhotos ? "text-gray-500" : "text-primary-600"
               }`}
             >
               <div
-                className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-bold ${
-                  showPhotos ? "bg-blue-500" : "bg-gray-300"
+                className={`w-10 h-10 rounded-full flex items-center justify-center text-white text-lg font-bold transition-all duration-300 ${
+                  showPhotos ? "bg-gray-400" : "bg-primary-600"
                 }`}
               >
                 2
               </div>
-              <span className="ml-2 font-medium">Fotos do Imóvel</span>
+              <span className="ml-3 font-medium text-lg">Fotos do Imóvel</span>
             </div>
           </div>
         </div>
 
         {/* Mensagens */}
         {error && (
-          <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md">
-            <div className="flex">
-              <span className="text-red-500 mr-2">⚠️</span>
-              <div>
-                <h3 className="text-sm font-medium text-red-800">
-                  Erro ao criar imóvel
-                </h3>
-                <p className="mt-1 text-sm">{error}</p>
-              </div>
+          <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg flex items-center">
+            <span className="text-red-500 mr-3 text-xl">⚠️</span>
+            <div>
+              <h3 className="text-sm font-medium text-red-800">
+                Erro ao processar
+              </h3>
+              <p className="mt-1 text-sm">{error}</p>
             </div>
           </div>
         )}
 
         {success && (
-          <div className="mb-6 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-md">
-            <div className="flex">
-              <span className="text-green-500 mr-2">✅</span>
-              <p className="text-sm font-medium">{success}</p>
-            </div>
+          <div className="mb-6 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg flex items-center">
+            <span className="text-green-500 mr-3 text-xl">✅</span>
+            <p className="text-sm font-medium">{success}</p>
           </div>
         )}
 
         {/* Formulário ou Upload de Fotos */}
         {!showPhotos ? (
-          // STEP 1: Formulário de Informações Básicas
-          <div className="bg-white shadow rounded-lg">
-            <form onSubmit={handleSubmit} className="space-y-8 p-6">
+          <div className="bg-white p-8 rounded-lg border border-gray-100">
+            <form onSubmit={handleSubmit} className="space-y-8">
               {/* Informações Básicas */}
               <div>
-                <h3 className="text-lg font-medium text-gray-900 mb-4">
-                  Informações Básicas
+                <h3 className="text-xl font-semibold text-gray-900 mb-5 border-b pb-3 border-gray-100">
+                  Detalhes Principais
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* Título */}
                   <div className="md:col-span-2">
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Título do Imóvel *
+                      Título do Imóvel <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="text"
                       name="title"
                       value={formData.title}
                       onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 transition-colors"
                       placeholder="Ex: Apartamento vista mar em Balneário Camboriú"
                       required
                     />
                   </div>
 
-                  {/* Tipo */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Tipo de Imóvel *
+                      Tipo de Imóvel <span className="text-red-500">*</span>
                     </label>
                     <select
                       name="type"
                       value={formData.type}
                       onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 transition-colors"
                       required
                     >
                       <option value="">Selecione o tipo</option>
@@ -367,7 +353,6 @@ const AdminNewProperty = () => {
                     </select>
                   </div>
 
-                  {/* Status */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Status
@@ -376,7 +361,7 @@ const AdminNewProperty = () => {
                       name="status"
                       value={formData.status}
                       onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 transition-colors"
                     >
                       <option value="available">Disponível</option>
                       <option value="occupied">Ocupado</option>
@@ -389,13 +374,13 @@ const AdminNewProperty = () => {
 
               {/* Capacidade */}
               <div>
-                <h3 className="text-lg font-medium text-gray-900 mb-4">
-                  Capacidade e Características
+                <h3 className="text-xl font-semibold text-gray-900 mb-5 border-b pb-3 border-gray-100">
+                  Características e Acomodações
                 </h3>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Máximo de Hóspedes *
+                      Máximo de Hóspedes <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="number"
@@ -405,13 +390,13 @@ const AdminNewProperty = () => {
                       min="1"
                       max="20"
                       required
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 transition-colors"
                     />
                   </div>
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Quartos *
+                      Quartos <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="number"
@@ -421,13 +406,13 @@ const AdminNewProperty = () => {
                       min="0"
                       max="10"
                       required
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 transition-colors"
                     />
                   </div>
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Banheiros *
+                      Banheiros <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="number"
@@ -437,21 +422,21 @@ const AdminNewProperty = () => {
                       min="1"
                       max="10"
                       required
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 transition-colors"
                     />
                   </div>
                 </div>
 
                 <div className="mt-6">
-                  <label className="flex items-center">
+                  <label className="flex items-center cursor-pointer">
                     <input
                       type="checkbox"
                       name="is_featured"
                       checked={formData.is_featured}
                       onChange={handleInputChange}
-                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      className="h-5 w-5 text-primary-600 focus:ring-primary-500 border-gray-300 rounded-md"
                     />
-                    <span className="ml-2 text-sm text-gray-700">
+                    <span className="ml-3 text-base text-gray-700">
                       Imóvel em destaque na página inicial
                     </span>
                   </label>
@@ -460,28 +445,43 @@ const AdminNewProperty = () => {
 
               {/* Localização */}
               <div>
-                <h3 className="text-lg font-medium text-gray-900 mb-4">
+                <h3 className="text-xl font-semibold text-gray-900 mb-5 border-b pb-3 border-gray-100">
                   Localização
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Cidade *
+                      Cidade <span className="text-red-500">*</span>
                     </label>
                     <select
                       name="city_id"
                       value={formData.city_id}
                       onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 transition-colors"
                       required
                     >
-                      <option value="">Selecione a cidade</option>
+                      <option value="">Selecione uma cidade</option>
                       {cities.map((city) => (
                         <option key={city.id} value={city.id}>
-                          {city.name}, {city.state}
+                          {city.name}
                         </option>
                       ))}
                     </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Endereço <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      name="address"
+                      value={formData.address}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 transition-colors"
+                      placeholder="Ex: Rua das Flores, 123"
+                      required
+                    />
                   </div>
 
                   <div>
@@ -493,67 +493,51 @@ const AdminNewProperty = () => {
                       name="neighborhood"
                       value={formData.neighborhood}
                       onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="Ex: Centro, Praia Central"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 transition-colors"
+                      placeholder="Ex: Centro"
                     />
                   </div>
 
-                  <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Endereço Completo *
-                    </label>
-                    <input
-                      type="text"
-                      name="address"
-                      value={formData.address}
-                      onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="Rua das Flores, 123"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Latitude (Opcional)
-                    </label>
-                    <input
-                      type="number"
-                      name="latitude"
-                      value={formData.latitude}
-                      onChange={handleInputChange}
-                      step="any"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="-26.997043"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Longitude (Opcional)
-                    </label>
-                    <input
-                      type="number"
-                      name="longitude"
-                      value={formData.longitude}
-                      onChange={handleInputChange}
-                      step="any"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="-48.613837"
-                    />
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Latitude
+                      </label>
+                      <input
+                        type="text"
+                        name="latitude"
+                        value={formData.latitude}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 transition-colors"
+                        placeholder="Ex: -26.9177"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Longitude
+                      </label>
+                      <input
+                        type="text"
+                        name="longitude"
+                        value={formData.longitude}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 transition-colors"
+                        placeholder="Ex: -48.6015"
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
 
               {/* Preços */}
               <div>
-                <h3 className="text-lg font-medium text-gray-900 mb-4">
-                  Preços
+                <h3 className="text-xl font-semibold text-gray-900 mb-5 border-b pb-3 border-gray-100">
+                  Precificação
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Preço por Noite (R$) *
+                      Preço por Noite <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="number"
@@ -563,14 +547,13 @@ const AdminNewProperty = () => {
                       min="0"
                       step="0.01"
                       required
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="250.00"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 transition-colors"
+                      placeholder="0.00"
                     />
                   </div>
-
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Preço Fim de Semana (R$)
+                      Preço Fim de Semana
                     </label>
                     <input
                       type="number"
@@ -579,14 +562,13 @@ const AdminNewProperty = () => {
                       onChange={handleInputChange}
                       min="0"
                       step="0.01"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="300.00"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 transition-colors"
+                      placeholder="0.00 (opcional)"
                     />
                   </div>
-
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Preço Alta Temporada (R$)
+                      Preço Alta Temporada
                     </label>
                     <input
                       type="number"
@@ -595,91 +577,80 @@ const AdminNewProperty = () => {
                       onChange={handleInputChange}
                       min="0"
                       step="0.01"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="400.00"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 transition-colors"
+                      placeholder="0.00 (opcional)"
                     />
                   </div>
                 </div>
               </div>
 
-              {/* Comodidades */}
-              {amenities.length > 0 && (
-                <div>
-                  <h3 className="text-lg font-medium text-gray-900 mb-4">
-                    Comodidades
-                  </h3>
-                  <p className="text-sm text-gray-600 mb-4">
-                    Selecione as comodidades disponíveis neste imóvel:
-                  </p>
-
-                  {Object.keys(amenitiesByCategory).map((category) => (
-                    <div key={category} className="mb-6">
-                      <h4 className="text-md font-medium text-gray-800 mb-3">
-                        {getCategoryLabel(category)}
-                      </h4>
-                      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                        {amenitiesByCategory[category].map((amenity) => (
-                          <label
-                            key={amenity.id}
-                            className="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer"
-                          >
-                            <input
-                              type="checkbox"
-                              checked={formData.amenities.includes(amenity.id)}
-                              onChange={() => handleAmenityToggle(amenity.id)}
-                              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                            />
-                            <span className="ml-3 text-lg">
-                              {getAmenityIcon(amenity.icon)}
-                            </span>
-                            <span className="ml-2 text-sm text-gray-700">
-                              {amenity.name}
-                            </span>
-                          </label>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-
               {/* Descrição */}
               <div>
-                <h3 className="text-lg font-medium text-gray-900 mb-4">
-                  Descrição
+                <h3 className="text-xl font-semibold text-gray-900 mb-5 border-b pb-3 border-gray-100">
+                  Descrição Detalhada
                 </h3>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Descrição do Imóvel
+                </label>
                 <textarea
                   name="description"
                   value={formData.description}
                   onChange={handleInputChange}
-                  rows="4"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Descreva o imóvel, suas características, localização e diferenciais..."
-                />
+                  rows="5"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 transition-colors"
+                  placeholder="Descreva o imóvel em detalhes, seus diferenciais e o que o torna especial."
+                ></textarea>
               </div>
 
-              {/* Botões */}
-              <div className="flex justify-end space-x-4 pt-6 border-t">
-                <button
-                  type="button"
-                  onClick={handleCancel}
-                  className="btn-secondary"
-                  disabled={loading}
-                >
-                  Cancelar
-                </button>
+              {/* Comodidades */}
+              <div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-5 border-b pb-3 border-gray-100">
+                  Comodidades
+                </h3>
+                {Object.keys(amenitiesByCategory).map((category) => (
+                  <div key={category} className="mb-6">
+                    <h4 className="text-lg font-medium text-gray-800 mb-3">
+                      {getCategoryLabel(category)}
+                    </h4>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                      {amenitiesByCategory[category].map((amenity) => (
+                        <label
+                          key={amenity.id}
+                          className="flex items-center cursor-pointer p-3 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={formData.amenities.includes(amenity.id)}
+                            onChange={() => handleAmenityToggle(amenity.id)}
+                            className="h-5 w-5 text-primary-600 focus:ring-primary-500 border-gray-300 rounded-md"
+                          />
+                          <span className="ml-3 text-base text-gray-700 flex items-center">
+                            <span className="mr-2 text-lg">
+                              {getAmenityIcon(amenity.icon)}
+                            </span>
+                            {amenity.name}
+                          </span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Botão de Envio */}
+              <div className="pt-6 border-t border-gray-200">
                 <button
                   type="submit"
                   disabled={loading}
-                  className="btn-primary"
+                  className="w-full bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 text-white font-bold py-4 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.01] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                 >
                   {loading ? (
-                    <span className="flex items-center">
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                      Salvando...
-                    </span>
+                    <div className="flex items-center">
+                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                      Salvando Imóvel...
+                    </div>
                   ) : (
-                    "Criar Imóvel"
+                    "Salvar e Adicionar Fotos"
                   )}
                 </button>
               </div>
@@ -687,29 +658,24 @@ const AdminNewProperty = () => {
           </div>
         ) : (
           // STEP 2: Upload de Fotos
-          <div id="photos-section">
-            <div className="bg-white shadow rounded-lg p-6">
-              <PhotoUpload
-                propertyUuid={createdPropertyUuid}
-                onUploadComplete={() => {
-                  setSuccess("Fotos adicionadas com sucesso!");
-                  setTimeout(() => setSuccess(""), 3000);
-                }}
-              />
-
-              {/* Botões de finalização */}
-              <div className="flex justify-between items-center mt-8 pt-6 border-t">
-                <div className="text-sm text-gray-600">
-                  💡 <strong>Dica:</strong> Adicione pelo menos 3-5 fotos para
-                  melhor apresentação do imóvel
-                </div>
-
-                <div className="flex space-x-4">
-                  <button onClick={handleFinish} className="btn-primary">
-                    ✅ Finalizar Cadastro
-                  </button>
-                </div>
-              </div>
+          <div
+            id="photos-section"
+            className="bg-white p-8 rounded-lg border border-gray-100"
+          >
+            <h3 className="text-xl font-semibold text-gray-900 mb-5 border-b pb-3 border-gray-100">
+              Upload de Fotos
+            </h3>
+            <PhotoUpload
+              propertyUuid={createdPropertyUuid}
+              onFinish={handleFinish}
+            />
+            <div className="mt-8 text-center">
+              <button
+                onClick={handleFinish}
+                className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors"
+              >
+                Finalizar Cadastro
+              </button>
             </div>
           </div>
         )}

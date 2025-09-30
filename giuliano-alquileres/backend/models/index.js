@@ -69,14 +69,17 @@ TouristSpot.belongsTo(City, {
 });
 
 // Sincronizar todos os models
+// Modificação temporária em backend/models/index.js
+// Substitua a função syncModels por esta versão:
+
 const syncModels = async (force = false) => {
   try {
     await sequelize.authenticate();
     console.log("✅ Conexão com banco estabelecida");
 
-    // Sincronizar models (alter: true atualiza sem perder dados)
-    await sequelize.sync({ alter: true });
-    console.log("✅ Models sincronizados com banco");
+    // 🛠️ SOLUÇÃO TEMPORÁRIA - sync sem alter para evitar conflito com VIEWs
+    await sequelize.sync({ force: false, alter: false });
+    console.log("✅ Models sincronizados com banco (sem alterações)");
 
     return true;
   } catch (error) {
