@@ -1,3 +1,4 @@
+// giuliano-alquileres/frontend/src/App.jsx
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
@@ -18,19 +19,15 @@ function App() {
         <div className="min-h-screen bg-gray-50">
           <Routes>
             {/* ===== ROTAS PÚBLICAS ===== */}
-
-            {/* Página inicial */}
             <Route path="/" element={<Home />} />
 
-            {/* Detalhes do imóvel - NOVA ROTA */}
+            {/* CORRIGIDO: Rota de detalhes do imóvel */}
             <Route path="/property/:uuid" element={<PropertyDetails />} />
 
             {/* Login */}
             <Route path="/login" element={<Login />} />
 
             {/* ===== ROTAS ADMINISTRATIVAS (PROTEGIDAS) ===== */}
-
-            {/* Dashboard Admin */}
             <Route
               path="/admin"
               element={
@@ -40,7 +37,6 @@ function App() {
               }
             />
 
-            {/* Gerenciar Imóveis */}
             <Route
               path="/admin/properties"
               element={
@@ -50,7 +46,6 @@ function App() {
               }
             />
 
-            {/* Novo Imóvel */}
             <Route
               path="/admin/properties/new"
               element={
@@ -60,7 +55,7 @@ function App() {
               }
             />
 
-            {/* Editar Imóvel */}
+            {/* CORRIGIDO: Rota de edição usando :id ao invés de :uuid */}
             <Route
               path="/admin/properties/:id/edit"
               element={
@@ -70,7 +65,7 @@ function App() {
               }
             />
 
-            {/* ===== ROTA 404 (OPCIONAL) ===== */}
+            {/* ===== ROTA 404 ===== */}
             <Route
               path="*"
               element={

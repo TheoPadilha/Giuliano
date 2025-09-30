@@ -1,5 +1,4 @@
-// src/components/property/PropertyCard.jsx
-
+// giuliano-alquileres/frontend/src/components/property/PropertyCard.jsx
 import { Link } from "react-router-dom";
 import PropTypes from "prop-types";
 
@@ -21,16 +20,41 @@ const PropertyCard = ({ property }) => {
     });
   };
 
+  // 🔧 CORREÇÃO: Garantir que temos o UUID correto
+  const propertyId = property.uuid || property.id;
+
+  // 🔧 CORREÇÃO: URL da foto usando o backend
+  const getPhotoUrl = (filename) => {
+    if (!filename) return null;
+    // Se já é uma URL completa, usa direto
+    if (filename.startsWith("http")) return filename;
+    // Caso contrário, monta a URL do backend
+    return `http://localhost:3001/uploads/properties/${filename}`;
+  };
+
+  // Pegar a primeira foto
+  const mainPhoto =
+    property.photos && property.photos.length > 0
+      ? typeof property.photos[0] === "string"
+        ? property.photos[0]
+        : property.photos[0].filename
+      : null;
+
   return (
-    <Link to={`/properties/${property.uuid}`} className="group block">
+    <Link to={`/property/${propertyId}`} className="group block">
       <div className="bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-300 border border-gray-100 hover:border-amber-400/30 transform hover:-translate-y-2">
         {/* Imagem */}
         <div className="relative h-64 overflow-hidden">
-          {property.photos && property.photos.length > 0 ? (
+          {mainPhoto ? (
             <img
-              src={property.photos[0]}
+              src={getPhotoUrl(mainPhoto)}
               alt={property.title}
               className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+              onError={(e) => {
+                console.error("Erro ao carregar imagem:", mainPhoto);
+                e.target.src =
+                  "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIGZpbGw9IiNGM0Y0RjYiLz48L3N2Zz4=";
+              }}
             />
           ) : (
             <div className="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
@@ -97,10 +121,12 @@ const PropertyCard = ({ property }) => {
                 <span className="mr-1">🚿</span>
                 <span className="font-semibold">{property.bathrooms}</span>
               </div>
-              <div className="flex items-center text-gray-700">
-                <span className="mr-1">📐</span>
-                <span className="font-semibold">{property.area}m²</span>
-              </div>
+              {property.max_guests && (
+                <div className="flex items-center text-gray-700">
+                  <span className="mr-1">👥</span>
+                  <span className="font-semibold">{property.max_guests}</span>
+                </div>
+              )}
             </div>
 
             {/* Ícone de seta */}
@@ -116,7 +142,8 @@ const PropertyCard = ({ property }) => {
 
 PropertyCard.propTypes = {
   property: PropTypes.shape({
-    uuid: PropTypes.string.isRequired,
+    uuid: PropTypes.string,
+    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     title: PropTypes.string.isRequired,
     address: PropTypes.string.isRequired,
     type: PropTypes.string.isRequired,
@@ -124,8 +151,8 @@ PropertyCard.propTypes = {
       .isRequired,
     bedrooms: PropTypes.number.isRequired,
     bathrooms: PropTypes.number.isRequired,
-    area: PropTypes.number.isRequired,
-    photos: PropTypes.arrayOf(PropTypes.string),
+    max_guests: PropTypes.number,
+    photos: PropTypes.array,
     is_featured: PropTypes.bool,
   }).isRequired,
 };

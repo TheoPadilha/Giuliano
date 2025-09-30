@@ -13,6 +13,33 @@ const PropertyDetails = () => {
   const [error, setError] = useState("");
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
 
+  const getPhotoUrl = (photo) => {
+    if (!photo) return null;
+
+    // Se photo é uma string (filename)
+    if (typeof photo === "string") {
+      // Se já é uma URL completa
+      if (photo.startsWith("http")) return photo;
+      // Caso contrário, monta a URL
+      return `http://localhost:3001/uploads/properties/${photo}`;
+    }
+
+    // Se photo é um objeto com filename
+    if (photo.filename) {
+      if (photo.filename.startsWith("http")) return photo.filename;
+      return `http://localhost:3001/uploads/properties/${photo.filename}`;
+    }
+
+    return null;
+  };
+
+  // E use assim nas imagens:
+  <img
+    src={getPhotoUrl(photos[currentPhotoIndex])}
+    alt={property.title}
+    // ... resto dos props
+  />;
+
   useEffect(() => {
     const fetchProperty = async () => {
       if (!uuid) {

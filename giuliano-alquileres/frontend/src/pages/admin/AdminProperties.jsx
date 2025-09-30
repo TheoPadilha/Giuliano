@@ -1,3 +1,5 @@
+// giuliano-alquileres/frontend/src/pages/admin/AdminProperties.jsx
+
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import api from "../../services/api";
@@ -18,6 +20,7 @@ const AdminProperties = () => {
     try {
       setLoading(true);
       const response = await api.get("/properties");
+      console.log("📦 Propriedades recebidas:", response.data.properties);
       setProperties(response.data.properties || []);
     } catch (error) {
       console.error("Erro ao carregar imóveis:", error);
@@ -38,6 +41,36 @@ const AdminProperties = () => {
       console.error("Erro ao excluir imóvel:", error);
       alert("Erro ao excluir imóvel");
     }
+  };
+
+  // 🔧 CORREÇÃO: Função para obter URL da foto
+  const getPhotoUrl = (property) => {
+    // Verificar se tem fotos
+    if (!property.photos || property.photos.length === 0) {
+      return null;
+    }
+
+    const firstPhoto = property.photos[0];
+
+    // Se é string (nome do arquivo ou URL)
+    if (typeof firstPhoto === "string") {
+      // Se já é URL completa
+      if (firstPhoto.startsWith("http")) {
+        return firstPhoto;
+      }
+      // Se é só o filename
+      return `http://localhost:3001/uploads/properties/${firstPhoto}`;
+    }
+
+    // Se é objeto com filename
+    if (firstPhoto.filename) {
+      if (firstPhoto.filename.startsWith("http")) {
+        return firstPhoto.filename;
+      }
+      return `http://localhost:3001/uploads/properties/${firstPhoto.filename}`;
+    }
+
+    return null;
   };
 
   const filteredProperties = properties.filter((property) => {
@@ -165,78 +198,99 @@ const AdminProperties = () => {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredProperties.map((property) => (
-              <div
-                key={property.uuid}
-                className="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden hover:shadow-lg transition-shadow duration-300"
-              >
-                {/* Image */}
-                <div className="relative h-48 bg-gray-100 flex items-center justify-center text-gray-400 text-sm">
-                  {property.photos && property.photos[0] ? (
-                    <img
-                      src={property.photos[0]}
-                      alt={property.title}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-full bg-gray-50 flex items-center justify-center">
-                      <span className="text-gray-400">Sem imagem</span>
-                    </div>
-                  )}
-                  {property.is_featured && (
-                    <div className="absolute top-3 right-3">
-                      <span className="bg-amber-500 text-white px-3 py-1 rounded-full text-xs font-medium shadow-md">
-                        Destaque
-                      </span>
-                    </div>
-                  )}
-                </div>
+            {filteredProperties.map((property) => {
+              const photoUrl = getPhotoUrl(property);
 
-                {/* Content */}
-                <div className="p-5">
-                  <h3 className="text-lg font-bold text-gray-900 mb-2 line-clamp-1">
-                    {property.title}
-                  </h3>
-                  <p className="text-sm text-gray-600 mb-4 line-clamp-1">
-                    {property.address}
-                  </p>
-
-                  <div className="flex items-center justify-between mb-4 text-sm text-gray-600 border-t border-b border-gray-100 py-2">
-                    <span className="flex items-center gap-1">
-                      🛌 {property.bedrooms} quartos
-                    </span>
-                    <span className="flex items-center gap-1">
-                      🛁 {property.bathrooms} banheiros
-                    </span>
-                    <span className="flex items-center gap-1">
-                      📏 {property.area ? property.area : "-"}m²
-                    </span>
+              return (
+                <div
+                  key={property.uuid}
+                  className="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden hover:shadow-lg transition-shadow duration-300"
+                >
+                  {/* Image */}
+                  <div className="relative h-48 bg-gray-100 flex items-center justify-center text-gray-400 text-sm">
+                    {photoUrl ? (
+                      <img
+                        src={photoUrl}
+                        alt={property.title}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          console.error(
+                            "❌ Erro ao carregar imagem:",
+                            photoUrl
+                          );
+                          e.target.onerror = null;
+                          e.target.src =
+                            "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIGZpbGw9IiNGM0Y0RjYiLz48cGF0aCBkPSJNMTIgOEMxMC44OTU0IDggMTAgOC44OTU0MyAxMCAxMEMxMCAxMS4xMDQ2IDEwLjg5NTQgMTIgMTIgMTJDMTMuMTA0NiAxMiAxNCAxMS4xMDQ2IDE0IDEwQzE0IDguODk1NDMgMTMuMTA0NiA4IDEyIDhaIiBmaWxsPSIjOUNBM0FGIi8+PHBhdGggZD0iTTIxIDNIM0MyLjQ0NzcxIDMgMiAzLjQ0NzcxIDIgNFYyMEMyIDIwLjU1MjMgMi40NDc3MSAyMSAzIDIxSDIxQzIxLjU1MjMgMjEgMjIgMjAuNTUyMyAyMiAyMFY0QzIyIDMuNDQ3NzEgMjEuNTUyMyAzIDIxIDNaTTIwIDE5SDRWNUgyMFYxOVoiIGZpbGw9IiM5Q0EzQUYiLz48L3N2Zz4=";
+                        }}
+                        onLoad={() =>
+                          console.log("✅ Imagem carregada:", photoUrl)
+                        }
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+                        <div className="text-center">
+                          <span className="text-4xl mb-2 block">🏠</span>
+                          <span className="text-gray-400 text-sm">
+                            Sem imagem
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                    {property.is_featured && (
+                      <div className="absolute top-3 right-3">
+                        <span className="bg-amber-500 text-white px-3 py-1 rounded-full text-xs font-medium shadow-md">
+                          ⭐ Destaque
+                        </span>
+                      </div>
+                    )}
                   </div>
 
-                  <div className="pt-4">
-                    <p className="text-sm text-gray-500 mb-1">Preço/noite</p>
-                    <p className="text-2xl font-bold text-primary-700 mb-4">
-                      R$ {parseFloat(property.price_per_night).toFixed(2)}
+                  {/* Content */}
+                  <div className="p-5">
+                    <h3 className="text-lg font-bold text-gray-900 mb-2 line-clamp-1">
+                      {property.title}
+                    </h3>
+                    <p className="text-sm text-gray-600 mb-4 line-clamp-1">
+                      📍 {property.address}
                     </p>
 
-                    <div className="flex gap-3">
-                      <Link
-                        to={`/admin/properties/${property.uuid}/edit`}
-                        className="flex-1 bg-primary-600 hover:bg-primary-700 text-white text-center px-4 py-2 rounded-lg font-medium transition-colors text-sm shadow-md hover:shadow-lg"
-                      >
-                        Editar
-                      </Link>
-                      <button
-                        onClick={() => handleDelete(property.uuid)}
-                        className="flex-1 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium transition-colors text-sm shadow-md hover:shadow-lg"
-                      >
-                        Excluir
-                      </button>
+                    <div className="flex items-center justify-between mb-4 text-sm text-gray-600 border-t border-b border-gray-100 py-2">
+                      <span className="flex items-center gap-1">
+                        🛏️ {property.bedrooms}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        🚿 {property.bathrooms}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        👥 {property.max_guests || "-"}
+                      </span>
+                    </div>
+
+                    <div className="pt-4">
+                      <p className="text-sm text-gray-500 mb-1">Preço/noite</p>
+                      <p className="text-2xl font-bold text-primary-700 mb-4">
+                        R$ {parseFloat(property.price_per_night).toFixed(2)}
+                      </p>
+
+                      <div className="flex gap-3">
+                        <Link
+                          to={`/admin/properties/${property.uuid}/edit`}
+                          className="flex-1 bg-primary-600 hover:bg-primary-700 text-white text-center px-4 py-2 rounded-lg font-medium transition-colors text-sm shadow-md hover:shadow-lg"
+                        >
+                          ✏️ Editar
+                        </Link>
+                        <button
+                          onClick={() => handleDelete(property.uuid)}
+                          className="flex-1 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium transition-colors text-sm shadow-md hover:shadow-lg"
+                        >
+                          🗑️ Excluir
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
