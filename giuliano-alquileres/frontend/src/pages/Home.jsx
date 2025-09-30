@@ -1,12 +1,13 @@
-// src/pages/Home.jsx - Design Elegante e Minimalista
+// giuliano-alquileres/frontend/src/pages/Home.jsx
 
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import api from "../services/api";
 import PropertyCard from "../components/property/PropertyCard";
 import Loading from "../components/common/Loading";
 
 const Home = () => {
+  const navigate = useNavigate();
   const [properties, setProperties] = useState([]);
   const [featuredProperties, setFeaturedProperties] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -36,9 +37,7 @@ const Home = () => {
   const handleSearch = (e) => {
     e.preventDefault();
     if (searchTerm.trim()) {
-      window.location.href = `/properties?search=${encodeURIComponent(
-        searchTerm
-      )}`;
+      navigate(`/properties?search=${encodeURIComponent(searchTerm.trim())}`);
     }
   };
 
@@ -47,11 +46,11 @@ const Home = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
-      {/* Hero Section - Elegante e Impactante */}
-      <section className="relative h-[85vh] overflow-hidden">
-        {/* Background com Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-transparent z-10"></div>
+    <div className="min-h-screen bg-white">
+      {/* Hero Section */}
+      <section className="relative h-[90vh] overflow-hidden">
+        {/* Background com Overlay mais escuro */}
+        <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/60 to-black/40 z-10"></div>
         <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
           style={{
@@ -64,38 +63,36 @@ const Home = () => {
         <div className="relative z-20 h-full flex items-center">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
             <div className="max-w-3xl">
-              {/* Badge Dourado */}
-              <div className="inline-flex items-center bg-gradient-to-r from-amber-400 to-yellow-500 text-gray-900 px-4 py-2 rounded-full font-bold text-sm mb-6 shadow-lg">
+              {/* Badge Amarelo */}
+              <div className="inline-flex items-center bg-yellow-400 text-gray-900 px-5 py-2 rounded-full font-bold text-sm mb-8">
                 <span className="mr-2">✨</span>
                 Imóveis Premium em Balneário Camboriú
               </div>
 
-              <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight">
+              <h1 className="text-5xl md:text-6xl font-bold text-white mb-6 leading-tight">
                 Encontre seu
-                <span className="block bg-gradient-to-r from-primary-500 to-amber-400 bg-clip-text text-transparent">
-                  Lar dos Sonhos
-                </span>
+                <span className="block text-red-500 mt-2">Lar dos Sonhos</span>
               </h1>
 
-              <p className="text-xl text-gray-200 mb-8 leading-relaxed">
+              <p className="text-xl text-gray-200 mb-10 leading-relaxed">
                 Descubra os melhores imóveis para compra e aluguel na cidade
                 mais desejada de Santa Catarina. Qualidade, conforto e
                 localização privilegiada.
               </p>
 
-              {/* Search Bar Elegante */}
-              <form onSubmit={handleSearch} className="relative">
-                <div className="flex bg-white rounded-2xl shadow-2xl overflow-hidden border-2 border-amber-400/20">
+              {/* Search Bar */}
+              <form onSubmit={handleSearch} className="relative mb-16">
+                <div className="flex bg-white rounded-xl shadow-2xl overflow-hidden">
                   <input
                     type="text"
                     placeholder="Buscar por localização, tipo de imóvel..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="flex-1 px-6 py-5 text-gray-900 placeholder-gray-500 focus:outline-none text-lg"
+                    className="flex-1 px-6 py-4 text-gray-900 placeholder-gray-500 focus:outline-none text-base"
                   />
                   <button
                     type="submit"
-                    className="bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 text-white px-8 font-bold transition-all duration-300 flex items-center gap-2"
+                    className="bg-red-600 hover:bg-red-700 text-white px-10 font-bold transition-all duration-300 flex items-center gap-2"
                   >
                     <span className="text-xl">🔍</span>
                     <span className="hidden sm:inline">Buscar</span>
@@ -103,22 +100,28 @@ const Home = () => {
                 </div>
               </form>
 
-              {/* Stats com detalhes dourados */}
-              <div className="grid grid-cols-3 gap-6 mt-12">
+              {/* Stats */}
+              <div className="grid grid-cols-3 gap-8">
                 <div className="text-center">
-                  <div className="text-4xl font-bold text-white mb-1">500+</div>
-                  <div className="text-gray-300 text-sm">Imóveis</div>
-                  <div className="w-12 h-1 bg-gradient-to-r from-amber-400 to-yellow-500 mx-auto mt-2 rounded-full"></div>
+                  <div className="text-5xl font-bold text-white mb-2">500+</div>
+                  <div className="text-gray-300 text-sm uppercase tracking-wide">
+                    Imóveis
+                  </div>
+                  <div className="w-16 h-1 bg-yellow-400 mx-auto mt-3 rounded-full"></div>
                 </div>
                 <div className="text-center">
-                  <div className="text-4xl font-bold text-white mb-1">98%</div>
-                  <div className="text-gray-300 text-sm">Satisfação</div>
-                  <div className="w-12 h-1 bg-gradient-to-r from-amber-400 to-yellow-500 mx-auto mt-2 rounded-full"></div>
+                  <div className="text-5xl font-bold text-white mb-2">98%</div>
+                  <div className="text-gray-300 text-sm uppercase tracking-wide">
+                    Satisfação
+                  </div>
+                  <div className="w-16 h-1 bg-yellow-400 mx-auto mt-3 rounded-full"></div>
                 </div>
                 <div className="text-center">
-                  <div className="text-4xl font-bold text-white mb-1">24/7</div>
-                  <div className="text-gray-300 text-sm">Suporte</div>
-                  <div className="w-12 h-1 bg-gradient-to-r from-amber-400 to-yellow-500 mx-auto mt-2 rounded-full"></div>
+                  <div className="text-5xl font-bold text-white mb-2">24/7</div>
+                  <div className="text-gray-300 text-sm uppercase tracking-wide">
+                    Suporte
+                  </div>
+                  <div className="w-16 h-1 bg-yellow-400 mx-auto mt-3 rounded-full"></div>
                 </div>
               </div>
             </div>
@@ -134,12 +137,12 @@ const Home = () => {
       </section>
 
       {/* Categorias Rápidas */}
-      <section className="py-16 bg-white">
+      <section className="py-16 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             <Link
               to="/properties?type=apartment"
-              className="group relative overflow-hidden rounded-2xl h-48 shadow-lg hover:shadow-2xl transition-all duration-300"
+              className="group relative overflow-hidden rounded-xl h-56 shadow-md hover:shadow-xl transition-all duration-300"
             >
               <div
                 className="absolute inset-0 bg-cover bg-center group-hover:scale-110 transition-transform duration-500"
@@ -148,17 +151,19 @@ const Home = () => {
                     "url('https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?q=80&w=1035')",
                 }}
               ></div>
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
-              <div className="absolute bottom-4 left-4 right-4 z-10">
-                <div className="text-3xl mb-2">🏢</div>
-                <h3 className="text-white font-bold text-xl">Apartamentos</h3>
-                <div className="w-16 h-1 bg-gradient-to-r from-amber-400 to-yellow-500 mt-2 rounded-full group-hover:w-full transition-all duration-300"></div>
+              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent"></div>
+              <div className="absolute bottom-6 left-6 right-6 z-10">
+                <div className="text-4xl mb-3">🏢</div>
+                <h3 className="text-white font-bold text-xl mb-2">
+                  Apartamentos
+                </h3>
+                <div className="w-12 h-1 bg-yellow-400 rounded-full group-hover:w-full transition-all duration-300"></div>
               </div>
             </Link>
 
             <Link
               to="/properties?type=house"
-              className="group relative overflow-hidden rounded-2xl h-48 shadow-lg hover:shadow-2xl transition-all duration-300"
+              className="group relative overflow-hidden rounded-xl h-56 shadow-md hover:shadow-xl transition-all duration-300"
             >
               <div
                 className="absolute inset-0 bg-cover bg-center group-hover:scale-110 transition-transform duration-500"
@@ -167,17 +172,17 @@ const Home = () => {
                     "url('https://images.unsplash.com/photo-1568605114967-8130f3a36994?q=80&w=1170')",
                 }}
               ></div>
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
-              <div className="absolute bottom-4 left-4 right-4 z-10">
-                <div className="text-3xl mb-2">🏠</div>
-                <h3 className="text-white font-bold text-xl">Casas</h3>
-                <div className="w-16 h-1 bg-gradient-to-r from-amber-400 to-yellow-500 mt-2 rounded-full group-hover:w-full transition-all duration-300"></div>
+              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent"></div>
+              <div className="absolute bottom-6 left-6 right-6 z-10">
+                <div className="text-4xl mb-3">🏠</div>
+                <h3 className="text-white font-bold text-xl mb-2">Casas</h3>
+                <div className="w-12 h-1 bg-yellow-400 rounded-full group-hover:w-full transition-all duration-300"></div>
               </div>
             </Link>
 
             <Link
               to="/properties?type=penthouse"
-              className="group relative overflow-hidden rounded-2xl h-48 shadow-lg hover:shadow-2xl transition-all duration-300"
+              className="group relative overflow-hidden rounded-xl h-56 shadow-md hover:shadow-xl transition-all duration-300"
             >
               <div
                 className="absolute inset-0 bg-cover bg-center group-hover:scale-110 transition-transform duration-500"
@@ -186,17 +191,19 @@ const Home = () => {
                     "url('https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=1170')",
                 }}
               ></div>
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
-              <div className="absolute bottom-4 left-4 right-4 z-10">
-                <div className="text-3xl mb-2">👑</div>
-                <h3 className="text-white font-bold text-xl">Coberturas</h3>
-                <div className="w-16 h-1 bg-gradient-to-r from-amber-400 to-yellow-500 mt-2 rounded-full group-hover:w-full transition-all duration-300"></div>
+              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent"></div>
+              <div className="absolute bottom-6 left-6 right-6 z-10">
+                <div className="text-4xl mb-3">👑</div>
+                <h3 className="text-white font-bold text-xl mb-2">
+                  Coberturas
+                </h3>
+                <div className="w-12 h-1 bg-yellow-400 rounded-full group-hover:w-full transition-all duration-300"></div>
               </div>
             </Link>
 
             <Link
               to="/properties?type=studio"
-              className="group relative overflow-hidden rounded-2xl h-48 shadow-lg hover:shadow-2xl transition-all duration-300"
+              className="group relative overflow-hidden rounded-xl h-56 shadow-md hover:shadow-xl transition-all duration-300"
             >
               <div
                 className="absolute inset-0 bg-cover bg-center group-hover:scale-110 transition-transform duration-500"
@@ -205,11 +212,11 @@ const Home = () => {
                     "url('https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?q=80&w=1080')",
                 }}
               ></div>
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
-              <div className="absolute bottom-4 left-4 right-4 z-10">
-                <div className="text-3xl mb-2">✨</div>
-                <h3 className="text-white font-bold text-xl">Studios</h3>
-                <div className="w-16 h-1 bg-gradient-to-r from-amber-400 to-yellow-500 mt-2 rounded-full group-hover:w-full transition-all duration-300"></div>
+              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent"></div>
+              <div className="absolute bottom-6 left-6 right-6 z-10">
+                <div className="text-4xl mb-3">✨</div>
+                <h3 className="text-white font-bold text-xl mb-2">Studios</h3>
+                <div className="w-12 h-1 bg-yellow-400 rounded-full group-hover:w-full transition-all duration-300"></div>
               </div>
             </Link>
           </div>
@@ -218,36 +225,36 @@ const Home = () => {
 
       {/* Imóveis em Destaque */}
       {featuredProperties.length > 0 && (
-        <section className="py-20 bg-gradient-to-b from-white to-gray-50">
+        <section className="py-20 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
-              <div className="inline-flex items-center bg-gradient-to-r from-amber-400 to-yellow-500 text-gray-900 px-4 py-2 rounded-full font-bold text-sm mb-4">
+              <div className="inline-flex items-center bg-yellow-400 text-gray-900 px-5 py-2 rounded-full font-bold text-sm mb-6">
                 <span className="mr-2">⭐</span>
                 Seleção Premium
               </div>
               <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-                Imóveis em{" "}
-                <span className="bg-gradient-to-r from-primary-600 to-amber-500 bg-clip-text text-transparent">
-                  Destaque
-                </span>
+                Imóveis em <span className="text-red-600">Destaque</span>
               </h2>
               <p className="text-gray-600 text-lg max-w-2xl mx-auto">
                 Propriedades cuidadosamente selecionadas com as melhores
                 localizações e comodidades
               </p>
-              <div className="w-24 h-1 bg-gradient-to-r from-primary-600 via-amber-400 to-primary-600 mx-auto mt-6 rounded-full"></div>
+              <div className="w-20 h-1 bg-red-600 mx-auto mt-6 rounded-full"></div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {featuredProperties.map((property) => (
-                <PropertyCard key={property.uuid} property={property} />
+                <PropertyCard
+                  key={property.uuid || property.id}
+                  property={property}
+                />
               ))}
             </div>
 
             <div className="text-center mt-12">
               <Link
                 to="/properties"
-                className="inline-flex items-center bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 text-white font-bold py-4 px-8 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:scale-105"
+                className="inline-flex items-center bg-red-600 hover:bg-red-700 text-white font-bold py-4 px-10 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
               >
                 <span>Ver Todos os Imóveis</span>
                 <span className="ml-2 text-xl">→</span>
@@ -258,22 +265,20 @@ const Home = () => {
       )}
 
       {/* Seção de Benefícios */}
-      <section className="py-20 bg-white">
+      <section className="py-20 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
               Por que escolher{" "}
-              <span className="bg-gradient-to-r from-primary-600 to-amber-500 bg-clip-text text-transparent">
-                nossos imóveis?
-              </span>
+              <span className="text-red-600">nossos imóveis?</span>
             </h2>
-            <div className="w-24 h-1 bg-gradient-to-r from-primary-600 via-amber-400 to-primary-600 mx-auto mt-6 rounded-full"></div>
+            <div className="w-20 h-1 bg-red-600 mx-auto mt-6 rounded-full"></div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="group text-center p-8 rounded-2xl hover:bg-gradient-to-br hover:from-gray-50 hover:to-white transition-all duration-300 hover:shadow-xl border-2 border-transparent hover:border-amber-400/20">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-primary-600 to-amber-500 rounded-2xl mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg">
-                <span className="text-3xl">🏆</span>
+            <div className="text-center p-8 bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300">
+              <div className="inline-flex items-center justify-center w-20 h-20 bg-red-600 rounded-xl mb-6 shadow-md">
+                <span className="text-4xl">🏆</span>
               </div>
               <h3 className="text-xl font-bold text-gray-900 mb-3">
                 Qualidade Garantida
@@ -284,9 +289,9 @@ const Home = () => {
               </p>
             </div>
 
-            <div className="group text-center p-8 rounded-2xl hover:bg-gradient-to-br hover:from-gray-50 hover:to-white transition-all duration-300 hover:shadow-xl border-2 border-transparent hover:border-amber-400/20">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-primary-600 to-amber-500 rounded-2xl mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg">
-                <span className="text-3xl">📍</span>
+            <div className="text-center p-8 bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300">
+              <div className="inline-flex items-center justify-center w-20 h-20 bg-red-600 rounded-xl mb-6 shadow-md">
+                <span className="text-4xl">📍</span>
               </div>
               <h3 className="text-xl font-bold text-gray-900 mb-3">
                 Localização Premium
@@ -296,9 +301,9 @@ const Home = () => {
               </p>
             </div>
 
-            <div className="group text-center p-8 rounded-2xl hover:bg-gradient-to-br hover:from-gray-50 hover:to-white transition-all duration-300 hover:shadow-xl border-2 border-transparent hover:border-amber-400/20">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-primary-600 to-amber-500 rounded-2xl mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg">
-                <span className="text-3xl">💬</span>
+            <div className="text-center p-8 bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300">
+              <div className="inline-flex items-center justify-center w-20 h-20 bg-red-600 rounded-xl mb-6 shadow-md">
+                <span className="text-4xl">💬</span>
               </div>
               <h3 className="text-xl font-bold text-gray-900 mb-3">
                 Atendimento Exclusivo
@@ -313,10 +318,10 @@ const Home = () => {
       </section>
 
       {/* Call to Action Final */}
-      <section className="py-20 bg-gradient-to-r from-primary-600 via-primary-700 to-primary-600 relative overflow-hidden">
+      <section className="py-20 bg-gradient-to-r from-red-600 via-red-700 to-red-600 relative overflow-hidden">
         <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-0 left-0 w-96 h-96 bg-amber-400 rounded-full blur-3xl"></div>
-          <div className="absolute bottom-0 right-0 w-96 h-96 bg-amber-400 rounded-full blur-3xl"></div>
+          <div className="absolute top-0 left-0 w-96 h-96 bg-yellow-400 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-0 right-0 w-96 h-96 bg-yellow-400 rounded-full blur-3xl"></div>
         </div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
@@ -331,7 +336,7 @@ const Home = () => {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
               to="/properties"
-              className="inline-flex items-center justify-center bg-white text-primary-700 font-bold py-4 px-8 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:scale-105"
+              className="inline-flex items-center justify-center bg-white text-red-600 font-bold py-4 px-10 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
             >
               <span>Explorar Imóveis</span>
               <span className="ml-2">🏠</span>
@@ -341,7 +346,7 @@ const Home = () => {
               href="https://wa.me/5547989105580"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center justify-center bg-gradient-to-r from-amber-400 to-yellow-500 text-gray-900 font-bold py-4 px-8 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:scale-105"
+              className="inline-flex items-center justify-center bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-bold py-4 px-10 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
             >
               <span>Falar no WhatsApp</span>
               <span className="ml-2">💬</span>

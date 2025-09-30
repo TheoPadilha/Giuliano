@@ -11,6 +11,7 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminProperties from "./pages/admin/AdminProperties";
 import AdminNewProperty from "./pages/admin/AdminNewProperty";
 import EditProperty from "./pages/admin/EditProperty";
+import Properties from "./pages/Properties";
 
 function App() {
   return (
@@ -26,6 +27,8 @@ function App() {
 
             {/* Login */}
             <Route path="/login" element={<Login />} />
+
+            <Route path="/properties" element={<Properties />} />
 
             {/* ===== ROTAS ADMINISTRATIVAS (PROTEGIDAS) ===== */}
             <Route

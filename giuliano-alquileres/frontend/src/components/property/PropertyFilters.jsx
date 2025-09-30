@@ -1,174 +1,97 @@
-// src/components/property/PropertyFilters.jsx
+// giuliano-alquileres/frontend/src/components/property/PropertyFilters.jsx
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
 const PropertyFilters = ({
   filters,
   onFiltersChange,
-  cities = [],
-  amenities = [],
+  cities,
+  amenities,
   onSearch,
-  loading = false,
+  loading,
   className = "",
 }) => {
-  const [localFilters, setLocalFilters] = useState(filters);
   const [showAdvanced, setShowAdvanced] = useState(false);
-  const [priceRange, setPriceRange] = useState({
-    min: filters.min_price || "",
-    max: filters.max_price || "",
-  });
 
-  // Sincronizar com props
-  useEffect(() => {
-    setLocalFilters(filters);
-    setPriceRange({
-      min: filters.min_price || "",
-      max: filters.max_price || "",
-    });
-  }, [filters]);
-
-  // Atualizar filtro local
-  const handleFilterChange = (key, value) => {
-    const updatedFilters = { ...localFilters, [key]: value };
-    setLocalFilters(updatedFilters);
-    onFiltersChange(updatedFilters);
+  const handleChange = (field, value) => {
+    onFiltersChange({ ...filters, [field]: value, page: 1 });
   };
 
-  // Atualizar range de preços
-  const handlePriceChange = (type, value) => {
-    const newRange = { ...priceRange, [type]: value };
-    setPriceRange(newRange);
-
-    const updatedFilters = {
-      ...localFilters,
-      min_price: newRange.min,
-      max_price: newRange.max,
-    };
-    setLocalFilters(updatedFilters);
-    onFiltersChange(updatedFilters);
-  };
-
-  // Toggle amenidade
   const handleAmenityToggle = (amenityId) => {
-    const currentAmenities = localFilters.amenities || [];
-    const updatedAmenities = currentAmenities.includes(amenityId)
+    const currentAmenities = filters.amenities || [];
+    const newAmenities = currentAmenities.includes(amenityId)
       ? currentAmenities.filter((id) => id !== amenityId)
       : [...currentAmenities, amenityId];
 
-    handleFilterChange("amenities", updatedAmenities);
+    handleChange("amenities", newAmenities);
   };
 
-  // Limpar filtros
-  const clearFilters = () => {
-    const emptyFilters = {
-      search: "",
-      city_id: "",
-      type: "",
-      max_guests: "",
-      min_price: "",
-      max_price: "",
-      bedrooms: "",
-      amenities: [],
-    };
-
-    setLocalFilters(emptyFilters);
-    setPriceRange({ min: "", max: "" });
-    onFiltersChange(emptyFilters);
-  };
-
-  // Verificar se tem filtros ativos
-  const hasActiveFilters = Object.values(localFilters).some((value) => {
+  const activeFiltersCount = Object.entries(filters).filter(([key, value]) => {
+    if (key === "page" || key === "limit") return false;
     if (Array.isArray(value)) return value.length > 0;
     return value !== "" && value !== null && value !== undefined;
-  });
-
-  // Agrupar amenidades por categoria
-  const groupedAmenities = amenities.reduce((acc, amenity) => {
-    const category = amenity.category || "other";
-    if (!acc[category]) acc[category] = [];
-    acc[category].push(amenity);
-    return acc;
-  }, {});
-
-  const getCategoryLabel = (category) => {
-    const labels = {
-      basic: "Básicas",
-      comfort: "Conforto",
-      entertainment: "Entretenimento",
-      safety: "Segurança",
-      other: "Outras",
-    };
-    return labels[category] || "Outras";
-  };
-
-  const getCategoryIcon = (category) => {
-    const icons = {
-      basic: "🏠",
-      comfort: "😌",
-      entertainment: "🎉",
-      safety: "🛡️",
-      other: "⭐",
-    };
-    return icons[category] || "⭐";
-  };
+  }).length;
 
   return (
     <div
-      className={`bg-white rounded-xl shadow-lg border border-gray-100 ${className}`}
+      className={`bg-white rounded-2xl shadow-sm border border-gray-100 ${className}`}
     >
-      <div className="p-6">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-bold text-gray-900 flex items-center">
-            🔍 <span className="ml-2">Filtrar Imóveis</span>
-          </h2>
-
-          <div className="flex items-center space-x-3">
-            {hasActiveFilters && (
-              <span className="text-sm text-blue-600 font-medium">
-                {
-                  Object.values(localFilters).filter((v) =>
-                    Array.isArray(v) ? v.length > 0 : v !== "" && v !== null
-                  ).length
-                }{" "}
-                filtros ativos
-              </span>
-            )}
-
-            <button
-              onClick={() => setShowAdvanced(!showAdvanced)}
-              className="text-sm text-gray-600 hover:text-blue-600 transition-colors font-medium"
-            >
-              {showAdvanced ? "▲ Menos filtros" : "▼ Mais filtros"}
-            </button>
+      {/* Header */}
+      <div className="px-8 py-6 border-b border-gray-100">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-red-100 rounded-xl flex items-center justify-center">
+              <span className="text-xl">🔍</span>
+            </div>
+            <div>
+              <h2 className="text-xl font-bold text-gray-900">
+                Filtrar Imóveis
+              </h2>
+              {activeFiltersCount > 0 && (
+                <p className="text-sm text-gray-600">
+                  {activeFiltersCount}{" "}
+                  {activeFiltersCount === 1 ? "filtro ativo" : "filtros ativos"}
+                </p>
+              )}
+            </div>
           </div>
-        </div>
 
-        {/* Filtros Básicos */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          {/* Busca por texto */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+          <button
+            onClick={() => setShowAdvanced(!showAdvanced)}
+            className="text-red-600 hover:text-red-700 font-semibold text-sm flex items-center gap-2 transition-colors"
+          >
+            <span>{showAdvanced ? "▼" : "▶"}</span>
+            <span>Mais filtros</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Filtros Principais */}
+      <div className="p-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {/* Buscar */}
+          <div className="lg:col-span-1">
+            <label className="block text-sm font-semibold text-gray-700 mb-3">
               🔎 Buscar
             </label>
             <input
               type="text"
               placeholder="Nome, localização..."
-              value={localFilters.search || ""}
-              onChange={(e) => handleFilterChange("search", e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+              value={filters.search}
+              onChange={(e) => handleChange("search", e.target.value)}
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all"
             />
           </div>
 
           {/* Cidade */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-semibold text-gray-700 mb-3">
               🏙️ Cidade
             </label>
             <select
-              value={localFilters.city_id || ""}
-              onChange={(e) => handleFilterChange("city_id", e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+              value={filters.city_id}
+              onChange={(e) => handleChange("city_id", e.target.value)}
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all appearance-none bg-white"
             >
               <option value="">Todas as cidades</option>
               {cities.map((city) => (
@@ -181,37 +104,37 @@ const PropertyFilters = ({
 
           {/* Tipo */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-semibold text-gray-700 mb-3">
               🏠 Tipo
             </label>
             <select
-              value={localFilters.type || ""}
-              onChange={(e) => handleFilterChange("type", e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+              value={filters.type}
+              onChange={(e) => handleChange("type", e.target.value)}
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all appearance-none bg-white"
             >
               <option value="">Todos os tipos</option>
-              <option value="apartment">🏢 Apartamento</option>
-              <option value="house">🏠 Casa</option>
-              <option value="studio">🏡 Studio</option>
-              <option value="penthouse">🏰 Cobertura</option>
+              <option value="apartment">Apartamento</option>
+              <option value="house">Casa</option>
+              <option value="penthouse">Cobertura</option>
+              <option value="studio">Studio</option>
             </select>
           </div>
 
           {/* Hóspedes */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-semibold text-gray-700 mb-3">
               👥 Hóspedes
             </label>
             <select
-              value={localFilters.max_guests || ""}
-              onChange={(e) => handleFilterChange("max_guests", e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+              value={filters.max_guests}
+              onChange={(e) => handleChange("max_guests", e.target.value)}
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all appearance-none bg-white"
             >
               <option value="">Qualquer quantidade</option>
               <option value="1">1 pessoa</option>
               <option value="2">2 pessoas</option>
               <option value="4">4 pessoas</option>
-              <option value="6">6+ pessoas</option>
+              <option value="6">6 pessoas</option>
               <option value="8">8+ pessoas</option>
             </select>
           </div>
@@ -219,167 +142,157 @@ const PropertyFilters = ({
 
         {/* Filtros Avançados */}
         {showAdvanced && (
-          <div className="border-t border-gray-200 pt-6 space-y-6">
-            {/* Range de Preços */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-3">
-                💰 Faixa de Preço (por noite)
-              </label>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <input
-                    type="number"
-                    placeholder="Preço mínimo"
-                    value={priceRange.min}
-                    onChange={(e) => handlePriceChange("min", e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                  />
-                </div>
-                <div>
-                  <input
-                    type="number"
-                    placeholder="Preço máximo"
-                    value={priceRange.max}
-                    onChange={(e) => handlePriceChange("max", e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                  />
-                </div>
+          <div className="mt-8 pt-8 border-t border-gray-100">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+              {/* Preço Mínimo */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-3">
+                  💰 Preço Mínimo
+                </label>
+                <input
+                  type="number"
+                  placeholder="R$ 0"
+                  value={filters.min_price}
+                  onChange={(e) => handleChange("min_price", e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all"
+                />
+              </div>
+
+              {/* Preço Máximo */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-3">
+                  💵 Preço Máximo
+                </label>
+                <input
+                  type="number"
+                  placeholder="R$ 10.000"
+                  value={filters.max_price}
+                  onChange={(e) => handleChange("max_price", e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all"
+                />
+              </div>
+
+              {/* Quartos */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-3">
+                  🛏️ Quartos
+                </label>
+                <select
+                  value={filters.bedrooms}
+                  onChange={(e) => handleChange("bedrooms", e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all appearance-none bg-white"
+                >
+                  <option value="">Qualquer</option>
+                  <option value="1">1 quarto</option>
+                  <option value="2">2 quartos</option>
+                  <option value="3">3 quartos</option>
+                  <option value="4">4+ quartos</option>
+                </select>
+              </div>
+
+              {/* Banheiros */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-3">
+                  🚿 Banheiros
+                </label>
+                <select
+                  value={filters.bathrooms}
+                  onChange={(e) => handleChange("bathrooms", e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all appearance-none bg-white"
+                >
+                  <option value="">Qualquer</option>
+                  <option value="1">1 banheiro</option>
+                  <option value="2">2 banheiros</option>
+                  <option value="3">3+ banheiros</option>
+                </select>
               </div>
             </div>
 
-            {/* Quartos */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-3">
-                🛏️ Número de Quartos
-              </label>
-              <select
-                value={localFilters.bedrooms || ""}
-                onChange={(e) => handleFilterChange("bedrooms", e.target.value)}
-                className="w-full md:w-1/3 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-              >
-                <option value="">Qualquer quantidade</option>
-                <option value="0">Studio (0 quartos)</option>
-                <option value="1">1 quarto</option>
-                <option value="2">2 quartos</option>
-                <option value="3">3 quartos</option>
-                <option value="4">4+ quartos</option>
-              </select>
-            </div>
-
             {/* Comodidades */}
-            {Object.keys(groupedAmenities).length > 0 && (
+            {amenities.length > 0 && (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-3">
-                  ⭐ Comodidades Desejadas
+                <label className="block text-sm font-semibold text-gray-700 mb-4">
+                  ✨ Comodidades
                 </label>
-
-                {Object.entries(groupedAmenities).map(
-                  ([category, categoryAmenities]) => (
-                    <div key={category} className="mb-4">
-                      <h4 className="text-sm font-medium text-gray-600 mb-2 flex items-center">
-                        <span className="mr-2">
-                          {getCategoryIcon(category)}
-                        </span>
-                        {getCategoryLabel(category)}
-                      </h4>
-
-                      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
-                        {categoryAmenities.map((amenity) => (
-                          <label
-                            key={amenity.id}
-                            className="flex items-center p-2 border border-gray-200 rounded-lg hover:bg-blue-50 cursor-pointer transition-colors"
-                          >
-                            <input
-                              type="checkbox"
-                              checked={(localFilters.amenities || []).includes(
-                                amenity.id
-                              )}
-                              onChange={() => handleAmenityToggle(amenity.id)}
-                              className="mr-2 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                            />
-                            <span className="text-sm text-gray-700">
-                              {amenity.name}
-                            </span>
-                          </label>
-                        ))}
-                      </div>
-                    </div>
-                  )
-                )}
+                <div className="flex flex-wrap gap-3">
+                  {amenities.map((amenity) => (
+                    <button
+                      key={amenity.id}
+                      onClick={() => handleAmenityToggle(amenity.id)}
+                      className={`px-5 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 ${
+                        filters.amenities?.includes(amenity.id)
+                          ? "bg-red-600 text-white shadow-md"
+                          : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                      }`}
+                    >
+                      {amenity.name}
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
           </div>
         )}
 
         {/* Botões de Ação */}
-        <div className="flex flex-col sm:flex-row gap-3 pt-6 border-t border-gray-200">
+        <div className="flex items-center gap-4 mt-8 pt-8 border-t border-gray-100">
           <button
             onClick={onSearch}
             disabled={loading}
-            className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-3 px-6 rounded-lg font-medium transition-all duration-200 shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex-1 bg-red-600 hover:bg-red-700 text-white font-semibold py-4 px-8 rounded-xl transition-all duration-300 transform hover:scale-[1.02] shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
           >
             {loading ? (
-              <span className="flex items-center justify-center">
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                Buscando...
+              <span className="flex items-center justify-center gap-2">
+                <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                    fill="none"
+                  />
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  />
+                </svg>
+                <span>Buscando...</span>
               </span>
             ) : (
-              <>🔍 Aplicar Filtros</>
+              <span className="flex items-center justify-center gap-2">
+                <span>🔍</span>
+                <span>Aplicar Filtros</span>
+              </span>
             )}
           </button>
 
-          {hasActiveFilters && (
+          {activeFiltersCount > 0 && (
             <button
-              onClick={clearFilters}
-              className="bg-gray-600 hover:bg-gray-700 text-white py-3 px-6 rounded-lg font-medium transition-all duration-200 shadow-md hover:shadow-lg"
+              onClick={() => {
+                onFiltersChange({
+                  search: "",
+                  city_id: "",
+                  type: "",
+                  max_guests: "",
+                  min_price: "",
+                  max_price: "",
+                  bedrooms: "",
+                  bathrooms: "",
+                  featured: "",
+                  amenities: [],
+                  page: 1,
+                  limit: filters.limit || 12,
+                });
+              }}
+              className="px-8 py-4 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-xl transition-all duration-200"
             >
-              🔄 Limpar Tudo
+              Limpar
             </button>
           )}
         </div>
-
-        {/* Indicador de Resultados */}
-        {hasActiveFilters && (
-          <div className="mt-4 p-3 bg-blue-50 rounded-lg">
-            <div className="flex flex-wrap gap-2">
-              {localFilters.search && (
-                <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm">
-                  Busca: "{localFilters.search}"
-                </span>
-              )}
-              {localFilters.city_id && (
-                <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm">
-                  {cities.find((c) => c.id == localFilters.city_id)?.name ||
-                    "Cidade"}
-                </span>
-              )}
-              {localFilters.type && (
-                <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm">
-                  {localFilters.type === "apartment" && "🏢 Apartamento"}
-                  {localFilters.type === "house" && "🏠 Casa"}
-                  {localFilters.type === "studio" && "🏡 Studio"}
-                  {localFilters.type === "penthouse" && "🏰 Cobertura"}
-                </span>
-              )}
-              {localFilters.max_guests && (
-                <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm">
-                  👥 {localFilters.max_guests}+ pessoas
-                </span>
-              )}
-              {(localFilters.min_price || localFilters.max_price) && (
-                <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm">
-                  💰 R$ {localFilters.min_price || "0"} - R${" "}
-                  {localFilters.max_price || "∞"}
-                </span>
-              )}
-              {localFilters.amenities && localFilters.amenities.length > 0 && (
-                <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm">
-                  ⭐ {localFilters.amenities.length} comodidades
-                </span>
-              )}
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );
