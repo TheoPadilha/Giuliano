@@ -1,7 +1,122 @@
-import { createContext, useContext, useState, useEffect } from "react";
-import api from "../services/api";
+import { createContext, useState, useContext, useEffect } from "react";
+import { authAPI } from "../services/api";
 
-const AuthContext = createContext();
+const AuthContext = createContext({});
+
+export const AuthProvider = ({ children }) => {
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  // Verificar autenticação ao carregar a aplicação
+  useEffect(() => {
+    checkAuth();
+  }, []);
+
+  // Auto-refresh do token a cada 6 dias (antes de expirar)
+  useEffect(() => {
+    if (isAuthenticated) {
+      const refreshInterval = setInterval(() => {
+        refreshToken();
+      }, 6 * 24 * 60 * 60 * 1000); // 6 dias em milissegundos
+
+      return () => clearInterval(refreshInterval);
+    }
+  }, [isAuthenticated]);
+
+  const checkAuth = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setLoading(false);
+        return;
+      }
+
+      const response = await authAPI.verify();
+      setUser(response.data.user);
+      setIsAuthenticated(true);
+      localStorage.setItem("user", JSON.stringify(response.data.user));
+    } catch (error) {
+      console.error("Erro ao verificar autenticação:", error);
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      setUser(null);
+      setIsAuthenticated(false);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const login = async (email, password) => {
+    try {
+      const response = await authAPI.login({ email, password });
+      const { token, user } = response.data;
+
+      localStorage.setItem("token", token);
+      localStorage.setItem("user", JSON.stringify(user));
+      setUser(user);
+      setIsAuthenticated(true);
+
+      return { success: true, user };
+    } catch (error) {
+      console.error("Erro ao fazer login:", error);
+      return {
+        success: false,
+        error: error.response?.data?.message || "Erro ao fazer login",
+      };
+    }
+  };
+
+  const register = async (userData) => {
+    try {
+      const response = await authAPI.register(userData);
+      const { token, user } = response.data;
+
+      localStorage.setItem("token", token);
+      localStorage.setItem("user", JSON.stringify(user));
+      setUser(user);
+      setIsAuthenticated(true);
+
+      return { success: true, user };
+    } catch (error) {
+      console.error("Erro ao registrar:", error);
+      return {
+        success: false,
+        error: error.response?.data?.message || "Erro ao registrar",
+      };
+    }
+  };
+
+  const logout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    setUser(null);
+    setIsAuthenticated(false);
+  };
+
+  const refreshToken = async () => {
+    try {
+      const response = await authAPI.refresh();
+      const { token } = response.data;
+      localStorage.setItem("token", token);
+    } catch (error) {
+      console.error("Erro ao renovar token:", error);
+      logout();
+    }
+  };
+
+  const value = {
+    user,
+    loading,
+    isAuthenticated,
+    login,
+    register,
+    logout,
+    checkAuth,
+  };
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+};
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
@@ -11,143 +126,4 @@ export const useAuth = () => {
   return context;
 };
 
-export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [token, setToken] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  // Verificar token ao carregar a aplicação
-  useEffect(() => {
-    const storedToken = localStorage.getItem("token");
-    const storedUser = localStorage.getItem("user");
-
-    if (storedToken && storedUser) {
-      try {
-        const parsedUser = JSON.parse(storedUser);
-        setToken(storedToken);
-        setUser(parsedUser);
-      } catch (error) {
-        console.error("Erro ao parsear usuário do localStorage:", error);
-        logout();
-      }
-    }
-
-    setLoading(false);
-  }, []);
-
-  // Função de login
-  const login = async (email, password) => {
-    try {
-      const response = await api.post("/auth/login", {
-        email,
-        password,
-      });
-
-      const { token: newToken, user: userData } = response.data;
-
-      // Verificar se o usuário é admin
-      if (userData.role !== "admin") {
-        return {
-          success: false,
-          error:
-            "Acesso negado. Apenas administradores podem acessar o painel.",
-        };
-      }
-
-      // Salvar no localStorage
-      localStorage.setItem("token", newToken);
-      localStorage.setItem("user", JSON.stringify(userData));
-
-      // Atualizar estado
-      setToken(newToken);
-      setUser(userData);
-
-      return { success: true };
-    } catch (error) {
-      console.error("Erro no login:", error);
-
-      let errorMessage = "Erro ao fazer login";
-
-      if (error.response?.status === 401) {
-        errorMessage = "Email ou senha incorretos. Verifique suas credenciais.";
-      } else if (error.response?.status === 404) {
-        errorMessage = "Usuário não encontrado. Verifique o email digitado.";
-      } else if (error.response?.data?.error) {
-        errorMessage = error.response.data.error;
-      }
-
-      return {
-        success: false,
-        error: errorMessage,
-      };
-    }
-  };
-
-  // Função de registro
-  const register = async (userData) => {
-    try {
-      const response = await api.post("/auth/register", userData);
-
-      const { token: newToken, user: userInfo } = response.data;
-
-      // Salvar no localStorage
-      localStorage.setItem("token", newToken);
-      localStorage.setItem("user", JSON.stringify(userInfo));
-
-      // Atualizar estado
-      setToken(newToken);
-      setUser(userInfo);
-
-      return { success: true };
-    } catch (error) {
-      console.error("Erro no registro:", error);
-      return {
-        success: false,
-        error: error.response?.data?.error || "Erro ao criar conta",
-      };
-    }
-  };
-
-  // Função de logout
-  const logout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    setToken(null);
-    setUser(null);
-  };
-
-  // Verificar se token ainda é válido
-  const verifyToken = async () => {
-    try {
-      const response = await api.get("/auth/verify");
-      return response.data.valid;
-    } catch (error) {
-      logout();
-      return false;
-    }
-  };
-
-  // Verificar se usuário é admin
-  const isAdmin = () => {
-    return user?.role === "admin";
-  };
-
-  // Verificar se está autenticado
-  const isAuthenticated = () => {
-    return !!token && !!user;
-  };
-
-  const value = {
-    user,
-    token,
-    loading,
-    login,
-    register,
-    logout,
-    verifyToken,
-    isAdmin,
-    isAuthenticated,
-  };
-
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-};
+export default AuthContext;

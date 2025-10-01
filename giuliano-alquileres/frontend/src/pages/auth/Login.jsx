@@ -1,17 +1,22 @@
-
+// src/pages/auth/Login.jsx
 import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
-import { useAuth } from "../contexts/AuthContext";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import { useAuth } from "../../contexts/AuthContext";
+import { FiMail, FiLock, FiAlertCircle } from "react-icons/fi";
 
 const Login = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { login } = useAuth();
+
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const from = location.state?.from?.pathname || "/";
 
   const handleChange = (e) => {
     setFormData({
@@ -26,21 +31,20 @@ const Login = () => {
     setError("");
     setLoading(true);
 
-    try {
-      await login(formData.email, formData.password);
-      navigate("/admin");
-    } catch (err) {
-      setError(
-        err.response?.data?.message || "Erro ao fazer login. Tente novamente."
-      );
-    } finally {
-      setLoading(false);
+    const result = await login(formData.email, formData.password);
+
+    setLoading(false);
+
+    if (result.success) {
+      navigate(from, { replace: true });
+    } else {
+      setError(result.error);
     }
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white flex">
-      {/* Lado Esquerdo - Hero Section Inspirado no Site */}
+      {/* Lado Esquerdo - Hero Section */}
       <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
         <div
           className="absolute inset-0 bg-cover bg-center"
@@ -52,12 +56,13 @@ const Login = () => {
         <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-transparent"></div>
 
         <div className="relative z-10 flex flex-col justify-center px-12 text-white">
-          {/* Badge Dourado */}
+          {/* Badge */}
           <div className="inline-flex items-center bg-gradient-to-r from-amber-400 to-yellow-500 text-gray-900 px-4 py-2 rounded-full font-bold text-sm mb-8 w-fit">
             <span className="mr-2">✨</span>
             Gestão Imobiliária Premium
           </div>
 
+          {/* Título Principal */}
           <h1 className="text-5xl font-bold mb-6 leading-tight">
             Acesse seu
             <span className="block bg-gradient-to-r from-primary-500 to-amber-400 bg-clip-text text-transparent">
@@ -65,11 +70,13 @@ const Login = () => {
             </span>
           </h1>
 
+          {/* Descrição */}
           <p className="text-xl text-gray-200 mb-12 leading-relaxed max-w-md">
-            Gerencie propriedades, reservas e clientes com nossa plataforma completa de administração imobiliária.
+            Gerencie propriedades, reservas e clientes com nossa plataforma
+            completa de administração imobiliária.
           </p>
 
-          {/* Stats com detalhes dourados */}
+          {/* Stats */}
           <div className="grid grid-cols-3 gap-6">
             <div className="text-center">
               <div className="text-3xl font-bold text-white mb-1">500+</div>
@@ -90,93 +97,115 @@ const Login = () => {
         </div>
       </div>
 
-      {/* Lado Direito - Formulário */}
+      {/* Lado Direito - Formulário de Login */}
       <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-white">
         <div className="w-full max-w-md">
           {/* Logo/Título */}
           <div className="text-center mb-12">
             <Link to="/" className="inline-block mb-8">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-primary-600 to-amber-500 rounded-2xl mb-4 shadow-lg">
-                <span className="text-3xl">🏢</span>
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-red-600 to-amber-500 rounded-2xl mb-4 shadow-lg">
+                <span className="text-3xl">🏠</span>
               </div>
             </Link>
 
-            {/* Badge Dourado */}
+            {/* Badge */}
             <div className="inline-flex items-center bg-gradient-to-r from-amber-400 to-yellow-500 text-gray-900 px-3 py-1 rounded-full font-bold text-xs mb-6">
               <span className="mr-1">⭐</span>
               Área Administrativa
             </div>
 
+            {/* Título */}
             <h2 className="text-4xl font-bold text-gray-900 mb-3">
-              Bem-vindo de volta
+              Bem-vindo de volta!
             </h2>
             <p className="text-gray-600">
               Faça login para acessar o painel administrativo
             </p>
-            <div className="w-16 h-1 bg-gradient-to-r from-primary-600 via-amber-400 to-primary-600 mx-auto mt-4 rounded-full"></div>
+            <div className="w-16 h-1 bg-gradient-to-r from-red-600 via-amber-400 to-red-600 mx-auto mt-4 rounded-full"></div>
           </div>
 
           {/* Alerta de Erro */}
           {error && (
             <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-6 rounded-r-2xl">
-              <p className="text-red-800 text-sm">{error}</p>
+              <div className="flex items-start">
+                <FiAlertCircle className="text-red-600 mt-0.5 flex-shrink-0 mr-2" />
+                <p className="text-red-800 text-sm">{error}</p>
+              </div>
             </div>
           )}
 
           {/* Formulário */}
           <form onSubmit={handleSubmit} className="space-y-6">
+            {/* E-mail */}
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-2">
+              <label
+                htmlFor="email"
+                className="block text-sm font-bold text-gray-700 mb-2"
+              >
                 E-mail
               </label>
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                placeholder="seu@email.com"
-                required
-                className="w-full px-4 py-4 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-primary-500 focus:ring-0 transition-all duration-300 hover:border-gray-300"
-              />
+              <div className="relative">
+                <FiMail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  required
+                  value={formData.email}
+                  onChange={handleChange}
+                  className="w-full pl-12 pr-4 py-4 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-red-500 focus:ring-0 transition-all duration-300 hover:border-gray-300"
+                  placeholder="seu@email.com"
+                />
+              </div>
             </div>
 
+            {/* Senha */}
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-2">
+              <label
+                htmlFor="password"
+                className="block text-sm font-bold text-gray-700 mb-2"
+              >
                 Senha
               </label>
-              <input
-                type="password"
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                placeholder="••••••••"
-                required
-                className="w-full px-4 py-4 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-primary-500 focus:ring-0 transition-all duration-300 hover:border-gray-300"
-              />
+              <div className="relative">
+                <FiLock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+                <input
+                  id="password"
+                  name="password"
+                  type="password"
+                  required
+                  value={formData.password}
+                  onChange={handleChange}
+                  className="w-full pl-12 pr-4 py-4 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-red-500 focus:ring-0 transition-all duration-300 hover:border-gray-300"
+                  placeholder="••••••••"
+                />
+              </div>
             </div>
 
+            {/* Opções adicionais */}
             <div className="flex items-center justify-between text-sm">
               <label className="flex items-center cursor-pointer group">
                 <input
                   type="checkbox"
-                  className="w-4 h-4 text-primary-600 border-2 border-gray-300 rounded focus:ring-primary-500 focus:ring-2"
+                  className="w-4 h-4 text-red-600 border-2 border-gray-300 rounded focus:ring-red-500 focus:ring-2"
                 />
                 <span className="ml-2 text-gray-700 group-hover:text-gray-900 transition-colors">
                   Lembrar-me
                 </span>
               </label>
-              <a 
-                href="#" 
-                className="text-primary-600 hover:text-primary-700 font-medium transition-colors"
+              <Link
+                to="/forgot-password"
+                className="text-red-600 hover:text-red-700 font-medium transition-colors"
               >
                 Esqueceu a senha?
-              </a>
+              </Link>
             </div>
 
+            {/* Botão de Login */}
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 text-white font-bold py-4 px-6 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+              className="w-full bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-bold py-4 px-6 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
             >
               {loading ? (
                 <div className="flex items-center justify-center">
@@ -192,10 +221,20 @@ const Login = () => {
             </button>
           </form>
 
+          {/* Link para Registro */}
           <div className="mt-8 text-center">
+            <p className="text-sm text-gray-600 mb-3">
+              Não tem uma conta?{" "}
+              <Link
+                to="/register"
+                className="text-red-600 hover:text-red-700 font-bold transition-colors"
+              >
+                Criar conta grátis
+              </Link>
+            </p>
             <Link
               to="/"
-              className="inline-flex items-center text-sm text-gray-600 hover:text-primary-700 transition-colors font-medium"
+              className="inline-flex items-center text-sm text-gray-600 hover:text-red-600 transition-colors font-medium"
             >
               <span className="mr-1">←</span>
               Voltar para o site

@@ -1,8 +1,9 @@
+// src/services/api.js - VERSÃO COMPLETA E CORRIGIDA
 import axios from "axios";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3001/api";
 
-// Instância do axios
+// Instância principal do axios
 const api = axios.create({
   baseURL: API_URL,
   timeout: 10000,
@@ -30,25 +31,70 @@ api.interceptors.response.use(
   (response) => {
     return response;
   },
-  (error) => {
-    // Apenas logar o erro, sem redirecionar automaticamente
-    if (error.response?.status === 401) {
-      console.log("Erro 401 - Não autorizado:", error.config?.url);
+  async (error) => {
+    const originalRequest = error.config;
 
-      // Opcional: Disparar um evento customizado que outros componentes podem escutar
-      window.dispatchEvent(
-        new CustomEvent("unauthorized", {
-          detail: {
-            url: error.config?.url,
-            message: error.response?.data?.message,
-          },
-        })
-      );
+    // Se o erro for 401 e não for uma tentativa de refresh
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+
+      try {
+        const token = localStorage.getItem("token");
+        if (token) {
+          // Tentar renovar o token
+          const response = await axios.post(
+            `${API_URL}/auth/refresh`,
+            {},
+            {
+              headers: { Authorization: `Bearer ${token}` },
+            }
+          );
+
+          const newToken = response.data.token;
+          localStorage.setItem("token", newToken);
+
+          // Retentar a requisição original com o novo token
+          originalRequest.headers.Authorization = `Bearer ${newToken}`;
+          return api(originalRequest);
+        }
+      } catch (refreshError) {
+        // Se falhar ao renovar, limpar o token e redirecionar para login
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        window.location.href = "/login";
+        return Promise.reject(refreshError);
+      }
     }
 
     return Promise.reject(error);
   }
 );
 
-export { api, API_URL };
+// ===== EXPORTS NOMEADOS PARA AUTENTICAÇÃO =====
+export const authAPI = {
+  register: (userData) => api.post("/auth/register", userData),
+  login: (credentials) => api.post("/auth/login", credentials),
+  verify: () => api.get("/auth/verify"),
+  refresh: () => api.post("/auth/refresh"),
+};
+
+// ===== EXPORTS NOMEADOS PARA PROPRIEDADES =====
+export const propertiesAPI = {
+  getAll: (params) => api.get("/properties", { params }),
+  getById: (id) => api.get(`/properties/${id}`),
+  create: (data) => api.post("/properties", data),
+  update: (id, data) => api.put(`/properties/${id}`, data),
+  delete: (id) => api.delete(`/properties/${id}`),
+};
+
+// ===== EXPORTS NOMEADOS PARA UTILITIES =====
+export const utilitiesAPI = {
+  getCities: () => api.get("/utilities/cities"),
+  getAmenities: () => api.get("/utilities/amenities"),
+};
+
+// ===== EXPORT DEFAULT (Instância do axios) =====
 export default api;
+
+// ===== EXPORT DA URL BASE =====
+export { API_URL };

@@ -1,17 +1,22 @@
-// giuliano-alquileres/frontend/src/App.jsx
+// src/App.jsx - VERSÃO COMPLETA E CORRIGIDA
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 
-// Páginas
+// Páginas Públicas
 import Home from "./pages/Home";
-import Login from "./pages/Login";
+import Properties from "./pages/Properties";
 import PropertyDetails from "./pages/PropertyDetails";
+
+// Páginas de Autenticação
+import Login from "./pages/auth/Login";
+import Register from "./pages/auth/Register";
+
+// Páginas Administrativas
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminProperties from "./pages/admin/AdminProperties";
 import AdminNewProperty from "./pages/admin/AdminNewProperty";
 import EditProperty from "./pages/admin/EditProperty";
-import Properties from "./pages/Properties";
 
 function App() {
   return (
@@ -21,16 +26,16 @@ function App() {
           <Routes>
             {/* ===== ROTAS PÚBLICAS ===== */}
             <Route path="/" element={<Home />} />
-
-            {/* CORRIGIDO: Rota de detalhes do imóvel */}
+            <Route path="/properties" element={<Properties />} />
             <Route path="/property/:uuid" element={<PropertyDetails />} />
 
-            {/* Login */}
+            {/* ===== ROTAS DE AUTENTICAÇÃO ===== */}
             <Route path="/login" element={<Login />} />
-
-            <Route path="/properties" element={<Properties />} />
+            <Route path="/register" element={<Register />} />
 
             {/* ===== ROTAS ADMINISTRATIVAS (PROTEGIDAS) ===== */}
+
+            {/* Dashboard Principal */}
             <Route
               path="/admin"
               element={
@@ -40,6 +45,7 @@ function App() {
               }
             />
 
+            {/* Listagem de Imóveis Admin */}
             <Route
               path="/admin/properties"
               element={
@@ -49,6 +55,7 @@ function App() {
               }
             />
 
+            {/* Criar Novo Imóvel */}
             <Route
               path="/admin/properties/new"
               element={
@@ -58,7 +65,7 @@ function App() {
               }
             />
 
-            {/* CORRIGIDO: Rota de edição usando :id ao invés de :uuid */}
+            {/* Editar Imóvel Existente */}
             <Route
               path="/admin/properties/:id/edit"
               element={
@@ -72,25 +79,39 @@ function App() {
             <Route
               path="*"
               element={
-                <div className="min-h-screen flex items-center justify-center bg-gray-50">
-                  <div className="text-center">
-                    <div className="text-6xl mb-4">🏠</div>
-                    <h1 className="text-2xl font-bold text-gray-900 mb-4">
-                      Página não encontrada
+                <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+                  <div className="text-center max-w-md">
+                    {/* Ícone */}
+                    <div className="text-8xl mb-6">🏠</div>
+
+                    {/* Número 404 */}
+                    <h1 className="text-6xl font-bold text-red-600 mb-4">
+                      404
                     </h1>
-                    <p className="text-gray-600 mb-6">
+
+                    {/* Título */}
+                    <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                      Página não encontrada
+                    </h2>
+
+                    {/* Descrição */}
+                    <p className="text-gray-600 mb-8">
                       A página que você procura não existe ou foi removida.
                     </p>
+
+                    {/* Botões de Ação */}
                     <div className="space-y-3">
-                      <a href="/" className="btn-primary inline-block">
-                        🏠 Ver Todos os Imóveis
+                      <a
+                        href="/"
+                        className="inline-block w-full bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-bold py-3 px-8 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+                      >
+                        🏠 Voltar para Home
                       </a>
-                      <br />
                       <button
                         onClick={() => window.history.back()}
-                        className="btn-secondary"
+                        className="w-full bg-white text-gray-700 border-2 border-gray-300 hover:border-red-600 hover:text-red-600 font-bold py-3 px-8 rounded-xl shadow-md hover:shadow-lg transition-all duration-300"
                       >
-                        ← Voltar
+                        ← Página Anterior
                       </button>
                     </div>
                   </div>

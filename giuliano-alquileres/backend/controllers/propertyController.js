@@ -1,8 +1,14 @@
-// backend/controllers/propertyController.js - VERSÃO CORRIGIDA
+// backend/controllers/propertyController.js - VERSÃO FINAL
 
-const { Property, City, PropertyPhoto, Amenity } = require("../models");
+const {
+  Property,
+  City,
+  PropertyPhoto,
+  Amenity,
+  sequelize,
+} = require("../models");
 const Joi = require("joi");
-const { Op } = require("sequelize");
+const { Op, QueryTypes } = require("sequelize");
 
 // Esquemas de validação
 const propertySchema = Joi.object({
@@ -30,8 +36,6 @@ const propertySchema = Joi.object({
 });
 
 // Listar imóveis com filtros
-// backend/controllers/propertyController.js - Melhorar a função getProperties
-
 const getProperties = async (req, res) => {
   try {
     const {
@@ -44,10 +48,10 @@ const getProperties = async (req, res) => {
       max_price,
       bedrooms,
       bathrooms,
-      status = "available",
+      status, // Sem valor padrão
       featured,
       search,
-      amenities, // IDs separados por vírgula: "1,2,3"
+      amenities,
     } = req.query;
 
     console.log("🔍 Parâmetros de busca recebidos:", req.query);
@@ -55,8 +59,11 @@ const getProperties = async (req, res) => {
     // Construir filtros
     const where = {};
 
-    // Status
-    if (status) where.status = status;
+    // Status (só filtra se for explicitamente passado)
+    if (status && status.trim()) {
+      where.status = status;
+      console.log(`📌 Filtrando por status: ${status}`);
+    }
 
     // Cidade
     if (city_id) where.city_id = parseInt(city_id);
@@ -83,7 +90,7 @@ const getProperties = async (req, res) => {
       if (max_price) where.price_per_night[Op.lte] = parseFloat(max_price);
     }
 
-    // Busca por texto (título, descrição, endereço)
+    // Busca por texto
     if (search && search.trim()) {
       where[Op.or] = [
         { title: { [Op.iLike]: `%${search.trim()}%` } },
@@ -93,69 +100,29 @@ const getProperties = async (req, res) => {
       ];
     }
 
-    console.log(
-      "📋 Filtros WHERE construídos:",
-      JSON.stringify(where, null, 2)
-    );
-
-    // Calcular offset
-    const offset = (parseInt(page) - 1) * parseInt(limit);
-
-    // Incluir relacionamentos
-    const include = [
-      {
-        model: City,
-        as: "city",
-        attributes: ["id", "name", "state", "country"],
-      },
-      {
-        model: PropertyPhoto,
-        as: "photos",
-        required: false,
-        attributes: ["id", "filename", "alt_text", "is_main", "display_order"],
-        order: [
-          ["is_main", "DESC"],
-          ["display_order", "ASC"],
-        ],
-      },
-      {
-        model: Amenity,
-        as: "amenities",
-        through: { attributes: [] },
-        attributes: ["id", "name", "icon", "category"],
-      },
-    ];
-
     // Filtro de amenidades
-    let propertiesQuery = {
-      where,
-      include,
-      order: [
-        ["is_featured", "DESC"],
-        ["created_at", "DESC"],
-      ],
-      limit: parseInt(limit),
-      offset,
-      distinct: true,
-      subQuery: false,
-    };
-
-    // Se tiver filtro de amenidades, adicionar condição
     if (amenities) {
       const amenityIds = amenities.split(",").map((id) => parseInt(id.trim()));
 
       if (amenityIds.length > 0) {
-        // Buscar propriedades que tenham TODAS as amenidades selecionadas
+        console.log(`🏷️ Filtrando por amenities: ${amenityIds.join(", ")}`);
+
         const propertiesWithAmenities = await sequelize.query(
           `
           SELECT p.id
           FROM properties p
           INNER JOIN property_amenities pa ON p.id = pa.property_id
-          WHERE pa.amenity_id IN (${amenityIds.join(",")})
+          WHERE pa.amenity_id IN (:amenityIds)
           GROUP BY p.id
-          HAVING COUNT(DISTINCT pa.amenity_id) = ${amenityIds.length}
-        `,
-          { type: sequelize.QueryTypes.SELECT }
+          HAVING COUNT(DISTINCT pa.amenity_id) = :amenityCount
+          `,
+          {
+            replacements: {
+              amenityIds: amenityIds,
+              amenityCount: amenityIds.length,
+            },
+            type: QueryTypes.SELECT,
+          }
         );
 
         const propertyIds = propertiesWithAmenities.map((p) => p.id);
@@ -163,7 +130,6 @@ const getProperties = async (req, res) => {
         if (propertyIds.length > 0) {
           where.id = { [Op.in]: propertyIds };
         } else {
-          // Se não encontrou nenhuma propriedade com todas as amenidades
           return res.json({
             properties: [],
             pagination: {
@@ -179,12 +145,65 @@ const getProperties = async (req, res) => {
       }
     }
 
-    // Buscar imóveis
-    const { count, rows: properties } = await Property.findAndCountAll(
-      propertiesQuery
-    );
+    console.log("📋 Filtros WHERE:", JSON.stringify(where, null, 2));
 
-    console.log(`✅ Encontradas ${count} propriedades`);
+    // Calcular offset
+    const offset = (parseInt(page) - 1) * parseInt(limit);
+
+    // COUNT separado (sem amenities)
+    const count = await Property.count({
+      where,
+      distinct: true,
+      col: "id",
+    });
+
+    console.log(`📊 Total de propriedades encontradas: ${count}`);
+
+    // SELECT com includes
+    const properties = await Property.findAll({
+      where,
+      include: [
+        {
+          model: City,
+          as: "city",
+          attributes: ["id", "name", "state", "country"],
+        },
+        {
+          model: PropertyPhoto,
+          as: "photos",
+          required: false,
+          attributes: [
+            "id",
+            "filename",
+            "alt_text",
+            "is_main",
+            "display_order",
+          ],
+          separate: true,
+          order: [
+            ["is_main", "DESC"],
+            ["display_order", "ASC"],
+          ],
+        },
+        {
+          model: Amenity,
+          as: "amenities",
+          through: { attributes: [] },
+          attributes: ["id", "name", "icon", "category"],
+        },
+      ],
+      order: [
+        ["is_featured", "DESC"],
+        ["created_at", "DESC"],
+      ],
+      limit: parseInt(limit),
+      offset,
+      subQuery: false,
+    });
+
+    console.log(
+      `✅ Retornando ${properties.length} propriedades da página ${page}`
+    );
 
     // Calcular total de páginas
     const totalPages = Math.ceil(count / parseInt(limit));
@@ -234,6 +253,7 @@ const getPropertyByUuid = async (req, res) => {
             "is_main",
             "display_order",
           ],
+          separate: true,
           order: [["display_order", "ASC"]],
         },
         {
@@ -265,7 +285,6 @@ const getPropertyByUuid = async (req, res) => {
 // Criar novo imóvel (admin only)
 const createProperty = async (req, res) => {
   try {
-    // Validar dados
     const { error, value } = propertySchema.validate(req.body);
     if (error) {
       return res.status(400).json({
@@ -276,7 +295,6 @@ const createProperty = async (req, res) => {
 
     const { amenities, ...propertyData } = value;
 
-    // Verificar se cidade existe
     const city = await City.findByPk(propertyData.city_id);
     if (!city) {
       return res.status(400).json({
@@ -284,15 +302,12 @@ const createProperty = async (req, res) => {
       });
     }
 
-    // Criar imóvel
     const property = await Property.create(propertyData);
 
-    // Associar comodidades se fornecidas
     if (amenities && amenities.length > 0) {
       await property.setAmenities(amenities);
     }
 
-    // Buscar imóvel criado com relacionamentos
     const createdProperty = await Property.findByPk(property.id, {
       include: [
         {
@@ -323,20 +338,17 @@ const createProperty = async (req, res) => {
   }
 };
 
-// 🛠️ CORREÇÃO: Atualizar imóvel (admin only) - Aceita UUID ou ID
+// Atualizar imóvel (admin only)
 const updateProperty = async (req, res) => {
   try {
     const { uuid } = req.params;
 
     console.log(`🔍 Buscando imóvel para atualização: ${uuid}`);
 
-    // 🛠️ CORREÇÃO: Buscar por UUID ou ID
     let property = null;
 
-    // Tentar buscar por UUID primeiro
     property = await Property.findOne({ where: { uuid } });
 
-    // Se não encontrar por UUID, tentar por ID
     if (!property && !isNaN(uuid)) {
       property = await Property.findByPk(parseInt(uuid));
     }
@@ -350,7 +362,6 @@ const updateProperty = async (req, res) => {
 
     console.log(`✅ Imóvel encontrado: ${property.id} (${property.uuid})`);
 
-    // Validar dados (permitir campos opcionais para atualização)
     const updateSchema = propertySchema.fork(
       [
         "title",
@@ -376,7 +387,6 @@ const updateProperty = async (req, res) => {
 
     const { amenities, ...propertyData } = value;
 
-    // Verificar cidade se fornecida
     if (propertyData.city_id) {
       const city = await City.findByPk(propertyData.city_id);
       if (!city) {
@@ -388,16 +398,13 @@ const updateProperty = async (req, res) => {
 
     console.log(`📝 Atualizando imóvel com dados:`, propertyData);
 
-    // Atualizar imóvel
     await property.update(propertyData);
 
-    // Atualizar comodidades se fornecidas
     if (Array.isArray(amenities)) {
       console.log(`🏷️ Atualizando amenities:`, amenities);
       await property.setAmenities(amenities);
     }
 
-    // Buscar imóvel atualizado
     const updatedProperty = await Property.findByPk(property.id, {
       include: [
         {
@@ -435,7 +442,6 @@ const deleteProperty = async (req, res) => {
   try {
     const { uuid } = req.params;
 
-    // Buscar por UUID ou ID
     let property = await Property.findOne({ where: { uuid } });
 
     if (!property && !isNaN(uuid)) {
@@ -485,6 +491,7 @@ const getFeaturedProperties = async (req, res) => {
           where: { is_main: true },
           required: false,
           attributes: ["id", "filename", "alt_text"],
+          separate: true,
         },
       ],
       order: [["created_at", "DESC"]],
