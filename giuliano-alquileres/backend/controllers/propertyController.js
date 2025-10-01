@@ -1,5 +1,3 @@
-// backend/controllers/propertyController.js - VERSÃO FINAL
-
 const {
   Property,
   City,
@@ -198,7 +196,7 @@ const getProperties = async (req, res) => {
       ],
       limit: parseInt(limit),
       offset,
-      subQuery: false,
+      subQuery: true,
     });
 
     console.log(
