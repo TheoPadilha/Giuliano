@@ -1,38 +1,57 @@
+// database.js modificado
+
 const { Sequelize } = require("sequelize");
 require("dotenv").config();
 
-// Configuração da conexão PostgreSQL
-const sequelize = new Sequelize({
-  host: process.env.DB_HOST || "localhost",
-  port: process.env.DB_PORT || 5432,
-  database: process.env.DB_NAME || "giuliano_alquileres",
-  username: process.env.DB_USER || "postgres",
-  password: process.env.DB_PASSWORD,
-  dialect: "postgres",
+let sequelize;
 
-  // Configurações de pool de conexões
-  pool: {
-    max: 10, // máximo de conexões
-    min: 0, // mínimo de conexões
-    acquire: 30000, // tempo limite para obter conexão
-    idle: 10000, // tempo máximo de conexão inativa
-  },
+// Verifica se estamos no ambiente de produção (no Render)
+if (process.env.DATABASE_URL) {
+  // Se a DATABASE_URL existe (no Render), usa ela para conectar
+  sequelize = new Sequelize(process.env.DATABASE_URL, {
+    dialect: "postgres",
+    protocol: "postgres",
+    dialectOptions: {
+      ssl: {
+        require: true,
+        rejectUnauthorized: false, // Essencial para a conexão no Render
+      },
+    },
+    logging: false, // Desativa o logging em produção
+    define: {
+      timestamps: true,
+      underscored: false,
+      freezeTableName: true,
+    },
+    timezone: "-03:00",
+  });
+} else {
+  // Se não, estamos no ambiente de desenvolvimento (sua máquina local)
+  // Usa as variáveis do seu arquivo .env
+  sequelize = new Sequelize({
+    host: process.env.DB_HOST || "localhost",
+    port: process.env.DB_PORT || 5432,
+    database: process.env.DB_NAME || "giuliano_alquileres",
+    username: process.env.DB_USER || "postgres",
+    password: process.env.DB_PASSWORD,
+    dialect: "postgres",
+    pool: {
+      max: 10,
+      min: 0,
+      acquire: 30000,
+      idle: 10000,
+    },
+    logging: console.log, // Ativa o logging em desenvolvimento
+    define: {
+      timestamps: true,
+      underscored: false,
+      freezeTableName: true,
+    },
+    timezone: "-03:00",
+  });
+}
 
-  // Configurações de logging
-  logging: process.env.NODE_ENV === "development" ? console.log : false,
-
-  // Configurações extras
-  define: {
-    timestamps: true, // adiciona createdAt e updatedAt
-    underscored: false, // usa camelCase ao invés de snake_case
-    freezeTableName: true, // não pluraliza nomes das tabelas
-  },
-
-  // Timezone
-  timezone: "-03:00", // Horário de Brasília
-});
-
-// Teste de conexão
+// O resto do seu arquivo permanece igual
 const testConnection = async () => {
   try {
     await sequelize.authenticate();
