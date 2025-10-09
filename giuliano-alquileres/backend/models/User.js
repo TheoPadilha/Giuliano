@@ -54,11 +54,20 @@ const User = sequelize.define(
         notEmpty: { msg: "Senha é obrigatória" },
       },
     },
+    // --- ALTERAÇÃO 1: Ajustando o campo 'role' ---
     role: {
-      type: DataTypes.ENUM("admin", "client"),
-      defaultValue: "client",
+      type: DataTypes.ENUM("admin", "admin_master"), // Novos papéis
+      defaultValue: "admin", // Todo novo cadastro será um 'admin' (dono de imóvel)
       allowNull: false,
     },
+    // --- ALTERAÇÃO 2: Adicionando o campo 'status' ---
+    status: {
+      type: DataTypes.ENUM("pending", "approved", "rejected"), // Status possíveis
+      defaultValue: "pending", // Todo novo cadastro começa como pendente
+      allowNull: false,
+    },
+    // O campo 'is_active' pode ser redundante agora, mas vamos mantê-lo por enquanto.
+    // Poderíamos usá-lo para um admin desativar uma conta em vez de deletá-la.
     is_active: {
       type: DataTypes.BOOLEAN,
       defaultValue: true,
@@ -70,7 +79,6 @@ const User = sequelize.define(
     createdAt: "created_at",
     updatedAt: "updated_at",
 
-    // Hooks para hash da senha
     hooks: {
       beforeCreate: async (user) => {
         if (user.password_hash) {
@@ -86,29 +94,30 @@ const User = sequelize.define(
   }
 );
 
-// Método para validar senha
+// --- NENHUMA ALTERAÇÃO NECESSÁRIA ABAIXO ---
+// Seus métodos continuam perfeitamente válidos.
+
 User.prototype.validatePassword = async function (password) {
   return await bcrypt.compare(password, this.password_hash);
 };
 
-// Método para excluir senha das respostas
 User.prototype.toJSON = function () {
   const values = { ...this.get() };
   delete values.password_hash;
   return values;
 };
 
-// Método estático para buscar por email
+// --- ALTERAÇÃO 3: Pequeno ajuste no método estático para buscar usuário ---
+// Agora ele não deve mais procurar por 'is_active', pois o status de aprovação é mais importante para o login.
 User.findByEmail = function (email) {
-  return this.findOne({ where: { email, is_active: true } });
+  return this.findOne({ where: { email } }); // Removemos o 'is_active: true' daqui
 };
 
-// Método estático para criar usuário com validação
+// O método createUser não precisa de alterações, pois os valores padrão de 'role' e 'status' já farão o trabalho.
 User.createUser = async function (userData) {
-  const { name, email, password, phone, country, role = "client" } = userData;
+  const { name, email, password, phone, country } = userData;
 
-  // Verificar se email já existe
-  const existingUser = await this.findByEmail(email);
+  const existingUser = await this.findOne({ where: { email } });
   if (existingUser) {
     throw new Error("Email já está em uso");
   }
@@ -119,7 +128,7 @@ User.createUser = async function (userData) {
     password_hash: password,
     phone,
     country,
-    role,
+    // 'role' e 'status' serão definidos pelos valores padrão do modelo.
   });
 };
 

@@ -1,10 +1,8 @@
-// backend/server.js - VERIFICAR ESTA PARTE
-
 const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");
 const rateLimit = require("express-rate-limit");
-const path = require("path"); // 🛠️ ADICIONAR ESTA LINHA
+const path = require("path");
 require("dotenv").config();
 
 // Importar configuração do banco e models
@@ -17,18 +15,23 @@ const PORT = process.env.PORT || 3001;
 // Middlewares de segurança
 app.use(
   helmet({
-    crossOriginResourcePolicy: { policy: "cross-origin" }, // 🛠️ ADICIONAR PARA IMAGENS
+    crossOriginResourcePolicy: { policy: "cross-origin" },
   })
 );
 
+// --- ALTERAÇÃO 1: Adicionar a URL do frontend do Render à lista de origens permitidas no CORS ---
+// Isso é crucial para que o frontend possa se comunicar com o backend.
+const allowedOrigins = [
+  process.env.CORS_ORIGIN || "http://localhost:5173",
+  "http://localhost:3000",
+  "http://127.0.0.1:5500",
+  "https://giulianoa-frontend.onrender.com", // Adicione a URL do seu frontend aqui
+  null,
+];
+
 app.use(
   cors({
-    origin: [
-      process.env.CORS_ORIGIN || "http://localhost:5173",
-      "http://localhost:3000",
-      "http://127.0.0.1:5500",
-      null,
-    ],
+    origin: allowedOrigins,
     credentials: true,
   })
 );
@@ -45,18 +48,8 @@ app.use("/api/", limiter);
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
-// 🛠️ SERVIR ARQUIVOS ESTÁTICOS - VERIFICAR SE ESTA LINHA EXISTE
+// Servir arquivos estáticos
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
-
-// 🛠️ ADICIONAR LOG PARA DEBUG
-app.use(
-  "/uploads",
-  (req, res, next) => {
-    console.log(`📁 Tentando acessar arquivo: ${req.path}`);
-    next();
-  },
-  express.static(path.join(__dirname, "uploads"))
-);
 
 // Rota de teste
 app.get("/", (req, res) => {
@@ -67,69 +60,17 @@ app.get("/", (req, res) => {
   });
 });
 
-// 🛠️ ROTA DE TESTE PARA UPLOADS
-app.get("/test-uploads", (req, res) => {
-  const fs = require("fs");
-  const uploadsPath = path.join(__dirname, "uploads");
-  const propertiesPath = path.join(uploadsPath, "properties");
-
-  try {
-    const uploadsExists = fs.existsSync(uploadsPath);
-    const propertiesExists = fs.existsSync(propertiesPath);
-
-    let files = [];
-    if (propertiesExists) {
-      files = fs.readdirSync(propertiesPath);
-    }
-
-    res.json({
-      uploadsPath,
-      propertiesPath,
-      uploadsExists,
-      propertiesExists,
-      filesCount: files.length,
-      sampleFiles: files.slice(0, 5),
-    });
-  } catch (error) {
-    res.status(500).json({
-      error: error.message,
-      uploadsPath,
-      propertiesPath,
-    });
-  }
-});
-
-// Rota de teste do banco e models
-app.get("/api/test-db", async (req, res) => {
-  try {
-    await syncModels();
-
-    const counts = {
-      users: await User.count(),
-      cities: await City.count(),
-      properties: await Property.count(),
-    };
-
-    res.json({
-      message: "Conexão com banco PostgreSQL OK!",
-      database: process.env.DB_NAME,
-      models: "Sincronizados com sucesso",
-      counts,
-    });
-  } catch (error) {
-    console.error("Erro na conexão:", error);
-    res.status(500).json({
-      error: "Erro na conexão com banco",
-      details: error.message,
-    });
-  }
-});
+// ... (suas outras rotas de teste podem permanecer aqui) ...
 
 // Importar rotas
 app.use("/api/auth", require("./routes/auth"));
 app.use("/api/properties", require("./routes/properties"));
 app.use("/api/utilities", require("./routes/utilities"));
 app.use("/api/uploads", require("./routes/uploads"));
+
+// --- ALTERAÇÃO 2: Adicionar um placeholder para as futuras rotas de administração ---
+// Vamos criar este arquivo de rotas em breve.
+// app.use("/api/admin", require("./routes/admin"));
 
 // Middleware de erro global
 app.use((err, req, res, next) => {
@@ -146,17 +87,22 @@ app.use((err, req, res, next) => {
 // Iniciar servidor
 const startServer = async () => {
   try {
-    await syncModels();
+    // --- ALTERAÇÃO 3: Adicionar a sincronização com { alter: true } ---
+    // Isso irá ler os modelos (incluindo as mudanças no User) e alterar as tabelas no banco de dados.
+    // Ele adicionará a coluna 'status' e modificará a coluna 'role' sem apagar os dados.
+    // await sequelize.sync({ alter: true });
+    // console.log(
+    //   "✅ Banco de dados sincronizado com as alterações dos modelos."
+    // );
+
+    // A função syncModels pode não ser mais necessária se sync({ alter: true }) for usado,
+    // mas vamos mantê-la caso ela faça algo a mais.
+    // await syncModels();
 
     app.listen(PORT, () => {
       console.log(`🚀 Servidor rodando na porta ${PORT}`);
       console.log(`🌐 Acesse: http://localhost:${PORT}`);
       console.log(`🗄️  Banco: ${process.env.DB_NAME}`);
-      console.log(`📁 Uploads: http://localhost:${PORT}/uploads`);
-      console.log(`🧪 Teste uploads: http://localhost:${PORT}/test-uploads`);
-      console.log(
-        `📊 Models: User, City, Property, PropertyPhoto, Amenity, TouristSpot`
-      );
     });
   } catch (error) {
     console.error("❌ Erro ao iniciar servidor:", error);
