@@ -544,18 +544,21 @@ const EditProperty = () => {
                 </div>
 
                 <div className="mt-6">
-                  <label className="flex items-center">
-                    <input
-                      type="checkbox"
-                      name="is_featured"
-                      checked={formData.is_featured}
-                      onChange={handleInputChange}
-                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                    />
-                    <span className="ml-2 text-sm text-gray-700">
-                      Imóvel em destaque na página inicial
-                    </span>
-                  </label>
+                  {/* 🔥 APENAS ADMIN_MASTER VÊ ESTA OPÇÃO */}
+                  {user?.role === "admin_master" && (
+                    <label className="flex items-center">
+                      <input
+                        type="checkbox"
+                        name="is_featured"
+                        checked={formData.is_featured}
+                        onChange={handleInputChange}
+                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      />
+                      <span className="ml-2 text-sm text-gray-700">
+                        ⭐ Marcar imóvel como destaque na página inicial
+                      </span>
+                    </label>
+                  )}
                 </div>
               </div>
 

@@ -1,12 +1,14 @@
-// src/pages/admin/AdminDashboard.jsx - Minimalista e Elegante
+// src/pages/admin/AdminDashboard.jsx - CORRIGIDO
 
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import AdminLayout from "../../components/admin/AdminLayout";
 import api from "../../services/api";
 import Loading from "../../components/common/Loading";
+import { useAuth } from "../../contexts/AuthContext"; // 🔥 IMPORTAR useAuth
 
 const AdminDashboard = () => {
+  const { user } = useAuth(); // 🔥 OBTER USUÁRIO LOGADO
   const [stats, setStats] = useState({
     totalProperties: 0,
     featuredProperties: 0,
@@ -18,8 +20,23 @@ const AdminDashboard = () => {
     const fetchStats = async () => {
       try {
         setLoading(true);
-        const response = await api.get("/properties");
+
+        // ========================================
+        // 🔥 CORREÇÃO: Filtrar por user_id se for admin
+        // ========================================
+        const params = {};
+
+        if (user && user.role === "admin") {
+          params.user_id = user.id; // Admin só vê seus próprios imóveis
+        }
+        // Admin_master não passa user_id, então vê todos
+
+        console.log("📊 Buscando estatísticas com params:", params);
+
+        const response = await api.get("/properties", { params });
         const properties = response.data.properties || [];
+
+        console.log(`✅ Dashboard carregado: ${properties.length} imóveis`);
 
         setStats({
           totalProperties: properties.length,
@@ -33,8 +50,11 @@ const AdminDashboard = () => {
       }
     };
 
-    fetchStats();
-  }, []);
+    // Só busca se o usuário estiver carregado
+    if (user) {
+      fetchStats();
+    }
+  }, [user]); // 🔥 ADICIONAR user como dependência
 
   if (loading) {
     return (
@@ -52,7 +72,10 @@ const AdminDashboard = () => {
     },
     {
       title: "Gerenciar Imóveis",
-      description: "Ver todas as propriedades",
+      description:
+        user?.role === "admin_master"
+          ? "Ver todas as propriedades"
+          : "Ver minhas propriedades", // 🔥 TEXTO DINÂMICO
       link: "/admin/properties",
     },
     {
@@ -67,7 +90,12 @@ const AdminDashboard = () => {
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-light text-gray-900 mb-2">Dashboard</h1>
-        <p className="text-gray-600">Visão geral da sua plataforma</p>
+        <p className="text-gray-600">
+          {user?.role === "admin_master"
+            ? "Visão geral de toda a plataforma"
+            : "Visão geral dos seus imóveis"}{" "}
+          {/* 🔥 TEXTO DINÂMICO */}
+        </p>
       </div>
 
       {/* Stats Cards */}
@@ -81,7 +109,10 @@ const AdminDashboard = () => {
             </span>
           </div>
           <h3 className="text-sm font-medium text-gray-600 mb-1">
-            Total de Imóveis
+            {user?.role === "admin_master"
+              ? "Total de Imóveis"
+              : "Meus Imóveis"}{" "}
+            {/* 🔥 TEXTO DINÂMICO */}
           </h3>
           <div className="w-full h-1 bg-gray-100 rounded-full overflow-hidden mt-4">
             <div className="h-full bg-gradient-to-r from-primary-600 to-primary-700 rounded-full w-full"></div>
@@ -171,7 +202,10 @@ const AdminDashboard = () => {
         <div>
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-light text-gray-900">
-              Imóveis Recentes
+              {user?.role === "admin_master"
+                ? "Imóveis Recentes"
+                : "Meus Imóveis Recentes"}{" "}
+              {/* 🔥 TEXTO DINÂMICO */}
             </h2>
             <Link
               to="/admin/properties"
@@ -267,6 +301,45 @@ const AdminDashboard = () => {
               </table>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* 🔥 NOVO: Mensagem quando admin não tem imóveis */}
+      {stats.totalProperties === 0 && (
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center">
+          <div className="text-gray-400 mb-4">
+            <svg
+              className="w-16 h-16 mx-auto text-gray-300"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={1.5}
+                d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
+              />
+            </svg>
+          </div>
+          <h3 className="text-xl font-medium text-gray-900 mb-2">
+            {user?.role === "admin_master"
+              ? "Nenhum imóvel cadastrado no sistema"
+              : "Você ainda não tem imóveis cadastrados"}
+          </h3>
+          <p className="text-gray-600 mb-6">
+            {user?.role === "admin_master"
+              ? "Aguarde os admins cadastrarem imóveis ou incentive-os a adicionar propriedades."
+              : "Comece adicionando seu primeiro imóvel para aparecer na plataforma."}
+          </p>
+          {user?.role === "admin" && (
+            <Link
+              to="/admin/properties/new"
+              className="inline-block bg-primary-600 hover:bg-primary-700 text-white px-6 py-3 rounded-lg font-medium transition-colors shadow-md hover:shadow-lg"
+            >
+              ➕ Adicionar Primeiro Imóvel
+            </Link>
+          )}
         </div>
       )}
     </AdminLayout>

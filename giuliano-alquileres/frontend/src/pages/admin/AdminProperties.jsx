@@ -3,10 +3,10 @@ import { Link } from "react-router-dom";
 import api from "../../services/api";
 import Loading from "../../components/common/Loading";
 import AdminLayout from "../../components/admin/AdminLayout";
-import { useAuth } from "../../contexts/AuthContext"; // Importar useAuth
+import { useAuth } from "../../contexts/AuthContext";
 
 const AdminProperties = () => {
-  const { user } = useAuth(); // Obter o usuário logado
+  const { user } = useAuth();
   const [properties, setProperties] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("all"); // all, pending, approved, rejected
@@ -15,17 +15,22 @@ const AdminProperties = () => {
   const fetchProperties = useCallback(async () => {
     try {
       setLoading(true);
-      let apiUrl = "/properties";
       const params = {};
 
-      // Se for admin, buscar apenas os próprios imóveis
+      // ========================================
+      // 🔥 CORREÇÃO CRÍTICA: Filtrar por user_id
+      // ========================================
+
+      // Se for admin normal, SEMPRE filtrar pelos próprios imóveis
       if (user && user.role === "admin") {
-        params.user_id = user.id; // Adicionar filtro por user_id
+        params.user_id = user.id;
       }
+
+      // Admin_master pode ver todos, então NÃO adiciona user_id
 
       // Adicionar filtro de status de aprovação
       if (filter !== "all") {
-        params.approval_status = filter; // Usa o valor do filtro diretamente
+        params.approval_status = filter;
       }
 
       // Adicionar filtro de busca
@@ -33,19 +38,20 @@ const AdminProperties = () => {
         params.search = searchTerm;
       }
 
-      const response = await api.get(apiUrl, { params });
-      console.log("📦 Propriedades recebidas:", response.data.properties);
+      console.log("📦 Buscando propriedades com params:", params);
+
+      const response = await api.get("/properties", { params });
+      console.log("✅ Propriedades recebidas:", response.data.properties);
       setProperties(response.data.properties || []);
     } catch (error) {
       console.error("Erro ao carregar imóveis:", error);
     } finally {
       setLoading(false);
     }
-  }, [user, filter, searchTerm]); // Dependências para useCallback
+  }, [user, filter, searchTerm]);
 
   useEffect(() => {
     if (user) {
-      // Só busca se o usuário estiver carregado
       fetchProperties();
     }
   }, [fetchProperties, user]);
@@ -76,7 +82,6 @@ const AdminProperties = () => {
     }
     try {
       await api.put(`/properties/${uuid}/${status}`);
-      // Atualiza o status do imóvel na lista local
       setProperties((prevProperties) =>
         prevProperties.map((p) =>
           p.uuid === uuid ? { ...p, approval_status: status } : p
@@ -91,26 +96,35 @@ const AdminProperties = () => {
     }
   };
 
-  // 🔧 CORREÇÃO: Função para obter URL da foto
+  const handleToggleFeatured = async (uuid, currentStatus) => {
+    try {
+      await api.put(`/properties/${uuid}/toggle-featured`);
+      // Atualizar localmente
+      setProperties((prevProperties) =>
+        prevProperties.map((p) =>
+          p.uuid === uuid ? { ...p, is_featured: !currentStatus } : p
+        )
+      );
+    } catch (error) {
+      console.error("Erro ao alterar destaque:", error);
+      alert("Erro ao alterar destaque do imóvel");
+    }
+  };
+
   const getPhotoUrl = (property) => {
-    // Verificar se tem fotos
     if (!property.photos || property.photos.length === 0) {
       return null;
     }
 
     const firstPhoto = property.photos[0];
 
-    // Se é string (nome do arquivo ou URL)
     if (typeof firstPhoto === "string") {
-      // Se já é URL completa
       if (firstPhoto.startsWith("http")) {
         return firstPhoto;
       }
-      // Se é só o filename
       return `http://localhost:3001/uploads/properties/${firstPhoto}`;
     }
 
-    // Se é objeto com filename
     if (firstPhoto.filename) {
       if (firstPhoto.filename.startsWith("http")) {
         return firstPhoto.filename;
@@ -121,7 +135,6 @@ const AdminProperties = () => {
     return null;
   };
 
-  // Mapeamento de status para texto e cor
   const statusMap = {
     pending: { text: "Pendente", color: "bg-yellow-500" },
     approved: { text: "Aprovado", color: "bg-green-500" },
@@ -143,10 +156,15 @@ const AdminProperties = () => {
         <div className="mb-8 border-b pb-4 border-gray-200 flex justify-between items-center">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">
-              Gerenciar Imóveis
+              {user?.role === "admin_master"
+                ? "Gerenciar Todos os Imóveis"
+                : "Meus Imóveis"}
             </h1>
             <p className="text-gray-600 mt-1">
-              {properties.length} imóveis encontrados
+              {properties.length}{" "}
+              {properties.length === 1
+                ? "imóvel encontrado"
+                : "imóveis encontrados"}
             </p>
           </div>
           <Link
@@ -243,7 +261,9 @@ const AdminProperties = () => {
               Nenhum imóvel encontrado
             </h3>
             <p className="text-gray-600 mb-6">
-              Tente ajustar os filtros ou adicione um novo imóvel.
+              {searchTerm
+                ? "Tente ajustar os filtros ou fazer uma nova busca."
+                : "Adicione seu primeiro imóvel para começar."}
             </p>
             <Link
               to="/admin/properties/new"
@@ -279,7 +299,7 @@ const AdminProperties = () => {
                           );
                           e.target.onerror = null;
                           e.target.src =
-                            "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjI0IiBoZWlnaHQ9IjI0IiBmaWxsPSIjRjNGNEY2Ii8+PHBhdGggZD0iTTEyIDhDMTAuODk1NCA4IDEwIDguODk1NDMgMTAgMTBDMTAgMTEuMTA0NiAxMC44OTU0IDEyIDEyIDEyQzEzLjEwNDYgMTIgMTQgMTEuMTA0NiAxNCAxMEMxNCA4Ljg5NTQzIDEzLjEwNDYgOCAxMiA4WiIgZmlsbD0iIjlDQTNBQiIvPjxwYXRoIGQ9Ik0yMSAzSDNDMi40NDc3MSAzIDIgMy40NDc3MSAyIDRWMjBDMiAyMC41NTIzIDIuNDQ3NzEgMjEgMyAyMUgyMUMyMS41NTIzIDIxIDIyIDIwLjU1MjMgMjIgMjBWNEMyMiAzLjQ0NzcxIDIxLjU1MjMgMyAyMSAzWk0yMCAxOUg0VjVIMjBWMTlaIiBmaWxsPSIjOUNBM0FGIi8+PC9zdmc+=";
+                            "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjI0IiBoZWlnaHQ9IjI0IiBmaWxsPSIjRjNGNEY2Ii8+PHBhdGggZD0iTTEyIDhDMTAuODk1NCA4IDEwIDguODk1NDMgMTAgMTBDMTAgMTEuMTA0NiAxMC44OTU0IDEyIDEyIDEyQzEzLjEwNDYgMTIgMTQgMTEuMTA0NiAxNCAxMEMxNCA4Ljg5NTQzIDEzLjEwNDYgOCAxMiA4WiIgZmlsbD0iIjlDQTNBQiIvPjxwYXRoIGQ9Ik0yMSAzSDNDMi40NDc3MSAzIDIgMy40NDc3MSAyIDRWMjBDMiAyMC41NTIzIDIuNDQ3NzEgMjEgMyAyMUgyMUMyMS41NTIzIDIxIDIyIDIwLjU1MjMgMjIgMjBWNEMyMiAzLjQ0NzcxIDIxLjU1MjMgMyAyMSAzWk0yMCAxOUg0VjVIMjBWMTlaIiBmaWxsPSIjOUNBM0FGIi8+PC9zdmc+";
                         }}
                         onLoad={() =>
                           console.log("✅ Imagem carregada:", photoUrl)
@@ -350,27 +370,27 @@ const AdminProperties = () => {
                           🗑️ Excluir
                         </button>
                       </div>
-                      {user?.role === "admin_master" &&
-                        property.approval_status === "pending" && (
-                          <div className="flex gap-3 mt-3">
-                            <button
-                              onClick={() =>
-                                handleApproveReject(property.uuid, "approved")
-                              }
-                              className="flex-1 bg-green-500 hover:bg-green-600 text-white text-center px-4 py-2 rounded-lg font-medium transition-colors text-sm shadow-md hover:shadow-lg"
-                            >
-                              ✅ Aprovar
-                            </button>
-                            <button
-                              onClick={() =>
-                                handleApproveReject(property.uuid, "rejected")
-                              }
-                              className="flex-1 bg-red-500 hover:bg-red-600 text-white text-center px-4 py-2 rounded-lg font-medium transition-colors text-sm shadow-md hover:shadow-lg"
-                            >
-                              ❌ Rejeitar
-                            </button>
-                          </div>
-                        )}
+
+                      {/* 🔥 NOVO: Botão de Destaque (apenas admin_master) */}
+                      {user?.role === "admin_master" && (
+                        <button
+                          onClick={() =>
+                            handleToggleFeatured(
+                              property.uuid,
+                              property.is_featured
+                            )
+                          }
+                          className={`w-full mt-3 px-4 py-2 rounded-lg font-medium transition-colors text-sm shadow-md hover:shadow-lg ${
+                            property.is_featured
+                              ? "bg-amber-500 hover:bg-amber-600 text-white"
+                              : "bg-gray-200 hover:bg-gray-300 text-gray-700"
+                          }`}
+                        >
+                          {property.is_featured
+                            ? "⭐ Remover Destaque"
+                            : "⭐ Marcar como Destaque"}
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>

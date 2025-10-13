@@ -427,19 +427,23 @@ const AdminNewProperty = () => {
                   </div>
                 </div>
 
+                {/* Capacidade - APÓS A GRID DE QUARTOS/BANHEIROS */}
                 <div className="mt-6">
-                  <label className="flex items-center cursor-pointer">
-                    <input
-                      type="checkbox"
-                      name="is_featured"
-                      checked={formData.is_featured}
-                      onChange={handleInputChange}
-                      className="h-5 w-5 text-primary-600 focus:ring-primary-500 border-gray-300 rounded-md"
-                    />
-                    <span className="ml-3 text-base text-gray-700">
-                      Imóvel em destaque na página inicial
-                    </span>
-                  </label>
+                  {/* 🔥 APENAS ADMIN_MASTER VÊ ESTA OPÇÃO */}
+                  {user?.role === "admin_master" && (
+                    <label className="flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        name="is_featured"
+                        checked={formData.is_featured}
+                        onChange={handleInputChange}
+                        className="h-5 w-5 text-primary-600 focus:ring-primary-500 border-gray-300 rounded-md"
+                      />
+                      <span className="ml-3 text-base text-gray-700">
+                        ⭐ Marcar imóvel como destaque na página inicial
+                      </span>
+                    </label>
+                  )}
                 </div>
               </div>
 
