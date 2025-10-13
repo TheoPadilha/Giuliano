@@ -60,6 +60,14 @@ const Property = sequelize.define(
         max: { args: [10], msg: "Máximo de 10 banheiros" },
       },
     },
+    user_id: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: "users",
+        key: "id",
+      },
+    },
     city_id: {
       type: DataTypes.INTEGER,
       allowNull: false,
@@ -126,6 +134,11 @@ const Property = sequelize.define(
       type: DataTypes.BOOLEAN,
       defaultValue: false,
     },
+    approval_status: {
+      type: DataTypes.ENUM("pending", "approved", "rejected"),
+      defaultValue: "pending",
+      allowNull: false,
+    },
   },
   {
     tableName: "properties",
@@ -135,6 +148,7 @@ const Property = sequelize.define(
 
     // Índices para performance
     indexes: [
+      { fields: ["user_id"] },
       { fields: ["city_id"] },
       { fields: ["status"] },
       { fields: ["type"] },

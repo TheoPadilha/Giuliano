@@ -8,7 +8,19 @@ const PropertyPhoto = require("./PropertyPhoto");
 const Amenity = require("./Amenity");
 const TouristSpot = require("./TouristSpot");
 
+// ============================================
 // RELACIONAMENTOS
+// ============================================
+
+// User -> Property (1:N) - PROPRIETÁRIO
+User.hasMany(Property, {
+  foreignKey: "user_id",
+  as: "properties",
+});
+Property.belongsTo(User, {
+  foreignKey: "user_id",
+  as: "owner",
+});
 
 // City -> Property (1:N)
 City.hasMany(Property, {
@@ -68,16 +80,15 @@ TouristSpot.belongsTo(City, {
   as: "city",
 });
 
-// Sincronizar todos os models
-// Modificação temporária em backend/models/index.js
-// Substitua a função syncModels por esta versão:
-
+// ============================================
+// SINCRONIZAR MODELS
+// ============================================
 const syncModels = async (force = false) => {
   try {
     await sequelize.authenticate();
     console.log("✅ Conexão com banco estabelecida");
 
-    // 🛠️ SOLUÇÃO TEMPORÁRIA - sync sem alter para evitar conflito com VIEWs
+    // Sync sem alter para evitar conflito com VIEWs
     await sequelize.sync({ force: false, alter: false });
     console.log("✅ Models sincronizados com banco (sem alterações)");
 
@@ -88,7 +99,9 @@ const syncModels = async (force = false) => {
   }
 };
 
-// Exportar tudo
+// ============================================
+// EXPORTAR TUDO
+// ============================================
 module.exports = {
   sequelize,
   User,

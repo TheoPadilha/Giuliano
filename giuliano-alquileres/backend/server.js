@@ -67,6 +67,7 @@ app.use("/api/auth", require("./routes/auth"));
 app.use("/api/properties", require("./routes/properties"));
 app.use("/api/utilities", require("./routes/utilities"));
 app.use("/api/uploads", require("./routes/uploads"));
+app.use("/api/admin", require("./routes/admin"));
 
 // --- ALTERAÇÃO 2: Adicionar um placeholder para as futuras rotas de administração ---
 // Vamos criar este arquivo de rotas em breve.

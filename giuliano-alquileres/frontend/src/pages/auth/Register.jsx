@@ -1,18 +1,20 @@
 // src/pages/auth/Register.jsx
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { useAuth } from "../../contexts/AuthContext";
+// import { useAuth } from "../../contexts/AuthContext";
 
 const Register = () => {
   const navigate = useNavigate();
-  const { register } = useAuth();
+  // const { register } = useAuth();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     password: "",
     confirmPassword: "",
+    phone: "",
   });
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
@@ -21,11 +23,13 @@ const Register = () => {
       [e.target.name]: e.target.value,
     });
     setError("");
+    setSuccess("");
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    setSuccess("");
 
     // Validação de senha
     if (formData.password !== formData.confirmPassword) {
@@ -41,19 +45,53 @@ const Register = () => {
     setLoading(true);
 
     try {
-      const result = await register({
-        name: formData.name,
-        email: formData.email,
-        password: formData.password,
+      // --- ALTERAÇÃO 3: Chamar a API diretamente ---
+      // Substitua 'api.post' pela sua forma de chamar a API (pode ser fetch)
+      // O importante é que esta chamada NÃO faz o login, apenas registra.
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/auth/register`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: formData.name,
+            email: formData.email,
+            password: formData.password,
+            phone: formData.phone, // Adicionado
+          }),
+        }
+      );
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        // Se a resposta da API não for 2xx, trata como erro
+        throw new Error(
+          result.error || result.message || "Erro ao criar conta."
+        );
+      }
+
+      // --- ALTERAÇÃO 4: Lógica de sucesso ---
+      // Em vez de navegar, mostramos uma mensagem de sucesso.
+      setSuccess(
+        "Cadastro realizado com sucesso! Sua conta está aguardando aprovação. Você será redirecionado para a página de login."
+      );
+
+      // Opcional: Limpar o formulário
+      setFormData({
+        name: "",
+        email: "",
+        password: "",
+        confirmPassword: "",
+        phone: "",
       });
 
-      if (result.success) {
-        navigate("/admin");
-      } else {
-        setError(result.error || "Erro ao criar conta");
-      }
+      // Redireciona para a página de login após alguns segundos
+      setTimeout(() => {
+        navigate("/login");
+      }, 4000); // 4 segundos
     } catch (err) {
-      setError("Erro ao criar conta. Tente novamente.");
+      setError(err.message || "Erro ao criar conta. Tente novamente.");
     } finally {
       setLoading(false);
     }
@@ -140,6 +178,13 @@ const Register = () => {
             </div>
           )}
 
+          {/* --- NOVO: Alerta de Sucesso --- */}
+          {success && (
+            <div className="bg-green-50 border-l-4 border-green-500 p-4 mb-6 rounded-r-2xl">
+              <p className="text-green-800 text-sm">{success}</p>
+            </div>
+          )}
+
           {/* Formulário */}
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
@@ -169,6 +214,21 @@ const Register = () => {
                 onChange={handleChange}
                 placeholder="seu@email.com"
                 required
+                className="w-full px-4 py-4 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-primary-500 focus:ring-0 transition-all duration-300 hover:border-gray-300"
+              />
+            </div>
+
+            {/* --- ALTERAÇÃO 5: Adicionar campo de Telefone --- */}
+            <div>
+              <label className="block text-sm font-bold text-gray-700 mb-2">
+                Telefone (WhatsApp)
+              </label>
+              <input
+                type="tel"
+                name="phone"
+                value={formData.phone}
+                onChange={handleChange}
+                placeholder="(XX) XXXXX-XXXX"
                 className="w-full px-4 py-4 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-primary-500 focus:ring-0 transition-all duration-300 hover:border-gray-300"
               />
             </div>
@@ -207,7 +267,7 @@ const Register = () => {
 
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || success}
               className="w-full bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 text-white font-bold py-4 px-6 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
             >
               {loading ? (

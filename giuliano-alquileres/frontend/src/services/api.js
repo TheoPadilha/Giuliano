@@ -1,4 +1,4 @@
-// src/services/api.js - VERSÃO COMPLETA E CORRIGIDA
+
 import axios from "axios";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3001/api";
@@ -52,6 +52,9 @@ api.interceptors.response.use(
 
           const newToken = response.data.token;
           localStorage.setItem("token", newToken);
+          
+          // ATUALIZA O TOKEN NO CABEÇALHO PADRÃO DO AXIOS
+          api.defaults.headers.common["Authorization"] = `Bearer ${newToken}`;
 
           // Retentar a requisição original com o novo token
           originalRequest.headers.Authorization = `Bearer ${newToken}`;

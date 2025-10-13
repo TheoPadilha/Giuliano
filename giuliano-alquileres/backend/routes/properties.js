@@ -9,6 +9,8 @@ const {
   verifyToken,
   requireAdmin,
   optionalAuth,
+  requireAdminMaster, // <-- NOVO MIDDLEWARE IMPORTADO
+  requirePropertyOwnerOrAdminMaster,
 } = require("../middleware/auth");
 
 // Rotas públicas (sem autenticação)
@@ -24,31 +26,52 @@ router.get("/:uuid", optionalAuth, propertyController.getPropertyByUuid);
 
 // Rotas protegidas (admin only)
 
-// POST /api/properties - Criar novo imóvel
+// POST /api/properties - Criar novo imóvel (apenas admin ou admin_master)
 router.post("/", verifyToken, requireAdmin, propertyController.createProperty);
 
-// 🛠️ CORREÇÃO: Adicionar rota PUT para atualização
+// PUT /api/properties/:uuid - Atualizar imóvel
+// Apenas o proprietário do imóvel ou um admin_master pode atualizar
 router.put(
   "/:uuid",
   verifyToken,
-  requireAdmin,
+  requirePropertyOwnerOrAdminMaster,
   propertyController.updateProperty
 );
 
-// 🛠️ CORREÇÃO: Adicionar rota PATCH para atualização parcial
+// PATCH /api/properties/:uuid - Atualização parcial de imóvel
+// Apenas o proprietário do imóvel ou um admin_master pode atualizar
 router.patch(
   "/:uuid",
   verifyToken,
-  requireAdmin,
+  requirePropertyOwnerOrAdminMaster,
   propertyController.updateProperty
 );
 
 // DELETE /api/properties/:uuid - Deletar imóvel
+// Apenas o proprietário do imóvel ou um admin_master pode deletar
 router.delete(
   "/:uuid",
   verifyToken,
-  requireAdmin,
+  requirePropertyOwnerOrAdminMaster,
   propertyController.deleteProperty
+);
+
+// --- Rotas de Aprovação de Imóveis (admin_master only) ---
+
+// PUT /api/properties/:uuid/approve - Aprovar imóvel
+router.put(
+  "/:uuid/approve",
+  verifyToken,
+  requireAdminMaster, // <-- APENAS ADMIN_MASTER PODE APROVAR
+  propertyController.approveProperty
+);
+
+// PUT /api/properties/:uuid/reject - Rejeitar imóvel
+router.put(
+  "/:uuid/reject",
+  verifyToken,
+  requireAdminMaster, // <-- APENAS ADMIN_MASTER PODE REJEITAR
+  propertyController.rejectProperty
 );
 
 module.exports = router;

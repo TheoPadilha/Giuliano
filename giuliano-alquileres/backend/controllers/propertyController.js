@@ -4,6 +4,7 @@ const {
   PropertyPhoto,
   Amenity,
   sequelize,
+  User, // Importar o modelo User
 } = require("../models");
 const Joi = require("joi");
 const { Op, QueryTypes } = require("sequelize");
@@ -31,6 +32,8 @@ const propertySchema = Joi.object({
     .optional(),
   is_featured: Joi.boolean().optional(),
   amenities: Joi.array().items(Joi.number().integer()).optional(),
+  // user_id não é validado aqui, pois é adicionado pelo backend
+  // approval_status não é validado aqui, pois é gerenciado pelo admin_master
 });
 
 // Listar imóveis com filtros
@@ -46,10 +49,12 @@ const getProperties = async (req, res) => {
       max_price,
       bedrooms,
       bathrooms,
-      status, // Sem valor padrão
+      status, // Status de disponibilidade (available, occupied, etc.)
+      approval_status, // Status de aprovação (pending, approved, rejected)
       featured,
       search,
       amenities,
+      user_id, // Filtrar por user_id (para admin ver seus próprios imóveis)
     } = req.query;
 
     console.log("🔍 Parâmetros de busca recebidos:", req.query);
@@ -57,10 +62,41 @@ const getProperties = async (req, res) => {
     // Construir filtros
     const where = {};
 
-    // Status (só filtra se for explicitamente passado)
+    // --- Lógica de Permissão para Visibilidade de Imóveis ---
+    // req.user pode ser undefined se o optionalAuth não encontrar token
+    const currentUser = req.user;
+
+    if (currentUser && currentUser.role !== "admin_master") {
+      where.approval_status = "approved";
+      // Se for um admin normal, filtra pelos seus próprios imóveis
+      if (currentUser.role === "admin") {
+        where.user_id = currentUser.id;
+      }
+    } else if (currentUser && currentUser.role === "admin_master") {
+      // Admin_master pode ver todos os status de aprovação
+      if (approval_status && approval_status.trim()) {
+        where.approval_status = approval_status;
+      }
+    } else {
+      // Para usuários não logados ou clientes, só mostra imóveis aprovados
+      where.approval_status = "approved";
+    }
+
+    // Status de disponibilidade (só filtra se for explicitamente passado)
     if (status && status.trim()) {
       where.status = status;
       console.log(`📌 Filtrando por status: ${status}`);
+    }
+
+    // Filtrar por user_id (apenas se for admin_master ou se o user_id for o do próprio usuário)
+    // Apenas aplica o filtro user_id se o usuário logado for admin_master OU se o user_id na query for o ID do próprio usuário logado (admin)
+    if (
+      user_id &&
+      currentUser &&
+      (currentUser.role === "admin_master" ||
+        currentUser.id === parseInt(user_id))
+    ) {
+      where.user_id = parseInt(user_id);
     }
 
     // Cidade
@@ -189,6 +225,11 @@ const getProperties = async (req, res) => {
           through: { attributes: [] },
           attributes: ["id", "name", "icon", "category"],
         },
+        {
+          model: User,
+          as: "owner", // Adicionar o proprietário do imóvel
+          attributes: ["id", "name", "email"],
+        },
       ],
       order: [
         ["is_featured", "DESC"],
@@ -260,6 +301,11 @@ const getPropertyByUuid = async (req, res) => {
           through: { attributes: [] },
           attributes: ["id", "name", "icon", "category"],
         },
+        {
+          model: User,
+          as: "owner",
+          attributes: ["id", "name", "email"],
+        },
       ],
     });
 
@@ -267,6 +313,24 @@ const getPropertyByUuid = async (req, res) => {
       return res.status(404).json({
         error: "Imóvel não encontrado",
       });
+    }
+
+    // --- Lógica de Permissão para Visibilidade de Imóvel Único ---
+    // Se o usuário não for admin_master e o imóvel não estiver aprovado, ou
+    // se for admin e o imóvel não for dele e não estiver aprovado, nega acesso.
+    if (req.user && req.user.role !== "admin_master") {
+      if (property.approval_status !== "approved") {
+        return res
+          .status(403)
+          .json({ error: "Acesso negado. Imóvel não aprovado." });
+      }
+      if (req.user.role === "admin" && property.user_id !== req.user.id) {
+        return res
+          .status(403)
+          .json({
+            error: "Acesso negado. Você não é o proprietário deste imóvel.",
+          });
+      }
     }
 
     res.json({ property });
@@ -300,6 +364,11 @@ const createProperty = async (req, res) => {
       });
     }
 
+    // Adicionar o user_id do usuário logado
+    propertyData.user_id = req.user.id;
+    // Definir o status inicial como \'pending\'
+    propertyData.approval_status = "pending";
+
     const property = await Property.create(propertyData);
 
     if (amenities && amenities.length > 0) {
@@ -319,11 +388,16 @@ const createProperty = async (req, res) => {
           through: { attributes: [] },
           attributes: ["id", "name", "icon", "category"],
         },
+        {
+          model: User,
+          as: "owner",
+          attributes: ["id", "name", "email"],
+        },
       ],
     });
 
     res.status(201).json({
-      message: "Imóvel criado com sucesso",
+      message: "Imóvel criado com sucesso e aguardando aprovação!",
       property: createdProperty,
     });
   } catch (error) {
@@ -343,13 +417,7 @@ const updateProperty = async (req, res) => {
 
     console.log(`🔍 Buscando imóvel para atualização: ${uuid}`);
 
-    let property = null;
-
-    property = await Property.findOne({ where: { uuid } });
-
-    if (!property && !isNaN(uuid)) {
-      property = await Property.findByPk(parseInt(uuid));
-    }
+    let property = await Property.findOne({ where: { uuid } });
 
     if (!property) {
       console.log(`❌ Imóvel não encontrado: ${uuid}`);
@@ -416,6 +484,11 @@ const updateProperty = async (req, res) => {
           through: { attributes: [] },
           attributes: ["id", "name", "icon", "category"],
         },
+        {
+          model: User,
+          as: "owner",
+          attributes: ["id", "name", "email"],
+        },
       ],
     });
 
@@ -441,10 +514,6 @@ const deleteProperty = async (req, res) => {
     const { uuid } = req.params;
 
     let property = await Property.findOne({ where: { uuid } });
-
-    if (!property && !isNaN(uuid)) {
-      property = await Property.findByPk(parseInt(uuid));
-    }
 
     if (!property) {
       return res.status(404).json({
@@ -476,6 +545,7 @@ const getFeaturedProperties = async (req, res) => {
       where: {
         status: "available",
         is_featured: true,
+        approval_status: "approved", // Apenas imóveis aprovados
       },
       include: [
         {
@@ -507,6 +577,46 @@ const getFeaturedProperties = async (req, res) => {
   }
 };
 
+// Aprovar imóvel (admin_master only)
+const approveProperty = async (req, res) => {
+  try {
+    const { uuid } = req.params;
+
+    const property = await Property.findOne({ where: { uuid } });
+
+    if (!property) {
+      return res.status(404).json({ error: "Imóvel não encontrado." });
+    }
+
+    await property.update({ approval_status: "approved" });
+
+    res.json({ message: "Imóvel aprovado com sucesso!", property });
+  } catch (error) {
+    console.error("Erro ao aprovar imóvel:", error);
+    res.status(500).json({ error: "Erro interno do servidor." });
+  }
+};
+
+// Rejeitar imóvel (admin_master only)
+const rejectProperty = async (req, res) => {
+  try {
+    const { uuid } = req.params;
+
+    const property = await Property.findOne({ where: { uuid } });
+
+    if (!property) {
+      return res.status(404).json({ error: "Imóvel não encontrado." });
+    }
+
+    await property.update({ approval_status: "rejected" });
+
+    res.json({ message: "Imóvel rejeitado com sucesso!", property });
+  } catch (error) {
+    console.error("Erro ao rejeitar imóvel:", error);
+    res.status(500).json({ error: "Erro interno do servidor." });
+  }
+};
+
 module.exports = {
   getProperties,
   getPropertyByUuid,
@@ -514,4 +624,6 @@ module.exports = {
   updateProperty,
   deleteProperty,
   getFeaturedProperties,
+  approveProperty,
+  rejectProperty,
 };

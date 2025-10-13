@@ -1,5 +1,11 @@
-import { createContext, useState, useContext, useEffect } from "react";
-import { authAPI } from "../services/api";
+import {
+  createContext,
+  useState,
+  useContext,
+  useEffect,
+  useCallback,
+} from "react";
+import api from "../services/api"; // Importa a instância do Axios
 
 const AuthContext = createContext({});
 
@@ -7,112 +13,101 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [token, setToken] = useState(() => localStorage.getItem("token"));
+
+  // Efeito para configurar o token na instância do Axios sempre que ele mudar
+  useEffect(() => {
+    if (token) {
+      api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+      localStorage.setItem("token", token);
+    } else {
+      delete api.defaults.headers.common["Authorization"];
+      localStorage.removeItem("token");
+    }
+  }, [token]);
+
+  const checkAuth = useCallback(async () => {
+    if (!token) {
+      setLoading(false);
+      setIsAuthenticated(false);
+      setUser(null);
+      return;
+    }
+
+    setLoading(true);
+    try {
+      // A rota /verify agora é /api/auth/verify
+      const response = await api.get("/auth/verify");
+      const fetchedUser = response.data.user;
+      setUser(fetchedUser);
+      setIsAuthenticated(true);
+      localStorage.setItem("user", JSON.stringify(fetchedUser));
+    } catch (error) {
+      console.error("Erro ao verificar autenticação, limpando sessão:", error);
+      setUser(null);
+      setIsAuthenticated(false);
+      setToken(null); // Limpa o token do estado
+    } finally {
+      setLoading(false);
+    }
+  }, [token]);
 
   // Verificar autenticação ao carregar a aplicação
   useEffect(() => {
     checkAuth();
-  }, []);
-
-  // Auto-refresh do token a cada 6 dias (antes de expirar)
-  useEffect(() => {
-    if (isAuthenticated) {
-      const refreshInterval = setInterval(() => {
-        refreshToken();
-      }, 6 * 24 * 60 * 60 * 1000); // 6 dias em milissegundos
-
-      return () => clearInterval(refreshInterval);
-    }
-  }, [isAuthenticated]);
-
-  const checkAuth = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        setLoading(false);
-        return;
-      }
-
-      const response = await authAPI.verify();
-      setUser(response.data.user);
-      setIsAuthenticated(true);
-      localStorage.setItem("user", JSON.stringify(response.data.user));
-    } catch (error) {
-      console.error("Erro ao verificar autenticação:", error);
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
-      setUser(null);
-      setIsAuthenticated(false);
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [checkAuth]);
 
   const login = async (email, password) => {
     try {
-      const response = await authAPI.login({ email, password });
-      const { token, user } = response.data;
+      const response = await api.post("/auth/login", { email, password });
+      const { token: newToken, user: loggedInUser } = response.data;
 
-      localStorage.setItem("token", token);
-      localStorage.setItem("user", JSON.stringify(user));
-      setUser(user);
+      setToken(newToken); // Atualiza o token no estado e no localStorage (via useEffect)
+      setUser(loggedInUser);
       setIsAuthenticated(true);
+      localStorage.setItem("user", JSON.stringify(loggedInUser));
 
-      return { success: true, user };
+      return { success: true, user: loggedInUser };
     } catch (error) {
       console.error("Erro ao fazer login:", error);
       return {
         success: false,
-        error: error.response?.data?.message || "Erro ao fazer login",
+        error: error.response?.data?.error || "Erro ao fazer login",
       };
     }
   };
 
+  // --- CORREÇÃO CRÍTICA ---
+  // A função de registro NÃO deve fazer login automático.
   const register = async (userData) => {
     try {
-      const response = await authAPI.register(userData);
-      const { token, user } = response.data;
-
-      localStorage.setItem("token", token);
-      localStorage.setItem("user", JSON.stringify(user));
-      setUser(user);
-      setIsAuthenticated(true);
-
-      return { success: true, user };
+      // A rota de registro não retorna mais token, apenas uma mensagem de sucesso.
+      const response = await api.post("/auth/register", userData);
+      return { success: true, message: response.data.message };
     } catch (error) {
       console.error("Erro ao registrar:", error);
       return {
         success: false,
-        error: error.response?.data?.message || "Erro ao registrar",
+        error: error.response?.data?.error || "Erro ao registrar",
       };
     }
   };
 
   const logout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
     setUser(null);
     setIsAuthenticated(false);
-  };
-
-  const refreshToken = async () => {
-    try {
-      const response = await authAPI.refresh();
-      const { token } = response.data;
-      localStorage.setItem("token", token);
-    } catch (error) {
-      console.error("Erro ao renovar token:", error);
-      logout();
-    }
+    setToken(null); // Limpa o token do estado e do localStorage (via useEffect)
+    localStorage.removeItem("user");
   };
 
   const value = {
     user,
     loading,
     isAuthenticated,
+    token, // Expondo o token para ser usado nos cabeçalhos
     login,
     register,
     logout,
-    checkAuth,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
