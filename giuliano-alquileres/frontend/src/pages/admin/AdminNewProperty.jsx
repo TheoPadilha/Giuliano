@@ -4,9 +4,11 @@ import AdminLayout from "../../components/admin/AdminLayout";
 import PhotoUpload from "../../components/admin/PhotoUpload";
 import api from "../../services/api";
 import Loading from "../../components/common/Loading";
+import { useAuth } from "../../contexts/AuthContext"; // 🎯 ADICIONAR ESTA LINHA
 
 const AdminNewProperty = () => {
   const navigate = useNavigate();
+  const { user } = useAuth(); // 🎯 ADICIONAR ESTA LINHA
   const [loading, setLoading] = useState(false);
   const [cities, setCities] = useState([]);
   const [amenities, setAmenities] = useState([]);

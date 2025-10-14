@@ -47,6 +47,22 @@ const Home = () => {
 
   return (
     <div className="min-h-screen bg-white">
+      {/* 🎯 BOTÃO SIGN IN MINIMALISTA */}
+      <header className="absolute top-0 left-0 right-0 z-30 px-6 py-5">
+        <div className="max-w-7xl mx-auto flex justify-end">
+          <button
+            onClick={() => navigate("/login")}
+            className="group relative px-6 py-2.5 text-sm font-semibold text-white/90 hover:text-white transition-all duration-300"
+          >
+            <span className="relative z-10">Sign In</span>
+            {/* Borda que aparece no hover */}
+            <span className="absolute inset-0 border-2 border-white/30 rounded-full opacity-0 group-hover:opacity-100 group-hover:border-white transition-all duration-300"></span>
+            {/* Background que aparece no hover */}
+            <span className="absolute inset-0 bg-white/10 backdrop-blur-sm rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 scale-95 group-hover:scale-100"></span>
+          </button>
+        </div>
+      </header>
+
       {/* Hero Section */}
       <section className="relative h-[90vh] overflow-hidden">
         {/* Background com Overlay mais escuro */}

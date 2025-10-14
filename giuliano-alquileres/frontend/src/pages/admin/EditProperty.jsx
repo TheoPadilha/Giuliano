@@ -1,4 +1,4 @@
-// src/pages/admin/EditProperty.jsx - VERSÃO COMPLETA
+// src/pages/admin/EditProperty.jsx - VERSÃO CORRIGIDA
 
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -6,15 +6,17 @@ import AdminLayout from "../../components/admin/AdminLayout";
 import PhotoUpload from "../../components/admin/PhotoUpload";
 import api from "../../services/api";
 import Loading from "../../components/common/Loading";
+import { useAuth } from "../../contexts/AuthContext"; // 🎯 ADICIONAR ESTA LINHA
 
 const EditProperty = () => {
   const navigate = useNavigate();
   const { id } = useParams();
+  const { user } = useAuth(); // 🎯 ADICIONAR ESTA LINHA
   const [loading, setLoading] = useState(false);
   const [loadingData, setLoadingData] = useState(true);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  const [activeTab, setActiveTab] = useState("info"); // 'info' ou 'photos'
+  const [activeTab, setActiveTab] = useState("info");
 
   // Dados auxiliares
   const [cities, setCities] = useState([]);
@@ -233,7 +235,6 @@ const EditProperty = () => {
 
       const propertyId = propertyData?.uuid || propertyData?.id || id;
 
-      // 🛠️ CORREÇÃO: Tentar PUT primeiro, depois PATCH
       let response;
       try {
         response = await api.put(`/properties/${propertyId}`, updateData);

@@ -9,7 +9,6 @@ const AdminProperties = () => {
   const { user } = useAuth();
   const [properties, setProperties] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState("all"); // all, pending, approved, rejected
   const [searchTerm, setSearchTerm] = useState("");
 
   const fetchProperties = useCallback(async () => {
@@ -17,21 +16,12 @@ const AdminProperties = () => {
       setLoading(true);
       const params = {};
 
-      // ========================================
-      // 🔥 CORREÇÃO CRÍTICA: Filtrar por user_id
-      // ========================================
-
       // Se for admin normal, SEMPRE filtrar pelos próprios imóveis
       if (user && user.role === "admin") {
         params.user_id = user.id;
       }
 
       // Admin_master pode ver todos, então NÃO adiciona user_id
-
-      // Adicionar filtro de status de aprovação
-      if (filter !== "all") {
-        params.approval_status = filter;
-      }
 
       // Adicionar filtro de busca
       if (searchTerm) {
@@ -48,7 +38,7 @@ const AdminProperties = () => {
     } finally {
       setLoading(false);
     }
-  }, [user, filter, searchTerm]);
+  }, [user, searchTerm]);
 
   useEffect(() => {
     if (user) {
@@ -67,32 +57,6 @@ const AdminProperties = () => {
     } catch (error) {
       console.error("Erro ao excluir imóvel:", error);
       alert("Erro ao excluir imóvel");
-    }
-  };
-
-  const handleApproveReject = async (uuid, status) => {
-    if (
-      !window.confirm(
-        `Tem certeza que deseja ${
-          status === "approved" ? "aprovar" : "rejeitar"
-        } este imóvel?`
-      )
-    ) {
-      return;
-    }
-    try {
-      await api.put(`/properties/${uuid}/${status}`);
-      setProperties((prevProperties) =>
-        prevProperties.map((p) =>
-          p.uuid === uuid ? { ...p, approval_status: status } : p
-        )
-      );
-    } catch (error) {
-      console.error(
-        `Erro ao ${status === "approved" ? "aprovar" : "rejeitar"} imóvel:`,
-        error
-      );
-      alert(`Erro ao ${status === "approved" ? "aprovar" : "rejeitar"} imóvel`);
     }
   };
 
@@ -135,12 +99,6 @@ const AdminProperties = () => {
     return null;
   };
 
-  const statusMap = {
-    pending: { text: "Pendente", color: "bg-yellow-500" },
-    approved: { text: "Aprovado", color: "bg-green-500" },
-    rejected: { text: "Rejeitado", color: "bg-red-500" },
-  };
-
   if (loading) {
     return (
       <AdminLayout>
@@ -175,7 +133,7 @@ const AdminProperties = () => {
           </Link>
         </div>
 
-        {/* Filters and Search */}
+        {/* Search Bar */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
           <div className="flex flex-col md:flex-row gap-4 items-center">
             {/* Search */}
@@ -187,54 +145,6 @@ const AdminProperties = () => {
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500 transition-colors"
               />
-            </div>
-
-            {/* Filter Buttons */}
-            <div className="flex gap-2 w-full md:w-auto">
-              <button
-                onClick={() => setFilter("all")}
-                className={`flex-1 md:flex-none px-5 py-3 rounded-lg font-medium transition-all duration-200 ${
-                  filter === "all"
-                    ? "bg-primary-600 text-white shadow-md"
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                }`}
-              >
-                Todos
-              </button>
-              {user?.role === "admin_master" && (
-                <>
-                  <button
-                    onClick={() => setFilter("pending")}
-                    className={`flex-1 md:flex-none px-5 py-3 rounded-lg font-medium transition-all duration-200 ${
-                      filter === "pending"
-                        ? "bg-yellow-500 text-white shadow-md"
-                        : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                    }`}
-                  >
-                    Pendentes
-                  </button>
-                  <button
-                    onClick={() => setFilter("approved")}
-                    className={`flex-1 md:flex-none px-5 py-3 rounded-lg font-medium transition-all duration-200 ${
-                      filter === "approved"
-                        ? "bg-green-600 text-white shadow-md"
-                        : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                    }`}
-                  >
-                    Aprovados
-                  </button>
-                  <button
-                    onClick={() => setFilter("rejected")}
-                    className={`flex-1 md:flex-none px-5 py-3 rounded-lg font-medium transition-all duration-200 ${
-                      filter === "rejected"
-                        ? "bg-red-600 text-white shadow-md"
-                        : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                    }`}
-                  >
-                    Rejeitados
-                  </button>
-                </>
-              )}
             </div>
           </div>
         </div>
@@ -276,9 +186,6 @@ const AdminProperties = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {properties.map((property) => {
               const photoUrl = getPhotoUrl(property);
-              const approvalStatusInfo = statusMap[
-                property.approval_status
-              ] || { text: "Desconhecido", color: "bg-gray-400" };
 
               return (
                 <div
@@ -315,6 +222,7 @@ const AdminProperties = () => {
                         </div>
                       </div>
                     )}
+                    {/* Badge de Destaque */}
                     {property.is_featured && (
                       <div className="absolute top-3 right-3">
                         <span className="bg-amber-500 text-white px-3 py-1 rounded-full text-xs font-medium shadow-md">
@@ -322,11 +230,6 @@ const AdminProperties = () => {
                         </span>
                       </div>
                     )}
-                    <div
-                      className={`absolute bottom-3 left-3 px-3 py-1 rounded-full text-xs font-medium shadow-md text-white ${approvalStatusInfo.color}`}
-                    >
-                      {approvalStatusInfo.text}
-                    </div>
                   </div>
 
                   {/* Content */}
@@ -371,7 +274,7 @@ const AdminProperties = () => {
                         </button>
                       </div>
 
-                      {/* 🔥 NOVO: Botão de Destaque (apenas admin_master) */}
+                      {/* Botão de Destaque (apenas admin_master) */}
                       {user?.role === "admin_master" && (
                         <button
                           onClick={() =>

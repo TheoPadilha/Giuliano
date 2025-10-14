@@ -16,7 +16,8 @@ const Login = () => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const from = location.state?.from?.pathname || "/";
+  // 🎯 ALTERADO: Redireciona para /admin por padrão após login
+  const from = location.state?.from?.pathname || "/admin";
 
   const handleChange = (e) => {
     setFormData({
