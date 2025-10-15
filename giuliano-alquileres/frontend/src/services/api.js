@@ -1,7 +1,7 @@
 
 import axios from "axios";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3001/api";
+const API_URL = import.meta.env.VITE_API_URL || "https://giulianoa-backend.onrender.com/";
 
 // Instância principal do axios
 const api = axios.create({
