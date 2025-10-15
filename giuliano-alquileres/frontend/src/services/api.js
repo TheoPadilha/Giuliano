@@ -1,11 +1,11 @@
-
 import axios from "axios";
 
-const API_URL = import.meta.env.VITE_API_URL || "https://giulianoa-backend.onrender.com/";
+const API_URL =
+  import.meta.env.VITE_API_URL || "https://giulianoa-backend.onrender.com/";
 
 // Instância principal do axios
 const api = axios.create({
-  baseURL: API_URL,
+  baseURL: `${API_URL}api`,
   timeout: 10000,
   headers: {
     "Content-Type": "application/json",
@@ -52,7 +52,7 @@ api.interceptors.response.use(
 
           const newToken = response.data.token;
           localStorage.setItem("token", newToken);
-          
+
           // ATUALIZA O TOKEN NO CABEÇALHO PADRÃO DO AXIOS
           api.defaults.headers.common["Authorization"] = `Bearer ${newToken}`;
 
