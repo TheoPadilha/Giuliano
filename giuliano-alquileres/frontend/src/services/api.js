@@ -5,7 +5,7 @@ const API_URL =
 
 // Instância principal do axios
 const api = axios.create({
-  baseURL: `${API_URL}api`,
+  baseURL: `${API_URL}`,
   timeout: 10000,
   headers: {
     "Content-Type": "application/json",
