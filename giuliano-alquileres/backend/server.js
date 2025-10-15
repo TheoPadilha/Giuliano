@@ -91,7 +91,7 @@ const startServer = async () => {
     // --- ALTERAÇÃO 3: Adicionar a sincronização com { alter: true } ---
     // Isso irá ler os modelos (incluindo as mudanças no User) e alterar as tabelas no banco de dados.
     // Ele adicionará a coluna 'status' e modificará a coluna 'role' sem apagar os dados.
-    // await sequelize.sync({ alter: true });
+    await sequelize.sync({ alter: true });
     // console.log(
     //   "✅ Banco de dados sincronizado com as alterações dos modelos."
     // );
