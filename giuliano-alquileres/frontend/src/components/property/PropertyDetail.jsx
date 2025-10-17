@@ -4,6 +4,28 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import api from "../services/api";
 import Loading from "../components/common/Loading";
+import {
+  FaHome,
+  FaStar,
+  FaBed,
+  FaShower,
+  FaRuler,
+  FaCar,
+  FaMapMarkerAlt,
+  FaComments,
+  FaWifi,
+  FaSnowflake,
+  FaSwimmingPool,
+  FaUtensils,
+  FaTv,
+  FaTshirt,
+  FaFire,
+  FaShieldAlt,
+  FaArrowLeft,
+  FaChevronLeft,
+  FaChevronRight,
+  FaCheck,
+} from "react-icons/fa";
 
 const PropertyDetails = () => {
   const { uuid } = useParams();
@@ -21,13 +43,17 @@ const PropertyDetails = () => {
       // Se já é uma URL completa
       if (photo.startsWith("http")) return photo;
       // Caso contrário, monta a URL
-      return `http://localhost:3001/uploads/properties/${photo}`;
+      return `${
+        import.meta.env.VITE_API_URL || "http://localhost:5000"
+      }/uploads/properties/${photo}`;
     }
 
     // Se photo é um objeto com filename
     if (photo.filename) {
       if (photo.filename.startsWith("http")) return photo.filename;
-      return `http://localhost:3001/uploads/properties/${photo.filename}`;
+      return `${
+        import.meta.env.VITE_API_URL || "http://localhost:5000"
+      }/uploads/properties/${photo.filename}`;
     }
 
     return null;
@@ -50,7 +76,7 @@ const PropertyDetails = () => {
 
       try {
         setLoading(true);
-        const response = await api.get(`/properties/${uuid}`);
+        const response = await api.get(`/api/properties/${uuid}`);
         const propertyData = response.data.property;
 
         if (!propertyData) {
@@ -115,18 +141,18 @@ const PropertyDetails = () => {
 
   const getAmenityIcon = (iconName) => {
     const icons = {
-      wifi: "📶",
-      snowflake: "❄️",
-      waves: "🏊",
+      wifi: <FaWifi />,
+      snowflake: <FaSnowflake />,
+      waves: <FaSwimmingPool />,
       "chef-hat": "👨‍🍳",
-      tv: "📺",
-      "washing-machine": "🧺",
-      home: "🏠",
-      flame: "🔥",
-      car: "🚗",
-      shield: "🛡️",
+      tv: <FaTv />,
+      "washing-machine": <FaTshirt />,
+      home: <FaHome />,
+      flame: <FaFire />,
+      car: <FaCar />,
+      shield: <FaShieldAlt />,
     };
-    return icons[iconName] || "⭐";
+    return icons[iconName] || <FaStar />;
   };
 
   const groupAmenitiesByCategory = (amenities) => {
@@ -155,7 +181,9 @@ const PropertyDetails = () => {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center max-w-md mx-auto p-6">
-          <div className="text-6xl mb-4">😕</div>
+          <div className="text-6xl mb-4">
+            <FaHome className="text-gray-400 mx-auto" />
+          </div>
           <h1 className="text-2xl font-bold text-gray-900 mb-4">
             {error || "Imóvel não encontrado"}
           </h1>
@@ -167,7 +195,7 @@ const PropertyDetails = () => {
               to="/"
               className="bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 text-white font-bold py-3 px-8 rounded-xl inline-block shadow-lg hover:shadow-red-strong transition-all duration-200"
             >
-              🏠 Ver Todos os Imóveis
+              <FaHome className="mr-2" /> Ver Todos os Imóveis
             </Link>
             <button
               onClick={() => navigate(-1)}
@@ -198,7 +226,7 @@ const PropertyDetails = () => {
             onClick={() => navigate(-1)}
             className="flex items-center text-primary-700 hover:text-primary-800 font-semibold transition-colors"
           >
-            <span className="text-xl mr-2">←</span>
+            <FaArrowLeft className="text-xl mr-2" />
             Voltar
           </button>
         </div>
@@ -222,13 +250,13 @@ const PropertyDetails = () => {
                     onClick={prevPhoto}
                     className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-3 rounded-full transition-all"
                   >
-                    <span className="text-2xl">‹</span>
+                    <FaChevronLeft className="text-2xl" />
                   </button>
                   <button
                     onClick={nextPhoto}
                     className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-3 rounded-full transition-all"
                   >
-                    <span className="text-2xl">›</span>
+                    <FaChevronRight className="text-2xl" />
                   </button>
 
                   {/* Indicadores */}
@@ -256,7 +284,7 @@ const PropertyDetails = () => {
           ) : (
             <div className="h-[400px] md:h-[600px] bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
               <div className="text-center text-gray-500">
-                <div className="text-6xl mb-4">🏠</div>
+                <FaHome className="text-6xl mb-4 mx-auto" />
                 <p className="text-lg">Sem fotos disponíveis</p>
               </div>
             </div>
@@ -280,20 +308,20 @@ const PropertyDetails = () => {
                     {property.title}
                   </h1>
                   <p className="text-gray-600 flex items-center">
-                    <span className="mr-2">📍</span>
+                    <FaMapMarkerAlt className="mr-2" />
                     {property.address}
                   </p>
                 </div>
                 {property.is_featured && (
                   <span className="bg-gradient-to-r from-primary-600 to-primary-700 text-white px-3 py-1 rounded-full text-sm font-bold shadow-lg">
-                    ⭐ Destaque
+                    <FaStar className="mr-1" /> Destaque
                   </span>
                 )}
               </div>
 
               <div className="flex flex-wrap gap-6 pt-4 border-t border-gray-200">
                 <div className="flex items-center">
-                  <span className="text-2xl mr-2">🛏️</span>
+                  <FaBed className="text-2xl mr-2 text-primary-600" />
                   <div>
                     <p className="text-2xl font-bold text-gray-900">
                       {property.bedrooms}
@@ -302,7 +330,7 @@ const PropertyDetails = () => {
                   </div>
                 </div>
                 <div className="flex items-center">
-                  <span className="text-2xl mr-2">🚿</span>
+                  <FaShower className="text-2xl mr-2 text-primary-600" />
                   <div>
                     <p className="text-2xl font-bold text-gray-900">
                       {property.bathrooms}
@@ -311,7 +339,7 @@ const PropertyDetails = () => {
                   </div>
                 </div>
                 <div className="flex items-center">
-                  <span className="text-2xl mr-2">📐</span>
+                  <FaRuler className="text-2xl mr-2 text-primary-600" />
                   <div>
                     <p className="text-2xl font-bold text-gray-900">
                       {property.area}
@@ -321,7 +349,7 @@ const PropertyDetails = () => {
                 </div>
                 {property.garage_spaces > 0 && (
                   <div className="flex items-center">
-                    <span className="text-2xl mr-2">🚗</span>
+                    <FaCar className="text-2xl mr-2 text-primary-600" />
                     <div>
                       <p className="text-2xl font-bold text-gray-900">
                         {property.garage_spaces}
@@ -363,7 +391,7 @@ const PropertyDetails = () => {
                                 key={amenity.id}
                                 className="flex items-center p-3 bg-gray-50 rounded-lg hover:bg-primary-50 transition-colors"
                               >
-                                <span className="text-2xl mr-3">
+                                <span className="text-2xl mr-3 text-primary-600">
                                   {getAmenityIcon(amenity.icon)}
                                 </span>
                                 <span className="text-gray-900 font-medium">
@@ -394,7 +422,7 @@ const PropertyDetails = () => {
                 onClick={handleWhatsAppContact}
                 className="w-full bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:shadow-red-strong transition-all duration-200 flex items-center justify-center gap-3"
               >
-                <span className="text-2xl">💬</span>
+                <FaComments className="text-2xl" />
                 <span>Entrar em Contato</span>
               </button>
 
@@ -404,15 +432,15 @@ const PropertyDetails = () => {
                 </h3>
                 <div className="space-y-2 text-sm text-gray-600">
                   <p className="flex items-center">
-                    <span className="mr-2">✓</span>
+                    <FaCheck className="mr-2 text-green-500" />
                     Check-in flexível
                   </p>
                   <p className="flex items-center">
-                    <span className="mr-2">✓</span>
+                    <FaCheck className="mr-2 text-green-500" />
                     Cancelamento grátis
                   </p>
                   <p className="flex items-center">
-                    <span className="mr-2">✓</span>
+                    <FaCheck className="mr-2 text-green-500" />
                     Resposta rápida
                   </p>
                 </div>

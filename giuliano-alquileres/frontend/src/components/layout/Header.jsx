@@ -72,6 +72,24 @@ const Header = () => {
                     </div>
 
                     <Link
+                      to="/my-bookings"
+                      className="flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-gray-50 transition-colors"
+                      onClick={() => setIsUserMenuOpen(false)}
+                    >
+                      <span>📅</span>
+                      <span>Minhas Reservas</span>
+                    </Link>
+
+                    <Link
+                      to="/favorites"
+                      className="flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-gray-50 transition-colors"
+                      onClick={() => setIsUserMenuOpen(false)}
+                    >
+                      <span>❤️</span>
+                      <span>Favoritos</span>
+                    </Link>
+
+                    <Link
                       to="/profile"
                       className="flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-gray-50 transition-colors"
                       onClick={() => setIsUserMenuOpen(false)}
@@ -159,6 +177,20 @@ const Header = () => {
                     </p>
                     <p className="text-xs text-gray-500 mb-4">{user?.email}</p>
                   </div>
+                  <Link
+                    to="/my-bookings"
+                    className="text-gray-700 hover:text-red-600 font-medium transition-colors"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Minhas Reservas
+                  </Link>
+                  <Link
+                    to="/favorites"
+                    className="text-gray-700 hover:text-red-600 font-medium transition-colors"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Favoritos
+                  </Link>
                   <Link
                     to="/profile"
                     className="text-gray-700 hover:text-red-600 font-medium transition-colors"

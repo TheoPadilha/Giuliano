@@ -19,6 +19,16 @@ import AdminNewProperty from "./pages/admin/AdminNewProperty";
 import EditProperty from "./pages/admin/EditProperty";
 import UsersPage from "./pages/admin/UsersPage"; // <-- Importe a nova página que vamos criar
 
+// --- Páginas de Pagamento ---
+import Checkout from "./pages/Checkout";
+import PaymentSuccess from "./pages/PaymentSuccess";
+import PaymentPending from "./pages/PaymentPending";
+import PaymentFailure from "./pages/PaymentFailure";
+
+// --- Páginas do Usuário ---
+import MyBookings from "./pages/MyBookings";
+import Favorites from "./pages/Favorites";
+
 // --- Páginas de Utilidade ---
 // É uma boa prática componentizar a página 404
 import NotFoundPage from "./pages/NotFoundPage";
@@ -92,6 +102,49 @@ function App() {
               element={
                 <ProtectedRoute requiredRole="admin">
                   <EditProperty />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* =====================================
+                ROTAS DE PAGAMENTO (Protegidas)
+            ====================================== */}
+
+            {/* Página de Checkout */}
+            <Route
+              path="/checkout/:bookingId"
+              element={
+                <ProtectedRoute>
+                  <Checkout />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Páginas de Retorno do Mercado Pago */}
+            <Route path="/payment/success" element={<PaymentSuccess />} />
+            <Route path="/payment/pending" element={<PaymentPending />} />
+            <Route path="/payment/failure" element={<PaymentFailure />} />
+
+            {/* =====================================
+                ROTAS DO USUÁRIO (Protegidas)
+            ====================================== */}
+            
+            {/* Minhas Reservas */}
+            <Route
+              path="/my-bookings"
+              element={
+                <ProtectedRoute>
+                  <MyBookings />
+                </ProtectedRoute>
+              }
+            />
+            
+            {/* Meus Favoritos */}
+            <Route
+              path="/favorites"
+              element={
+                <ProtectedRoute>
+                  <Favorites />
                 </ProtectedRoute>
               }
             />

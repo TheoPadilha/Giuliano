@@ -33,7 +33,7 @@ const AdminDashboard = () => {
 
         console.log("📊 Buscando estatísticas com params:", params);
 
-        const response = await api.get("/properties", { params });
+        const response = await api.get("/api/properties", { params });
         const properties = response.data.properties || [];
 
         console.log(`✅ Dashboard carregado: ${properties.length} imóveis`);
@@ -238,9 +238,9 @@ const AdminDashboard = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
-                  {stats.recentProperties.map((property) => (
+                  {stats.recentProperties.map((property, index) => (
                     <tr
-                      key={property.uuid}
+                      key={property.uuid || property.id || `property-${index}`}
                       className="hover:bg-gray-50 transition-colors"
                     >
                       <td className="px-6 py-4">

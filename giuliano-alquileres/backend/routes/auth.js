@@ -1,24 +1,28 @@
 const express = require("express");
-const router = express.Router();
 
 // Importar controllers e middlewares
 const authController = require("../controllers/authController");
 const { verifyToken } = require("../middleware/auth");
 
-// Rotas públicas (sem autenticação)
+// Exportar função que recebe os limiters
+module.exports = (authLimiter, registerLimiter) => {
+  const router = express.Router();
 
-// POST /api/auth/register - Cadastrar novo usuário
-router.post("/register", authController.register);
+  // Rotas públicas (sem autenticação)
 
-// POST /api/auth/login - Fazer login
-router.post("/login", authController.login);
+  // POST /api/auth/register - Cadastrar novo usuário (com rate limiter específico)
+  router.post("/register", registerLimiter, authController.register);
 
-// Rotas protegidas (com autenticação)
+  // POST /api/auth/login - Fazer login (com rate limiter específico)
+  router.post("/login", authLimiter, authController.login);
 
-// GET /api/auth/verify - Verificar se token é válido
-router.get("/verify", verifyToken, authController.verifyToken);
+  // Rotas protegidas (com autenticação)
 
-// POST /api/auth/refresh - Renovar token
-router.post("/refresh", verifyToken, authController.refreshToken);
+  // GET /api/auth/verify - Verificar se token é válido
+  router.get("/verify", verifyToken, authController.verifyToken);
 
-module.exports = router;
+  // POST /api/auth/refresh - Renovar token
+  router.post("/refresh", verifyToken, authController.refreshToken);
+
+  return router;
+};

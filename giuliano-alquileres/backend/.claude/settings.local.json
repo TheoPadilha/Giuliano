@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//c/Users/theoh/Documents/MeusProjetos/Giuliano/giuliano-alquileres/frontend/src/pages/auth/**)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

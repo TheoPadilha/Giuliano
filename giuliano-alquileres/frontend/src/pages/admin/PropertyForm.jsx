@@ -42,9 +42,9 @@ const PropertyForm = () => {
   const fetchInitialData = async () => {
     try {
       const [citiesRes, amenitiesRes] = await Promise.all([
-        api.get("/utilities/cities").catch(() => ({ data: { cities: [] } })),
+        api.get("/api/utilities/cities").catch(() => ({ data: { cities: [] } })),
         api
-          .get("/utilities/amenities")
+          .get("/api/utilities/amenities")
           .catch(() => ({ data: { amenities: [] } })),
       ]);
 
@@ -58,7 +58,7 @@ const PropertyForm = () => {
   const fetchProperty = async () => {
     try {
       setLoadingData(true);
-      const response = await api.get(`/properties/${uuid}`);
+      const response = await api.get(`/api/properties/${uuid}`);
       const property = response.data.property;
 
       const propertyAmenityIds = property.amenities
@@ -124,9 +124,9 @@ const PropertyForm = () => {
       };
 
       if (isEditing) {
-        await api.put(`/properties/${uuid}`, data);
+        await api.put(`/api/properties/${uuid}`, data);
       } else {
-        await api.post("/properties", data);
+        await api.post("/api/properties", data);
       }
       navigate("/admin/properties");
     } catch (error) {

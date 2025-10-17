@@ -66,12 +66,6 @@ const User = sequelize.define(
       defaultValue: "pending", // Todo novo cadastro começa como pendente
       allowNull: false,
     },
-    // O campo 'is_active' pode ser redundante agora, mas vamos mantê-lo por enquanto.
-    // Poderíamos usá-lo para um admin desativar uma conta em vez de deletá-la.
-    is_active: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: true,
-    },
   },
   {
     tableName: "users",
@@ -81,11 +75,21 @@ const User = sequelize.define(
 
     hooks: {
       beforeCreate: async (user) => {
+        // Normalizar email para lowercase
+        if (user.email) {
+          user.email = user.email.toLowerCase().trim();
+        }
+        // Hash da senha
         if (user.password_hash) {
           user.password_hash = await bcrypt.hash(user.password_hash, 12);
         }
       },
       beforeUpdate: async (user) => {
+        // Normalizar email se alterado
+        if (user.changed("email") && user.email) {
+          user.email = user.email.toLowerCase().trim();
+        }
+        // Hash da senha se alterada
         if (user.changed("password_hash")) {
           user.password_hash = await bcrypt.hash(user.password_hash, 12);
         }
@@ -107,10 +111,9 @@ User.prototype.toJSON = function () {
   return values;
 };
 
-// --- ALTERAÇÃO 3: Pequeno ajuste no método estático para buscar usuário ---
-// Agora ele não deve mais procurar por 'is_active', pois o status de aprovação é mais importante para o login.
+// Buscar usuário por email (normalizado)
 User.findByEmail = function (email) {
-  return this.findOne({ where: { email } }); // Removemos o 'is_active: true' daqui
+  return this.findOne({ where: { email: email.toLowerCase().trim() } });
 };
 
 // O método createUser não precisa de alterações, pois os valores padrão de 'role' e 'status' já farão o trabalho.

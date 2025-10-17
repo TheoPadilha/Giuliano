@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import { FiMail, FiLock, FiAlertCircle } from "react-icons/fi";
+import { FaHome, FaStar, FaArrowLeft, FaArrowRight } from "react-icons/fa";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -39,7 +40,9 @@ const Login = () => {
     if (result.success) {
       navigate(from, { replace: true });
     } else {
-      setError(result.error);
+      // Exibir mensagem de erro com detalhes se disponível
+      const errorMessage = result.message || result.error || "Erro ao fazer login";
+      setError(errorMessage);
     }
   };
 
@@ -105,13 +108,13 @@ const Login = () => {
           <div className="text-center mb-12">
             <Link to="/" className="inline-block mb-8">
               <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-red-600 to-amber-500 rounded-2xl mb-4 shadow-lg">
-                <span className="text-3xl">🏠</span>
+                <FaHome className="text-3xl text-white" />
               </div>
             </Link>
 
             {/* Badge */}
             <div className="inline-flex items-center bg-gradient-to-r from-amber-400 to-yellow-500 text-gray-900 px-3 py-1 rounded-full font-bold text-xs mb-6">
-              <span className="mr-1">⭐</span>
+              <FaStar className="mr-1" />
               Área Administrativa
             </div>
 
@@ -216,7 +219,7 @@ const Login = () => {
               ) : (
                 <div className="flex items-center justify-center">
                   <span>Entrar no Painel</span>
-                  <span className="ml-2 text-lg">→</span>
+                  <FaArrowRight className="ml-2" />
                 </div>
               )}
             </button>
@@ -237,7 +240,7 @@ const Login = () => {
               to="/"
               className="inline-flex items-center text-sm text-gray-600 hover:text-red-600 transition-colors font-medium"
             >
-              <span className="mr-1">←</span>
+              <FaArrowLeft className="mr-1" />
               Voltar para o site
             </Link>
           </div>

@@ -24,15 +24,39 @@ const propertySchema = Joi.object({
   neighborhood: Joi.string().max(100).optional(),
   latitude: Joi.number().min(-90).max(90).optional(),
   longitude: Joi.number().min(-180).max(180).optional(),
-  price_per_night: Joi.number().positive().required(),
-  weekend_price: Joi.number().positive().optional(),
-  high_season_price: Joi.number().positive().optional(),
+  price_per_night: Joi.number().positive().precision(2).required(),
+  weekend_price: Joi.number().positive().precision(2).optional(),
+  high_season_price: Joi.number().positive().precision(2).optional(),
   status: Joi.string()
     .valid("available", "occupied", "maintenance", "inactive")
     .optional(),
   is_featured: Joi.boolean().optional(),
   amenities: Joi.array().items(Joi.number().integer()).optional(),
-});
+})
+  .custom((value, helpers) => {
+    // Validação: se latitude é fornecida, longitude também deve ser
+    if (
+      (value.latitude !== undefined && value.longitude === undefined) ||
+      (value.latitude === undefined && value.longitude !== undefined)
+    ) {
+      return helpers.error("coordinates.incomplete");
+    }
+    // Arredondar preços para 2 casas decimais
+    if (value.price_per_night) {
+      value.price_per_night = Math.round(value.price_per_night * 100) / 100;
+    }
+    if (value.weekend_price) {
+      value.weekend_price = Math.round(value.weekend_price * 100) / 100;
+    }
+    if (value.high_season_price) {
+      value.high_season_price = Math.round(value.high_season_price * 100) / 100;
+    }
+    return value;
+  })
+  .messages({
+    "coordinates.incomplete":
+      "Latitude e longitude devem ser fornecidas juntas ou nenhuma das duas",
+  });
 
 // Listar imóveis com filtros
 const getProperties = async (req, res) => {
@@ -330,41 +354,30 @@ const createProperty = async (req, res) => {
     propertyData.user_id = req.user.id;
 
     // 🔥 VALIDAÇÃO: Apenas admin_master pode marcar como destaque
-    if (propertyData.is_featured && req.user.role !== "admin_master") {
-      propertyData.is_featured = false;
+    // Se o usuário não for admin_master, remove a propriedade is_featured
+    if (req.user.role !== "admin_master") {
+      delete propertyData.is_featured;
     }
 
-    const property = await Property.create(propertyData);
+    const newProperty = await Property.create(propertyData);
 
     if (amenities && amenities.length > 0) {
-      await property.setAmenities(amenities);
+      const existingAmenities = await Amenity.findAll({
+        where: { id: amenities },
+      });
+      await newProperty.addAmenities(existingAmenities);
     }
 
-    const createdProperty = await Property.findByPk(property.id, {
+    // Recarregar o imóvel para incluir as associações
+    const propertyWithAssociations = await Property.findByPk(newProperty.id, {
       include: [
-        {
-          model: City,
-          as: "city",
-          attributes: ["id", "name", "state"],
-        },
-        {
-          model: Amenity,
-          as: "amenities",
-          through: { attributes: [] },
-          attributes: ["id", "name", "icon", "category"],
-        },
-        {
-          model: User,
-          as: "owner",
-          attributes: ["id", "name", "email"],
-        },
+        { model: City, as: "city" },
+        { model: Amenity, as: "amenities", through: { attributes: [] } },
+        { model: User, as: "owner", attributes: ["id", "name", "email"] },
       ],
     });
 
-    res.status(201).json({
-      message: "Imóvel criado com sucesso!",
-      property: createdProperty,
-    });
+    res.status(201).json({ property: propertyWithAssociations });
   } catch (error) {
     console.error("Erro ao criar imóvel:", error);
     res.status(500).json({
@@ -379,30 +392,8 @@ const createProperty = async (req, res) => {
 const updateProperty = async (req, res) => {
   try {
     const { uuid } = req.params;
+    const { error, value } = propertySchema.validate(req.body);
 
-    let property = await Property.findOne({ where: { uuid } });
-
-    if (!property) {
-      return res.status(404).json({
-        error: "Imóvel não encontrado",
-      });
-    }
-
-    const updateSchema = propertySchema.fork(
-      [
-        "title",
-        "type",
-        "max_guests",
-        "bedrooms",
-        "bathrooms",
-        "city_id",
-        "address",
-        "price_per_night",
-      ],
-      (schema) => schema.optional()
-    );
-
-    const { error, value } = updateSchema.validate(req.body);
     if (error) {
       return res.status(400).json({
         error: "Dados inválidos",
@@ -412,11 +403,33 @@ const updateProperty = async (req, res) => {
 
     const { amenities, ...propertyData } = value;
 
-    // 🔥 VALIDAÇÃO: Apenas admin_master pode alterar is_featured
-    if ("is_featured" in propertyData && req.user.role !== "admin_master") {
-      delete propertyData.is_featured;
+    const property = await Property.findOne({
+      where: { uuid },
+      include: [{ model: Amenity, as: "amenities" }],
+    });
+
+    if (!property) {
+      return res.status(404).json({
+        error: "Imóvel não encontrado",
+      });
     }
 
+    // 🔥 VALIDAÇÃO: Apenas admin_master pode alterar o status ou is_featured
+    if (req.user.role !== "admin_master") {
+      // Se não for admin_master, remove status e is_featured dos dados de atualização
+      delete propertyData.status;
+      delete propertyData.is_featured;
+
+      // Adicionalmente, verificar se o usuário está tentando alterar o user_id
+      if (propertyData.user_id && propertyData.user_id !== req.user.id) {
+        return res.status(403).json({
+          error:
+            "Acesso negado. Você não pode alterar o proprietário do imóvel.",
+        });
+      }
+    }
+
+    // Se city_id for fornecido, verificar se a cidade existe
     if (propertyData.city_id) {
       const city = await City.findByPk(propertyData.city_id);
       if (!city) {
@@ -428,37 +441,26 @@ const updateProperty = async (req, res) => {
 
     await property.update(propertyData);
 
-    if (Array.isArray(amenities)) {
-      await property.setAmenities(amenities);
+    // Atualizar amenidades
+    if (amenities) {
+      const existingAmenities = await Amenity.findAll({
+        where: { id: amenities },
+      });
+      await property.setAmenities(existingAmenities);
     }
 
+    // Recarregar o imóvel para incluir as associações atualizadas
     const updatedProperty = await Property.findByPk(property.id, {
       include: [
-        {
-          model: City,
-          as: "city",
-          attributes: ["id", "name", "state"],
-        },
-        {
-          model: Amenity,
-          as: "amenities",
-          through: { attributes: [] },
-          attributes: ["id", "name", "icon", "category"],
-        },
-        {
-          model: User,
-          as: "owner",
-          attributes: ["id", "name", "email"],
-        },
+        { model: City, as: "city" },
+        { model: Amenity, as: "amenities", through: { attributes: [] } },
+        { model: User, as: "owner", attributes: ["id", "name", "email"] },
       ],
     });
 
-    res.json({
-      message: "Imóvel atualizado com sucesso",
-      property: updatedProperty,
-    });
+    res.json({ property: updatedProperty });
   } catch (error) {
-    console.error("💥 Erro ao atualizar imóvel:", error);
+    console.error("Erro ao atualizar imóvel:", error);
     res.status(500).json({
       error: "Erro interno do servidor",
       details:
@@ -472,7 +474,7 @@ const deleteProperty = async (req, res) => {
   try {
     const { uuid } = req.params;
 
-    let property = await Property.findOne({ where: { uuid } });
+    const property = await Property.findOne({ where: { uuid } });
 
     if (!property) {
       return res.status(404).json({
@@ -568,5 +570,5 @@ module.exports = {
   updateProperty,
   deleteProperty,
   getFeaturedProperties,
-  toggleFeatured, // 🔥 NOVA ROTA
+  toggleFeatured,
 };

@@ -1,6 +1,8 @@
 // giuliano-alquileres/frontend/src/components/property/PropertyCard.jsx
 import { Link } from "react-router-dom";
 import PropTypes from "prop-types";
+import { FaHome, FaStar, FaBed, FaShower, FaUsers, FaMapMarkerAlt, FaArrowRight } from "react-icons/fa";
+import FavoriteButton from "./FavoriteButton";
 
 const PropertyCard = ({ property }) => {
   const getTypeLabel = (type) => {
@@ -28,8 +30,9 @@ const PropertyCard = ({ property }) => {
     if (!filename) return null;
     // Se já é uma URL completa, usa direto
     if (filename.startsWith("http")) return filename;
-    // Caso contrário, monta a URL do backend
-    return `http://localhost:3001/uploads/properties/${filename}`;
+    // Caso contrário, monta a URL do backend (usar variável de ambiente)
+    const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+    return `${API_URL}/uploads/properties/${filename}`;
   };
 
   // Pegar a primeira foto
@@ -58,14 +61,14 @@ const PropertyCard = ({ property }) => {
             />
           ) : (
             <div className="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
-              <span className="text-6xl">🏠</span>
+              <FaHome className="text-6xl text-gray-400" />
             </div>
           )}
 
           {/* Badge Featured */}
           {property.is_featured && (
             <div className="absolute top-4 right-4 bg-gradient-to-r from-amber-400 to-yellow-500 text-gray-900 px-3 py-1 rounded-full font-bold text-xs shadow-lg flex items-center gap-1">
-              <span>⭐</span>
+              <FaStar />
               <span>Destaque</span>
             </div>
           )}
@@ -73,6 +76,11 @@ const PropertyCard = ({ property }) => {
           {/* Badge Tipo */}
           <div className="absolute top-4 left-4 bg-white/95 backdrop-blur-sm text-gray-900 px-3 py-1 rounded-full font-semibold text-xs shadow-md">
             {getTypeLabel(property.type)}
+          </div>
+
+          {/* Botão de Favorito */}
+          <div className="absolute top-4 right-4">
+            <FavoriteButton propertyId={property.id} className="shadow-lg" />
           </div>
 
           {/* Overlay de Preço */}
@@ -85,10 +93,11 @@ const PropertyCard = ({ property }) => {
                 </p>
                 <p className="text-gray-300 text-xs">por noite</p>
               </div>
-              <div className="bg-white/20 backdrop-blur-sm rounded-full px-3 py-1">
+              <div className="bg-white/20 backdrop-blur-sm rounded-full px-3 py-1 flex items-center gap-1">
                 <span className="text-white text-sm font-semibold">
-                  {property.bedrooms} 🛏️
+                  {property.bedrooms}
                 </span>
+                <FaBed className="text-white" />
               </div>
             </div>
           </div>
@@ -103,7 +112,7 @@ const PropertyCard = ({ property }) => {
 
           {/* Localização */}
           <p className="text-gray-600 text-sm mb-4 flex items-center line-clamp-1">
-            <span className="mr-1">📍</span>
+            <FaMapMarkerAlt className="mr-1" />
             {property.address}
           </p>
 
@@ -114,16 +123,16 @@ const PropertyCard = ({ property }) => {
           <div className="flex items-center justify-between text-sm">
             <div className="flex items-center gap-4">
               <div className="flex items-center text-gray-700">
-                <span className="mr-1">🛏️</span>
+                <FaBed className="mr-1" />
                 <span className="font-semibold">{property.bedrooms}</span>
               </div>
               <div className="flex items-center text-gray-700">
-                <span className="mr-1">🚿</span>
+                <FaShower className="mr-1" />
                 <span className="font-semibold">{property.bathrooms}</span>
               </div>
               {property.max_guests && (
                 <div className="flex items-center text-gray-700">
-                  <span className="mr-1">👥</span>
+                  <FaUsers className="mr-1" />
                   <span className="font-semibold">{property.max_guests}</span>
                 </div>
               )}
@@ -131,7 +140,7 @@ const PropertyCard = ({ property }) => {
 
             {/* Ícone de seta */}
             <div className="w-8 h-8 rounded-full bg-gradient-to-r from-primary-600 to-amber-500 flex items-center justify-center group-hover:scale-110 transition-transform">
-              <span className="text-white text-sm">→</span>
+              <FaArrowRight className="text-white text-sm" />
             </div>
           </div>
         </div>

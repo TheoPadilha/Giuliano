@@ -23,7 +23,7 @@ const PhotoUpload = ({ propertyUuid, onUploadComplete }) => {
     try {
       setLoading(true);
       const response = await api.get(
-        `/uploads/properties/${propertyUuid}/photos`
+        `/api/uploads/properties/${propertyUuid}/photos`
       );
       setPhotos(response.data.photos || []);
     } catch (err) {
@@ -74,7 +74,7 @@ const PhotoUpload = ({ propertyUuid, onUploadComplete }) => {
           alt_texts: altTexts,
         });
 
-        const response = await api.post("/uploads/properties", formData, {
+        const response = await api.post("/api/uploads/properties", formData, {
           headers: {
             "Content-Type": "multipart/form-data",
           },
@@ -124,7 +124,7 @@ const PhotoUpload = ({ propertyUuid, onUploadComplete }) => {
   const setMainPhoto = async (photoId) => {
     try {
       setError("");
-      await api.put(`/uploads/photos/${photoId}/main`);
+      await api.put(`/api/uploads/photos/${photoId}/main`);
       setSuccess("Foto principal definida!");
       await fetchPhotos();
       setTimeout(() => setSuccess(""), 2000);
@@ -142,7 +142,7 @@ const PhotoUpload = ({ propertyUuid, onUploadComplete }) => {
 
     try {
       setError("");
-      await api.delete(`/uploads/photos/${photoId}`);
+      await api.delete(`/api/uploads/photos/${photoId}`);
       setSuccess("Foto excluída com sucesso!");
       await fetchPhotos();
       setTimeout(() => setSuccess(""), 2000);
@@ -187,7 +187,7 @@ const PhotoUpload = ({ propertyUuid, onUploadComplete }) => {
       const photoIds = newPhotos.map((photo) => photo.id);
 
       // Enviar para o backend
-      await api.put(`/uploads/properties/${propertyUuid}/photos/reorder`, {
+      await api.put(`/api/uploads/properties/${propertyUuid}/photos/reorder`, {
         photo_ids: photoIds,
       });
 
@@ -331,7 +331,7 @@ const PhotoUpload = ({ propertyUuid, onUploadComplete }) => {
                 {/* Imagem */}
                 <div className="aspect-w-16 aspect-h-9">
                   <img
-                    src={`http://localhost:3001/uploads/properties/${photo.filename}`}
+                    src={`${import.meta.env.VITE_API_URL || "http://localhost:5000"}/uploads/properties/${photo.filename}`}
                     alt={photo.alt_text}
                     className="w-full h-48 object-cover"
                     onError={(e) => {

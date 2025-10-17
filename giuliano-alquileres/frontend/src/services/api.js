@@ -1,7 +1,9 @@
 import axios from "axios";
 
-const API_URL =
-  import.meta.env.VITE_API_URL || "https://giulianoa-backend.onrender.com/";
+// Remover barra final para evitar URLs duplas
+const API_URL = (
+  import.meta.env.VITE_API_URL || "https://giulianoa-backend.onrender.com"
+).replace(/\/$/, "");
 
 // Instância principal do axios
 const api = axios.create({
@@ -12,10 +14,40 @@ const api = axios.create({
   },
 });
 
+// Helper seguro para localStorage
+const safeLocalStorage = {
+  getItem: (key) => {
+    try {
+      return localStorage.getItem(key);
+    } catch (error) {
+      console.warn("localStorage não disponível:", error);
+      return null;
+    }
+  },
+  setItem: (key, value) => {
+    try {
+      localStorage.setItem(key, value);
+      return true;
+    } catch (error) {
+      console.warn("localStorage não disponível:", error);
+      return false;
+    }
+  },
+  removeItem: (key) => {
+    try {
+      localStorage.removeItem(key);
+      return true;
+    } catch (error) {
+      console.warn("localStorage não disponível:", error);
+      return false;
+    }
+  },
+};
+
 // Interceptor para adicionar token automaticamente
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("token");
+    const token = safeLocalStorage.getItem("token");
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -34,16 +66,31 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
+    // Tratamento de erro de rede
+    if (!error.response) {
+      if (error.message === "Network Error") {
+        console.error("Erro de rede: Verifique sua conexão com a internet");
+        return Promise.reject(new Error("Sem conexão com a internet"));
+      }
+      // Timeout ou outros erros sem resposta
+      return Promise.reject(error);
+    }
+
+    // Se for erro 403 (Forbidden - conta pendente/rejeitada), não tentar refresh
+    if (error.response?.status === 403) {
+      return Promise.reject(error);
+    }
+
     // Se o erro for 401 e não for uma tentativa de refresh
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
 
       try {
-        const token = localStorage.getItem("token");
+        const token = safeLocalStorage.getItem("token");
         if (token) {
           // Tentar renovar o token
           const response = await axios.post(
-            `${API_URL}/auth/refresh`,
+            `${API_URL}/api/auth/refresh`,
             {},
             {
               headers: { Authorization: `Bearer ${token}` },
@@ -51,7 +98,7 @@ api.interceptors.response.use(
           );
 
           const newToken = response.data.token;
-          localStorage.setItem("token", newToken);
+          safeLocalStorage.setItem("token", newToken);
 
           // ATUALIZA O TOKEN NO CABEÇALHO PADRÃO DO AXIOS
           api.defaults.headers.common["Authorization"] = `Bearer ${newToken}`;
@@ -62,8 +109,8 @@ api.interceptors.response.use(
         }
       } catch (refreshError) {
         // Se falhar ao renovar, limpar o token e redirecionar para login
-        localStorage.removeItem("token");
-        localStorage.removeItem("user");
+        safeLocalStorage.removeItem("token");
+        safeLocalStorage.removeItem("user");
         window.location.href = "/login";
         return Promise.reject(refreshError);
       }
@@ -75,25 +122,25 @@ api.interceptors.response.use(
 
 // ===== EXPORTS NOMEADOS PARA AUTENTICAÇÃO =====
 export const authAPI = {
-  register: (userData) => api.post("/auth/register", userData),
-  login: (credentials) => api.post("/auth/login", credentials),
-  verify: () => api.get("/auth/verify"),
-  refresh: () => api.post("/auth/refresh"),
+  register: (userData) => api.post("/api/auth/register", userData),
+  login: (credentials) => api.post("/api/auth/login", credentials),
+  verify: () => api.get("/api/auth/verify"),
+  refresh: () => api.post("/api/auth/refresh"),
 };
 
 // ===== EXPORTS NOMEADOS PARA PROPRIEDADES =====
 export const propertiesAPI = {
-  getAll: (params) => api.get("/properties", { params }),
-  getById: (id) => api.get(`/properties/${id}`),
-  create: (data) => api.post("/properties", data),
-  update: (id, data) => api.put(`/properties/${id}`, data),
-  delete: (id) => api.delete(`/properties/${id}`),
+  getAll: (params) => api.get("/api/properties", { params }),
+  getById: (id) => api.get(`/api/properties/${id}`),
+  create: (data) => api.post("/api/properties", data),
+  update: (id, data) => api.put(`/api/properties/${id}`, data),
+  delete: (id) => api.delete(`/api/properties/${id}`),
 };
 
 // ===== EXPORTS NOMEADOS PARA UTILITIES =====
 export const utilitiesAPI = {
-  getCities: () => api.get("/utilities/cities"),
-  getAmenities: () => api.get("/utilities/amenities"),
+  getCities: () => api.get("/api/utilities/cities"),
+  getAmenities: () => api.get("/api/utilities/amenities"),
 };
 
 // ===== EXPORT DEFAULT (Instância do axios) =====
@@ -101,3 +148,6 @@ export default api;
 
 // ===== EXPORT DA URL BASE =====
 export { API_URL };
+
+
+

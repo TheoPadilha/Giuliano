@@ -37,7 +37,7 @@ export const AuthProvider = ({ children }) => {
     setLoading(true);
     try {
       // A rota /verify agora é /api/auth/verify
-      const response = await api.get("/auth/verify");
+      const response = await api.get("/api/auth/verify");
       const fetchedUser = response.data.user;
       setUser(fetchedUser);
       setIsAuthenticated(true);
@@ -59,7 +59,7 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
-      const response = await api.post("/auth/login", { email, password });
+      const response = await api.post("/api/auth/login", { email, password });
       const { token: newToken, user: loggedInUser } = response.data;
 
       setToken(newToken); // Atualiza o token no estado e no localStorage (via useEffect)
@@ -70,9 +70,15 @@ export const AuthProvider = ({ children }) => {
       return { success: true, user: loggedInUser };
     } catch (error) {
       console.error("Erro ao fazer login:", error);
+
+      // Capturar mensagem detalhada do backend (incluindo status 403)
+      const errorData = error.response?.data;
+      const errorMessage = errorData?.message || errorData?.error || "Erro ao fazer login";
+
       return {
         success: false,
-        error: error.response?.data?.error || "Erro ao fazer login",
+        error: errorData?.error || "Erro ao fazer login",
+        message: errorMessage,
       };
     }
   };
@@ -82,7 +88,7 @@ export const AuthProvider = ({ children }) => {
   const register = async (userData) => {
     try {
       // A rota de registro não retorna mais token, apenas uma mensagem de sucesso.
-      const response = await api.post("/auth/register", userData);
+      const response = await api.post("/api/auth/register", userData);
       return { success: true, message: response.data.message };
     } catch (error) {
       console.error("Erro ao registrar:", error);

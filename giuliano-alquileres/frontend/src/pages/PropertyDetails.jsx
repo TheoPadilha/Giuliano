@@ -24,7 +24,7 @@ const PropertyDetails = () => {
 
       try {
         setLoading(true);
-        const response = await api.get(`/properties/${uuid}`);
+        const response = await api.get(`/api/properties/${uuid}`);
         const propertyData = response.data.property;
 
         if (!propertyData) {
@@ -206,7 +206,7 @@ const PropertyDetails = () => {
                   {/* Foto Principal */}
                   <div className="aspect-w-16 aspect-h-9 bg-gray-200">
                     <img
-                      src={`http://localhost:3001/uploads/properties/${photos[currentPhotoIndex].filename}`}
+                      src={`${import.meta.env.VITE_API_URL || "http://localhost:5000"}/uploads/properties/${photos[currentPhotoIndex].filename}`}
                       alt={photos[currentPhotoIndex].alt_text || property.title}
                       className="w-full h-96 object-cover"
                       onError={(e) => {
@@ -263,7 +263,7 @@ const PropertyDetails = () => {
                         }`}
                       >
                         <img
-                          src={`http://localhost:3001/uploads/properties/${photo.filename}`}
+                          src={`${import.meta.env.VITE_API_URL || "http://localhost:5000"}/uploads/properties/${photo.filename}`}
                           alt={photo.alt_text}
                           className="w-full h-16 object-cover"
                         />

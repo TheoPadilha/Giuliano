@@ -1,0 +1,35 @@
+{
+  "watch": [
+    "server.js",
+    "routes/**/*.js",
+    "controllers/**/*.js",
+    "models/**/*.js",
+    "middleware/**/*.js",
+    "config/**/*.js",
+    "utils/**/*.js"
+  ],
+  "ignore": [
+    "node_modules/**",
+    "uploads/**",
+    "*.log",
+    "*.test.js"
+  ],
+  "ext": "js,json",
+  "delay": "1000",
+  "env": {
+    "NODE_ENV": "development"
+  },
+  "restartable": "rs",
+  "verbose": false,
+  "execMap": {
+    "js": "node"
+  },
+  "events": {
+    "restart": "echo '🔄 Servidor reiniciando devido a mudanças...'",
+    "crash": "echo '💥 Servidor crashou! Reiniciando em 3 segundos...'",
+    "exit": "echo '👋 Servidor encerrado'"
+  },
+  "colours": true,
+  "legacyWatch": false,
+  "pollingInterval": 100
+}

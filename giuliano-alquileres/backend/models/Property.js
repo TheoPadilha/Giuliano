@@ -134,11 +134,6 @@ const Property = sequelize.define(
       type: DataTypes.BOOLEAN,
       defaultValue: false,
     },
-    approval_status: {
-      type: DataTypes.ENUM("pending", "approved", "rejected"),
-      defaultValue: "pending",
-      allowNull: false,
-    },
   },
   {
     tableName: "properties",
@@ -148,6 +143,7 @@ const Property = sequelize.define(
 
     // Índices para performance
     indexes: [
+      // Índices simples
       { fields: ["user_id"] },
       { fields: ["city_id"] },
       { fields: ["status"] },
@@ -155,6 +151,10 @@ const Property = sequelize.define(
       { fields: ["price_per_night"] },
       { fields: ["max_guests"] },
       { fields: ["is_featured"] },
+      // Índices compostos para queries comuns
+      { fields: ["status", "is_featured", "city_id"], name: "idx_listing_main" },
+      { fields: ["user_id", "status"], name: "idx_user_properties" },
+      { fields: ["city_id", "status", "type"], name: "idx_city_search" },
     ],
   }
 );

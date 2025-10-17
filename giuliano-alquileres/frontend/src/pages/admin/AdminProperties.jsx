@@ -4,6 +4,7 @@ import api from "../../services/api";
 import Loading from "../../components/common/Loading";
 import AdminLayout from "../../components/admin/AdminLayout";
 import { useAuth } from "../../contexts/AuthContext";
+import { FaPlus, FaHome, FaStar, FaBed, FaShower, FaUsers, FaMapMarkerAlt, FaEdit, FaTrash } from "react-icons/fa";
 
 const AdminProperties = () => {
   const { user } = useAuth();
@@ -30,7 +31,7 @@ const AdminProperties = () => {
 
       console.log("📦 Buscando propriedades com params:", params);
 
-      const response = await api.get("/properties", { params });
+      const response = await api.get("/api/properties", { params });
       console.log("✅ Propriedades recebidas:", response.data.properties);
       setProperties(response.data.properties || []);
     } catch (error) {
@@ -52,7 +53,7 @@ const AdminProperties = () => {
     }
 
     try {
-      await api.delete(`/properties/${uuid}`);
+      await api.delete(`/api/properties/${uuid}`);
       setProperties(properties.filter((p) => p.uuid !== uuid));
     } catch (error) {
       console.error("Erro ao excluir imóvel:", error);
@@ -62,7 +63,7 @@ const AdminProperties = () => {
 
   const handleToggleFeatured = async (uuid, currentStatus) => {
     try {
-      await api.put(`/properties/${uuid}/toggle-featured`);
+      await api.put(`/api/properties/${uuid}/toggle-featured`);
       // Atualizar localmente
       setProperties((prevProperties) =>
         prevProperties.map((p) =>
@@ -81,19 +82,20 @@ const AdminProperties = () => {
     }
 
     const firstPhoto = property.photos[0];
+    const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
     if (typeof firstPhoto === "string") {
       if (firstPhoto.startsWith("http")) {
         return firstPhoto;
       }
-      return `http://localhost:3001/uploads/properties/${firstPhoto}`;
+      return `${API_URL}/uploads/properties/${firstPhoto}`;
     }
 
     if (firstPhoto.filename) {
       if (firstPhoto.filename.startsWith("http")) {
         return firstPhoto.filename;
       }
-      return `http://localhost:3001/uploads/properties/${firstPhoto.filename}`;
+      return `${API_URL}/uploads/properties/${firstPhoto.filename}`;
     }
 
     return null;
@@ -127,9 +129,9 @@ const AdminProperties = () => {
           </div>
           <Link
             to="/admin/properties/new"
-            className="bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 text-white font-bold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02]"
+            className="bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 text-white font-bold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02] flex items-center gap-2"
           >
-            ➕ Novo Imóvel
+            <FaPlus /> Novo Imóvel
           </Link>
         </div>
 
@@ -215,7 +217,7 @@ const AdminProperties = () => {
                     ) : (
                       <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
                         <div className="text-center">
-                          <span className="text-4xl mb-2 block">🏠</span>
+                          <FaHome className="text-4xl mb-2 mx-auto text-gray-400" />
                           <span className="text-gray-400 text-sm">
                             Sem imagem
                           </span>
@@ -225,8 +227,8 @@ const AdminProperties = () => {
                     {/* Badge de Destaque */}
                     {property.is_featured && (
                       <div className="absolute top-3 right-3">
-                        <span className="bg-amber-500 text-white px-3 py-1 rounded-full text-xs font-medium shadow-md">
-                          ⭐ Destaque
+                        <span className="bg-amber-500 text-white px-3 py-1 rounded-full text-xs font-medium shadow-md flex items-center gap-1">
+                          <FaStar /> Destaque
                         </span>
                       </div>
                     )}
@@ -237,19 +239,19 @@ const AdminProperties = () => {
                     <h3 className="text-lg font-bold text-gray-900 mb-2 line-clamp-1">
                       {property.title}
                     </h3>
-                    <p className="text-sm text-gray-600 mb-4 line-clamp-1">
-                      📍 {property.address}
+                    <p className="text-sm text-gray-600 mb-4 line-clamp-1 flex items-center gap-1">
+                      <FaMapMarkerAlt /> {property.address}
                     </p>
 
                     <div className="flex items-center justify-between mb-4 text-sm text-gray-600 border-t border-b border-gray-100 py-2">
                       <span className="flex items-center gap-1">
-                        🛏️ {property.bedrooms}
+                        <FaBed /> {property.bedrooms}
                       </span>
                       <span className="flex items-center gap-1">
-                        🚿 {property.bathrooms}
+                        <FaShower /> {property.bathrooms}
                       </span>
                       <span className="flex items-center gap-1">
-                        👥 {property.max_guests || "-"}
+                        <FaUsers /> {property.max_guests || "-"}
                       </span>
                     </div>
 
@@ -262,15 +264,15 @@ const AdminProperties = () => {
                       <div className="flex gap-3">
                         <Link
                           to={`/admin/properties/${property.uuid}/edit`}
-                          className="flex-1 bg-primary-600 hover:bg-primary-700 text-white text-center px-4 py-2 rounded-lg font-medium transition-colors text-sm shadow-md hover:shadow-lg"
+                          className="flex-1 bg-primary-600 hover:bg-primary-700 text-white text-center px-4 py-2 rounded-lg font-medium transition-colors text-sm shadow-md hover:shadow-lg flex items-center justify-center gap-1"
                         >
-                          ✏️ Editar
+                          <FaEdit /> Editar
                         </Link>
                         <button
                           onClick={() => handleDelete(property.uuid)}
-                          className="flex-1 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium transition-colors text-sm shadow-md hover:shadow-lg"
+                          className="flex-1 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium transition-colors text-sm shadow-md hover:shadow-lg flex items-center justify-center gap-1"
                         >
-                          🗑️ Excluir
+                          <FaTrash /> Excluir
                         </button>
                       </div>
 
@@ -283,15 +285,16 @@ const AdminProperties = () => {
                               property.is_featured
                             )
                           }
-                          className={`w-full mt-3 px-4 py-2 rounded-lg font-medium transition-colors text-sm shadow-md hover:shadow-lg ${
+                          className={`w-full mt-3 px-4 py-2 rounded-lg font-medium transition-colors text-sm shadow-md hover:shadow-lg flex items-center justify-center gap-1 ${
                             property.is_featured
                               ? "bg-amber-500 hover:bg-amber-600 text-white"
                               : "bg-gray-200 hover:bg-gray-300 text-gray-700"
                           }`}
                         >
+                          <FaStar />
                           {property.is_featured
-                            ? "⭐ Remover Destaque"
-                            : "⭐ Marcar como Destaque"}
+                            ? "Remover Destaque"
+                            : "Marcar como Destaque"}
                         </button>
                       )}
                     </div>

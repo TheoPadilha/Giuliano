@@ -6,6 +6,7 @@ import api from "../services/api";
 import PropertyCard from "../components/property/PropertyCard";
 import PropertyFilters from "../components/property/PropertyFilters";
 import Loading from "../components/common/Loading";
+import { FaArrowLeft, FaSearch, FaRedo, FaFlag } from "react-icons/fa";
 
 const Properties = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -36,8 +37,8 @@ const Properties = () => {
     const fetchAuxData = async () => {
       try {
         const [citiesRes, amenitiesRes] = await Promise.all([
-          api.get("/utilities/cities"),
-          api.get("/utilities/amenities"),
+          api.get("/api/utilities/cities"),
+          api.get("/api/utilities/amenities"),
         ]);
 
         setCities(citiesRes.data.cities || []);
@@ -74,7 +75,7 @@ const Properties = () => {
 
       console.log("🔍 Buscando com params:", params.toString());
 
-      const response = await api.get(`/properties?${params.toString()}`);
+      const response = await api.get(`/api/properties?${params.toString()}`);
 
       console.log("📦 Propriedades encontradas:", response.data);
 
@@ -133,7 +134,7 @@ const Properties = () => {
                 to="/"
                 className="text-red-600 hover:text-red-700 font-semibold text-sm flex items-center gap-2 transition-colors"
               >
-                <span>←</span>
+                <FaArrowLeft />
                 <span>Voltar</span>
               </Link>
               <div className="border-l border-gray-300 pl-6">
@@ -180,7 +181,7 @@ const Properties = () => {
           <Loading text="Buscando imóveis..." />
         ) : properties.length === 0 ? (
           <div className="bg-gray-50 rounded-2xl border border-gray-200 p-16 text-center">
-            <div className="text-7xl mb-6">🔍</div>
+            <FaSearch className="text-7xl mb-6 mx-auto text-gray-400" />
             <h3 className="text-3xl font-bold text-gray-900 mb-3">
               Nenhum imóvel encontrado
             </h3>
@@ -205,18 +206,18 @@ const Properties = () => {
                 });
                 setSearchParams({});
               }}
-              className="bg-red-600 hover:bg-red-700 text-white px-8 py-4 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-lg"
+              className="bg-red-600 hover:bg-red-700 text-white px-8 py-4 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-lg flex items-center gap-2"
             >
-              🔄 Limpar Filtros
+              <FaRedo /> Limpar Filtros
             </button>
           </div>
         ) : (
           <>
             {/* Grid de Propriedades */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-              {properties.map((property) => (
+              {properties.map((property, index) => (
                 <PropertyCard
-                  key={property.uuid || property.id}
+                  key={property.uuid || property.id || `property-${index}`}
                   property={property}
                 />
               ))}

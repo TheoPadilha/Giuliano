@@ -7,7 +7,15 @@ const registerSchema = Joi.object({
   name: Joi.string().min(2).max(100).required(),
   email: Joi.string().email().required(),
   password: Joi.string().min(6).required(),
-  phone: Joi.string().min(10).max(20).optional(),
+  phone: Joi.string()
+    .pattern(/^\+?[1-9]\d{1,14}$/)
+    .min(10)
+    .max(20)
+    .optional()
+    .messages({
+      "string.pattern.base":
+        "Telefone deve estar em formato internacional válido (ex: +5511999999999)",
+    }),
   country: Joi.string().max(50).optional(),
 });
 

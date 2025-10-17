@@ -71,9 +71,9 @@ const requireAdminMaster = (req, res, next) => {
   next();
 };
 
-// Verificar se o usuário é admin
+// Verificar se o usuário é admin (admin ou admin_master)
 const requireAdmin = (req, res, next) => {
-  if (req.user.role !== "admin") {
+  if (req.user.role !== "admin" && req.user.role !== "admin_master") {
     return res.status(403).json({
       error: "Acesso negado. Apenas administradores.",
     });
@@ -118,7 +118,7 @@ const optionalAuth = async (req, res, next) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const user = await User.findByPk(decoded.id);
 
-    req.user = user && user.is_active ? user : null;
+    req.user = user || null;
     next();
   } catch (error) {
     // Em caso de erro, continuar sem usuário autenticado
@@ -127,20 +127,12 @@ const optionalAuth = async (req, res, next) => {
   }
 };
 
-module.exports = {
-  verifyToken,
-  requireAdmin,
-  requireAdminMaster,
-  requireOwnerOrAdmin,
-  optionalAuth,
-};
-
 // Verificar se o usuário é o proprietário do imóvel ou um admin_master
 const requirePropertyOwnerOrAdminMaster = async (req, res, next) => {
   try {
     const propertyUuid = req.params.uuid;
-    const userId = req.user.id; // ID do usuário logado
-    const userRole = req.user.role; // Papel do usuário logado
+    const userId = req.user.id;
+    const userRole = req.user.role;
 
     // Se o usuário é um admin_master, ele tem acesso total
     if (userRole === "admin_master") {
@@ -155,11 +147,9 @@ const requirePropertyOwnerOrAdminMaster = async (req, res, next) => {
     }
 
     if (property.user_id !== userId) {
-      return res
-        .status(403)
-        .json({
-          error: "Acesso negado. Você não é o proprietário deste imóvel.",
-        });
+      return res.status(403).json({
+        error: "Acesso negado. Você não é o proprietário deste imóvel.",
+      });
     }
 
     // Se for o proprietário, permite a ação
@@ -169,11 +159,9 @@ const requirePropertyOwnerOrAdminMaster = async (req, res, next) => {
       "Erro no middleware requirePropertyOwnerOrAdminMaster:",
       error
     );
-    return res
-      .status(500)
-      .json({
-        error: "Erro interno do servidor ao verificar permissões do imóvel.",
-      });
+    return res.status(500).json({
+      error: "Erro interno do servidor ao verificar permissões do imóvel.",
+    });
   }
 };
 

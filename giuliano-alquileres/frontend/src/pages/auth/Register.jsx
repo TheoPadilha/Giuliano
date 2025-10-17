@@ -49,7 +49,7 @@ const Register = () => {
       // Substitua 'api.post' pela sua forma de chamar a API (pode ser fetch)
       // O importante é que esta chamada NÃO faz o login, apenas registra.
       const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/auth/register`,
+        `${import.meta.env.VITE_API_URL}/api/auth/register`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

@@ -41,8 +41,8 @@ const AdminNewProperty = () => {
     const fetchData = async () => {
       try {
         const [citiesRes, amenitiesRes] = await Promise.all([
-          api.get("/utilities/cities"),
-          api.get("/utilities/amenities"),
+          api.get("/api/utilities/cities"),
+          api.get("/api/utilities/amenities"),
         ]);
 
         setCities(citiesRes.data.cities || []);
@@ -148,7 +148,7 @@ const AdminNewProperty = () => {
 
       console.log("Criando imóvel:", propertyData);
 
-      const response = await api.post("/properties", propertyData);
+      const response = await api.post("/api/properties", propertyData);
       const createdProperty = response.data.property;
 
       console.log("Imóvel criado:", createdProperty);

@@ -14,7 +14,7 @@ const UsersPage = () => {
     setError("");
     try {
       const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/admin/users`,
+        `${import.meta.env.VITE_API_URL}/api/admin/users`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -41,7 +41,7 @@ const UsersPage = () => {
   const handleUserAction = async (userId, action) => {
     try {
       const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/admin/users/${userId}/${action}`,
+        `${import.meta.env.VITE_API_URL}/api/admin/users/${userId}/${action}`,
         {
           method: "PUT",
           headers: { Authorization: `Bearer ${token}` },
@@ -165,9 +165,9 @@ const UsersPage = () => {
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {filteredUsers.length > 0 ? (
-                    filteredUsers.map((user) => (
+                    filteredUsers.map((user, index) => (
                       <tr
-                        key={user.uuid}
+                        key={user.uuid || user.id || `user-${index}`}
                         className="hover:bg-gray-50 transition-colors"
                       >
                         <td className="px-6 py-4 whitespace-nowrap">

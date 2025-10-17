@@ -5,25 +5,26 @@ import { Link, useNavigate } from "react-router-dom";
 import api from "../services/api";
 import PropertyCard from "../components/property/PropertyCard";
 import Loading from "../components/common/Loading";
+import SearchBar from "../components/search/SearchBar";
+import { FaStar, FaBuilding, FaHome, FaCrown, FaGem, FaTrophy, FaMapMarkerAlt, FaComments, FaWhatsapp } from "react-icons/fa";
 
 const Home = () => {
   const navigate = useNavigate();
-  const [properties, setProperties] = useState([]);
   const [featuredProperties, setFeaturedProperties] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     const fetchProperties = async () => {
       try {
         setLoading(true);
-        const response = await api.get("/properties");
+        const response = await api.get("/api/properties", {
+          params: { status: "available" }
+        });
         const allProperties = response.data.properties || [];
 
         setFeaturedProperties(
           allProperties.filter((p) => p.is_featured).slice(0, 6)
         );
-        setProperties(allProperties.slice(0, 12));
       } catch (error) {
         console.error("Erro ao carregar propriedades:", error);
       } finally {
@@ -33,13 +34,6 @@ const Home = () => {
 
     fetchProperties();
   }, []);
-
-  const handleSearch = (e) => {
-    e.preventDefault();
-    if (searchTerm.trim()) {
-      navigate(`/properties?search=${encodeURIComponent(searchTerm.trim())}`);
-    }
-  };
 
   if (loading) {
     return <Loading text="Carregando imóveis incríveis..." />;
@@ -81,7 +75,7 @@ const Home = () => {
             <div className="max-w-3xl">
               {/* Badge Amarelo */}
               <div className="inline-flex items-center bg-yellow-400 text-gray-900 px-5 py-2 rounded-full font-bold text-sm mb-8">
-                <span className="mr-2">✨</span>
+                <FaGem className="mr-2" />
                 Imóveis Premium em Balneário Camboriú
               </div>
 
@@ -95,59 +89,43 @@ const Home = () => {
                 mais desejada de Santa Catarina. Qualidade, conforto e
                 localização privilegiada.
               </p>
-
-              {/* Search Bar */}
-              <form onSubmit={handleSearch} className="relative mb-16">
-                <div className="flex bg-white rounded-xl shadow-2xl overflow-hidden">
-                  <input
-                    type="text"
-                    placeholder="Buscar por localização, tipo de imóvel..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="flex-1 px-6 py-4 text-gray-900 placeholder-gray-500 focus:outline-none text-base"
-                  />
-                  <button
-                    type="submit"
-                    className="bg-red-600 hover:bg-red-700 text-white px-10 font-bold transition-all duration-300 flex items-center gap-2"
-                  >
-                    <span className="text-xl">🔍</span>
-                    <span className="hidden sm:inline">Buscar</span>
-                  </button>
-                </div>
-              </form>
-
-              {/* Stats */}
-              <div className="grid grid-cols-3 gap-8">
-                <div className="text-center">
-                  <div className="text-5xl font-bold text-white mb-2">500+</div>
-                  <div className="text-gray-300 text-sm uppercase tracking-wide">
-                    Imóveis
-                  </div>
-                  <div className="w-16 h-1 bg-yellow-400 mx-auto mt-3 rounded-full"></div>
-                </div>
-                <div className="text-center">
-                  <div className="text-5xl font-bold text-white mb-2">98%</div>
-                  <div className="text-gray-300 text-sm uppercase tracking-wide">
-                    Satisfação
-                  </div>
-                  <div className="w-16 h-1 bg-yellow-400 mx-auto mt-3 rounded-full"></div>
-                </div>
-                <div className="text-center">
-                  <div className="text-5xl font-bold text-white mb-2">24/7</div>
-                  <div className="text-gray-300 text-sm uppercase tracking-wide">
-                    Suporte
-                  </div>
-                  <div className="w-16 h-1 bg-yellow-400 mx-auto mt-3 rounded-full"></div>
-                </div>
-              </div>
             </div>
           </div>
         </div>
+      </section>
 
-        {/* Scroll Indicator */}
-        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-20 animate-bounce">
-          <div className="w-6 h-10 border-2 border-white rounded-full flex items-start justify-center p-2">
-            <div className="w-1 h-3 bg-white rounded-full"></div>
+      {/* 🔥 NOVA SEÇÃO DE BUSCA COM CALENDÁRIO */}
+      <section className="relative -mt-24 z-30 pb-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <SearchBar />
+        </div>
+      </section>
+
+      {/* Seção de estatísticas movida para baixo */}
+      <section className="py-12 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-3 gap-8 max-w-4xl mx-auto">
+            <div className="text-center">
+              <div className="text-5xl font-bold text-red-600 mb-2">500+</div>
+              <div className="text-gray-600 text-sm uppercase tracking-wide">
+                Imóveis
+              </div>
+              <div className="w-16 h-1 bg-yellow-400 mx-auto mt-3 rounded-full"></div>
+            </div>
+            <div className="text-center">
+              <div className="text-5xl font-bold text-red-600 mb-2">98%</div>
+              <div className="text-gray-600 text-sm uppercase tracking-wide">
+                Satisfação
+              </div>
+              <div className="w-16 h-1 bg-yellow-400 mx-auto mt-3 rounded-full"></div>
+            </div>
+            <div className="text-center">
+              <div className="text-5xl font-bold text-red-600 mb-2">24/7</div>
+              <div className="text-gray-600 text-sm uppercase tracking-wide">
+                Suporte
+              </div>
+              <div className="w-16 h-1 bg-yellow-400 mx-auto mt-3 rounded-full"></div>
+            </div>
           </div>
         </div>
       </section>
@@ -169,7 +147,7 @@ const Home = () => {
               ></div>
               <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent"></div>
               <div className="absolute bottom-6 left-6 right-6 z-10">
-                <div className="text-4xl mb-3">🏢</div>
+                <FaBuilding className="text-4xl mb-3 text-white" />
                 <h3 className="text-white font-bold text-xl mb-2">
                   Apartamentos
                 </h3>
@@ -190,7 +168,7 @@ const Home = () => {
               ></div>
               <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent"></div>
               <div className="absolute bottom-6 left-6 right-6 z-10">
-                <div className="text-4xl mb-3">🏠</div>
+                <FaHome className="text-4xl mb-3 text-white" />
                 <h3 className="text-white font-bold text-xl mb-2">Casas</h3>
                 <div className="w-12 h-1 bg-yellow-400 rounded-full group-hover:w-full transition-all duration-300"></div>
               </div>
@@ -209,7 +187,7 @@ const Home = () => {
               ></div>
               <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent"></div>
               <div className="absolute bottom-6 left-6 right-6 z-10">
-                <div className="text-4xl mb-3">👑</div>
+                <FaCrown className="text-4xl mb-3 text-white" />
                 <h3 className="text-white font-bold text-xl mb-2">
                   Coberturas
                 </h3>
@@ -230,7 +208,7 @@ const Home = () => {
               ></div>
               <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent"></div>
               <div className="absolute bottom-6 left-6 right-6 z-10">
-                <div className="text-4xl mb-3">✨</div>
+                <FaGem className="text-4xl mb-3 text-white" />
                 <h3 className="text-white font-bold text-xl mb-2">Studios</h3>
                 <div className="w-12 h-1 bg-yellow-400 rounded-full group-hover:w-full transition-all duration-300"></div>
               </div>
@@ -245,7 +223,7 @@ const Home = () => {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
               <div className="inline-flex items-center bg-yellow-400 text-gray-900 px-5 py-2 rounded-full font-bold text-sm mb-6">
-                <span className="mr-2">⭐</span>
+                <FaStar className="mr-2" />
                 Seleção Premium
               </div>
               <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
@@ -259,9 +237,9 @@ const Home = () => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {featuredProperties.map((property) => (
+              {featuredProperties.map((property, index) => (
                 <PropertyCard
-                  key={property.uuid || property.id}
+                  key={property.uuid || property.id || `property-${index}`}
                   property={property}
                 />
               ))}
@@ -294,7 +272,7 @@ const Home = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="text-center p-8 bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300">
               <div className="inline-flex items-center justify-center w-20 h-20 bg-red-600 rounded-xl mb-6 shadow-md">
-                <span className="text-4xl">🏆</span>
+                <FaTrophy className="text-4xl text-white" />
               </div>
               <h3 className="text-xl font-bold text-gray-900 mb-3">
                 Qualidade Garantida
@@ -307,7 +285,7 @@ const Home = () => {
 
             <div className="text-center p-8 bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300">
               <div className="inline-flex items-center justify-center w-20 h-20 bg-red-600 rounded-xl mb-6 shadow-md">
-                <span className="text-4xl">📍</span>
+                <FaMapMarkerAlt className="text-4xl text-white" />
               </div>
               <h3 className="text-xl font-bold text-gray-900 mb-3">
                 Localização Premium
@@ -319,7 +297,7 @@ const Home = () => {
 
             <div className="text-center p-8 bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300">
               <div className="inline-flex items-center justify-center w-20 h-20 bg-red-600 rounded-xl mb-6 shadow-md">
-                <span className="text-4xl">💬</span>
+                <FaComments className="text-4xl text-white" />
               </div>
               <h3 className="text-xl font-bold text-gray-900 mb-3">
                 Atendimento Exclusivo
@@ -355,7 +333,7 @@ const Home = () => {
               className="inline-flex items-center justify-center bg-white text-red-600 font-bold py-4 px-10 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
             >
               <span>Explorar Imóveis</span>
-              <span className="ml-2">🏠</span>
+              <FaHome className="ml-2" />
             </Link>
 
             <a
@@ -365,7 +343,7 @@ const Home = () => {
               className="inline-flex items-center justify-center bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-bold py-4 px-10 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
             >
               <span>Falar no WhatsApp</span>
-              <span className="ml-2">💬</span>
+              <FaWhatsapp className="ml-2" />
             </a>
           </div>
         </div>

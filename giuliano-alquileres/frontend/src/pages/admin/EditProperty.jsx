@@ -47,8 +47,8 @@ const EditProperty = () => {
   // Buscar imóvel com tentativas múltiplas
   const fetchProperty = async (propertyId) => {
     const attempts = [
-      { url: `/properties/${propertyId}`, description: "Endpoint direto" },
-      { url: "/properties", description: "Lista completa", findInList: true },
+      { url: `/api/properties/${propertyId}`, description: "Endpoint direto" },
+      { url: "/api/properties", description: "Lista completa", findInList: true },
     ];
 
     for (const attempt of attempts) {
@@ -95,9 +95,9 @@ const EditProperty = () => {
         const [propertyResult, citiesResponse, amenitiesResponse] =
           await Promise.all([
             fetchProperty(id),
-            api.get("/utilities/cities"),
+            api.get("/api/utilities/cities"),
             api
-              .get("/utilities/amenities")
+              .get("/api/utilities/amenities")
               .catch(() => ({ data: { amenities: [] } })),
           ]);
 
@@ -237,14 +237,14 @@ const EditProperty = () => {
 
       let response;
       try {
-        response = await api.put(`/properties/${propertyId}`, updateData);
+        response = await api.put(`/api/properties/${propertyId}`, updateData);
       } catch (putError) {
         if (
           putError.response?.status === 404 ||
           putError.response?.status === 405
         ) {
           console.log("PUT falhou, tentando PATCH...");
-          response = await api.patch(`/properties/${propertyId}`, updateData);
+          response = await api.patch(`/api/properties/${propertyId}`, updateData);
         } else {
           throw putError;
         }
