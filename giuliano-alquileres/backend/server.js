@@ -68,25 +68,41 @@ app.use(
 // Rate limiting geral para toda a API
 const generalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutos
-  max: 50, // Reduzido de 100 para 50
-  message: "Muitas requisições. Tente novamente em 15 minutos.",
+  max: 100, // Aumentado para não bloquear desenvolvimento
+  message: { error: "Muitas requisições. Tente novamente em 15 minutos." },
   standardHeaders: true,
   legacyHeaders: false,
+  handler: (req, res) => {
+    res.status(429).json({
+      success: false,
+      error: "Muitas requisições. Tente novamente em 15 minutos."
+    });
+  }
 });
 
 // Rate limiter específico para autenticação (mais restritivo)
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutos
-  max: 5, // Apenas 5 tentativas de login
-  message: "Muitas tentativas de login. Tente novamente em 15 minutos.",
+  max: 10, // Aumentado de 5 para 10
   skipSuccessfulRequests: true, // Não conta requisições bem-sucedidas
+  handler: (req, res) => {
+    res.status(429).json({
+      success: false,
+      error: "Muitas tentativas de login. Tente novamente em 15 minutos."
+    });
+  }
 });
 
 // Rate limiter para cadastro
 const registerLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // 1 hora
-  max: 3, // Apenas 3 cadastros por hora
-  message: "Muitos cadastros. Tente novamente em 1 hora.",
+  max: 10, // Aumentado de 3 para 10
+  handler: (req, res) => {
+    res.status(429).json({
+      success: false,
+      error: "Muitos cadastros. Tente novamente em 1 hora."
+    });
+  }
 });
 
 app.use("/api/", generalLimiter);
@@ -109,6 +125,7 @@ app.get("/", (req, res) => {
 
 // Importar rotas com rate limiters específicos
 app.use("/api/auth", require("./routes/auth")(authLimiter, registerLimiter));
+app.use("/api/users", require("./routes/users"));
 app.use("/api/properties", require("./routes/properties"));
 app.use("/api/utilities", require("./routes/utilities"));
 app.use("/api/uploads", require("./routes/uploads"));

@@ -143,6 +143,13 @@ export const utilitiesAPI = {
   getAmenities: () => api.get("/api/utilities/amenities"),
 };
 
+// ===== EXPORTS NOMEADOS PARA REVIEWS =====
+export const reviewsAPI = {
+  create: (data) => api.post("/api/reviews", data),
+  getPropertyReviews: (propertyId, params) => api.get(`/api/reviews/property/${propertyId}`, { params }),
+  getMyReviews: () => api.get("/api/reviews/my"),
+};
+
 // ===== EXPORT DEFAULT (Instância do axios) =====
 export default api;
 

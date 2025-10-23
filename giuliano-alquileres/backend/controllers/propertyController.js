@@ -76,6 +76,8 @@ const getProperties = async (req, res) => {
       search,
       amenities,
       user_id,
+      checkIn,
+      checkOut,
     } = req.query;
 
     console.log("🔍 Parâmetros de busca recebidos:", req.query);
@@ -185,6 +187,49 @@ const getProperties = async (req, res) => {
             },
           });
         }
+      }
+    }
+
+    // 12. 🔥 FILTRO POR DISPONIBILIDADE DE DATAS (CHECK-IN E CHECK-OUT)
+    if (checkIn && checkOut) {
+      console.log(`📅 Filtrando por disponibilidade: ${checkIn} até ${checkOut}`);
+
+      // Buscar propriedades que NÃO têm reservas conflitantes nas datas solicitadas
+      const unavailableProperties = await sequelize.query(
+        `
+        SELECT DISTINCT b.property_id
+        FROM bookings b
+        WHERE b.status IN ('pending', 'confirmed', 'in_progress')
+          AND (
+            (b.check_in <= :checkOut AND b.check_out >= :checkIn)
+          )
+        `,
+        {
+          replacements: {
+            checkIn: checkIn,
+            checkOut: checkOut,
+          },
+          type: QueryTypes.SELECT,
+        }
+      );
+
+      const unavailablePropertyIds = unavailableProperties.map((p) => p.property_id);
+
+      // Filtrar para excluir propriedades indisponíveis
+      if (unavailablePropertyIds.length > 0) {
+        console.log(`❌ ${unavailablePropertyIds.length} propriedades indisponíveis nestas datas`);
+
+        if (where.id && where.id[Op.in]) {
+          // Se já existe filtro de ID (de amenidades), fazer intersecção
+          where.id[Op.in] = where.id[Op.in].filter(
+            (id) => !unavailablePropertyIds.includes(id)
+          );
+        } else {
+          // Caso contrário, excluir apenas as indisponíveis
+          where.id = { [Op.notIn]: unavailablePropertyIds };
+        }
+      } else {
+        console.log(`✅ Todas as propriedades disponíveis nestas datas`);
       }
     }
 

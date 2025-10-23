@@ -5,8 +5,9 @@ import { useSearchParams, Link } from "react-router-dom";
 import api from "../services/api";
 import PropertyCard from "../components/property/PropertyCard";
 import PropertyFilters from "../components/property/PropertyFilters";
+import PropertyFiltersPro from "../components/property/PropertyFiltersPro";
 import Loading from "../components/common/Loading";
-import { FaArrowLeft, FaSearch, FaRedo, FaFlag } from "react-icons/fa";
+import { FaArrowLeft, FaSearch, FaRedo, FaFlag, FaSortAmountDown } from "react-icons/fa";
 
 const Properties = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -21,13 +22,16 @@ const Properties = () => {
     search: searchParams.get("search") || "",
     city_id: searchParams.get("city_id") || "",
     type: searchParams.get("type") || "",
-    max_guests: searchParams.get("max_guests") || "",
+    max_guests: searchParams.get("max_guests") || searchParams.get("guests") || "",
     min_price: searchParams.get("min_price") || "",
     max_price: searchParams.get("max_price") || "",
     bedrooms: searchParams.get("bedrooms") || "",
     bathrooms: searchParams.get("bathrooms") || "",
     featured: searchParams.get("featured") || "",
     amenities: searchParams.get("amenities")?.split(",").filter(Boolean) || [],
+    checkIn: searchParams.get("checkIn") || "",
+    checkOut: searchParams.get("checkOut") || "",
+    rooms: [],
     page: parseInt(searchParams.get("page")) || 1,
     limit: parseInt(searchParams.get("limit")) || 12,
   });
@@ -125,48 +129,65 @@ const Properties = () => {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Header Moderno */}
-      <header className="bg-white shadow-sm border-b border-gray-100 sticky top-0 z-40">
+      {/* Header Profissional */}
+      <header className="bg-gradient-to-r from-gray-900 to-gray-800 shadow-xl sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-6">
               <Link
                 to="/"
-                className="text-red-600 hover:text-red-700 font-semibold text-sm flex items-center gap-2 transition-colors"
+                className="text-white hover:text-gray-200 font-semibold text-sm flex items-center gap-2 transition-colors px-4 py-2 bg-white/10 rounded-lg hover:bg-white/20"
               >
                 <FaArrowLeft />
                 <span>Voltar</span>
               </Link>
-              <div className="border-l border-gray-300 pl-6">
-                <h1 className="text-3xl font-bold text-gray-900">
-                  Nossos Imóveis
+              <div className="border-l border-gray-600 pl-6">
+                <h1 className="text-3xl font-bold text-white flex items-center gap-3">
+                  <FaSearch className="text-primary-500" />
+                  <span>Imóveis Disponíveis</span>
                 </h1>
-                <p className="text-sm text-gray-600 mt-1">
-                  {loading
-                    ? "Buscando..."
-                    : `${properties.length} ${
-                        properties.length === 1
+                <div className="text-sm text-gray-300 mt-1 flex items-center gap-2">
+                  {loading ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                      <span>Buscando imóveis...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="font-semibold text-primary-400">{properties.length}</span>
+                      <span>
+                        {properties.length === 1
                           ? "imóvel encontrado"
-                          : "imóveis encontrados"
-                      }`}
-                </p>
+                          : "imóveis encontrados"}
+                      </span>
+                    </>
+                  )}
+                </div>
               </div>
             </div>
 
-            {/* Language Selector */}
-            <select className="px-4 py-2 border border-gray-200 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent bg-white">
-              <option value="pt">🇧🇷 Português</option>
-              <option value="es">🇪🇸 Español</option>
-              <option value="en">🇺🇸 English</option>
-            </select>
+            {/* Stats Badge */}
+            {pagination.totalItems > 0 && (
+              <div className="hidden md:flex items-center gap-4 bg-white/10 backdrop-blur-sm rounded-xl px-6 py-3 border border-white/20">
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-white">{pagination.totalItems}</p>
+                  <p className="text-xs text-gray-300">Total</p>
+                </div>
+                <div className="w-px h-10 bg-white/20" />
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-white">{pagination.totalPages}</p>
+                  <p className="text-xs text-gray-300">Páginas</p>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </header>
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Filtros */}
-        <PropertyFilters
+        {/* Filtros Profissionais */}
+        <PropertyFiltersPro
           filters={filters}
           onFiltersChange={handleFiltersChange}
           cities={cities}
@@ -180,36 +201,81 @@ const Properties = () => {
         {loading ? (
           <Loading text="Buscando imóveis..." />
         ) : properties.length === 0 ? (
-          <div className="bg-gray-50 rounded-2xl border border-gray-200 p-16 text-center">
-            <FaSearch className="text-7xl mb-6 mx-auto text-gray-400" />
-            <h3 className="text-3xl font-bold text-gray-900 mb-3">
-              Nenhum imóvel encontrado
-            </h3>
-            <p className="text-gray-600 text-lg mb-8 max-w-md mx-auto">
-              Tente ajustar os filtros ou fazer uma nova busca.
-            </p>
-            <button
-              onClick={() => {
-                setFilters({
-                  search: "",
-                  city_id: "",
-                  type: "",
-                  max_guests: "",
-                  min_price: "",
-                  max_price: "",
-                  bedrooms: "",
-                  bathrooms: "",
-                  featured: "",
-                  amenities: [],
-                  page: 1,
-                  limit: 12,
-                });
-                setSearchParams({});
-              }}
-              className="bg-red-600 hover:bg-red-700 text-white px-8 py-4 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-lg flex items-center gap-2"
-            >
-              <FaRedo /> Limpar Filtros
-            </button>
+          <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-3xl border-2 border-gray-200 p-16 text-center shadow-xl">
+            <div className="max-w-2xl mx-auto">
+              <div className="mb-8 relative">
+                <div className="w-32 h-32 bg-gradient-to-br from-gray-200 to-gray-300 rounded-full mx-auto flex items-center justify-center">
+                  <FaSearch className="text-6xl text-gray-400" />
+                </div>
+                <div className="absolute top-0 right-1/4 w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center">
+                  <FaFlag className="text-3xl text-primary-600" />
+                </div>
+              </div>
+
+              <h3 className="text-4xl font-bold text-gray-900 mb-4">
+                Nenhum imóvel encontrado
+              </h3>
+              <p className="text-gray-600 text-lg mb-8">
+                Não encontramos imóveis que correspondam aos seus critérios de busca.
+                <br />
+                <span className="text-sm">Tente ajustar os filtros ou fazer uma nova pesquisa.</span>
+              </p>
+
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                <button
+                  onClick={() => {
+                    setFilters({
+                      search: "",
+                      city_id: "",
+                      type: "",
+                      max_guests: "",
+                      min_price: "",
+                      max_price: "",
+                      bedrooms: "",
+                      bathrooms: "",
+                      featured: "",
+                      amenities: [],
+                      checkIn: "",
+                      checkOut: "",
+                      rooms: [],
+                      page: 1,
+                      limit: 12,
+                    });
+                    setSearchParams({});
+                  }}
+                  className="bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 text-white px-8 py-4 rounded-xl font-bold transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center gap-3"
+                >
+                  <FaRedo />
+                  <span>Limpar Todos os Filtros</span>
+                </button>
+
+                <Link
+                  to="/"
+                  className="px-8 py-4 bg-white border-2 border-gray-300 hover:border-primary-600 text-gray-700 hover:text-primary-600 rounded-xl font-bold transition-all duration-300 flex items-center gap-3 shadow-md"
+                >
+                  <FaArrowLeft />
+                  <span>Voltar ao Início</span>
+                </Link>
+              </div>
+
+              <div className="mt-12 pt-8 border-t border-gray-300">
+                <p className="text-sm text-gray-600 mb-4 font-semibold">Sugestões:</p>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm text-gray-600">
+                  <div className="bg-white p-4 rounded-lg border border-gray-200">
+                    <p className="font-medium text-gray-900 mb-1">Expanda a busca</p>
+                    <p>Tente buscar em outras cidades ou regiões</p>
+                  </div>
+                  <div className="bg-white p-4 rounded-lg border border-gray-200">
+                    <p className="font-medium text-gray-900 mb-1">Ajuste o preço</p>
+                    <p>Aumente a faixa de preço para mais opções</p>
+                  </div>
+                  <div className="bg-white p-4 rounded-lg border border-gray-200">
+                    <p className="font-medium text-gray-900 mb-1">Reduza filtros</p>
+                    <p>Menos comodidades selecionadas = mais resultados</p>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         ) : (
           <>

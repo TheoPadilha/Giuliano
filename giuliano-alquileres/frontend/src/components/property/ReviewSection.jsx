@@ -17,7 +17,7 @@ const ReviewSection = ({ propertyId }) => {
 
   const fetchReviews = async (pageNum = 1) => {
     try {
-      const response = await api.get(`/reviews/property/${propertyId}?page=${pageNum}&limit=5`);
+      const response = await api.get(`/api/reviews/property/${propertyId}?page=${pageNum}&limit=5`);
       
       if (pageNum === 1) {
         setReviews(response.data.reviews);

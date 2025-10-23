@@ -19,10 +19,10 @@ module.exports = (authLimiter, registerLimiter) => {
   // Rotas protegidas (com autenticação)
 
   // GET /api/auth/verify - Verificar se token é válido
-  router.get("/verify", verifyToken, authController.verifyToken);
+  router.get("/verify", verifyToken, authController.verify);
 
   // POST /api/auth/refresh - Renovar token
-  router.post("/refresh", verifyToken, authController.refreshToken);
+  router.post("/refresh", verifyToken, authController.refresh);
 
   return router;
 };

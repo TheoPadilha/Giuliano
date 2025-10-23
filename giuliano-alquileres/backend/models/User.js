@@ -56,14 +56,14 @@ const User = sequelize.define(
     },
     // --- ALTERAÇÃO 1: Ajustando o campo 'role' ---
     role: {
-      type: DataTypes.ENUM("admin", "admin_master"), // Novos papéis
-      defaultValue: "admin", // Todo novo cadastro será um 'admin' (dono de imóvel)
+      type: DataTypes.ENUM("client", "admin", "admin_master"), // client = hóspede, admin = proprietário, admin_master = super admin
+      defaultValue: "client", // Todo novo cadastro será um 'client' (hóspede)
       allowNull: false,
     },
     // --- ALTERAÇÃO 2: Adicionando o campo 'status' ---
     status: {
       type: DataTypes.ENUM("pending", "approved", "rejected"), // Status possíveis
-      defaultValue: "pending", // Todo novo cadastro começa como pendente
+      defaultValue: "approved", // Clientes são aprovados automaticamente, apenas admins precisam aprovação
       allowNull: false,
     },
   },

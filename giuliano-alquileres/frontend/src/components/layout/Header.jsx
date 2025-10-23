@@ -98,7 +98,7 @@ const Header = () => {
                       <span>Meu Perfil</span>
                     </Link>
 
-                    {user?.role === "admin" && (
+                    {(user?.role === "admin" || user?.role === "admin_master") && (
                       <Link
                         to="/admin"
                         className="flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-gray-50 transition-colors"
@@ -198,7 +198,7 @@ const Header = () => {
                   >
                     Meu Perfil
                   </Link>
-                  {user?.role === "admin" && (
+                  {(user?.role === "admin" || user?.role === "admin_master") && (
                     <Link
                       to="/admin"
                       className="text-gray-700 hover:text-red-600 font-medium transition-colors"

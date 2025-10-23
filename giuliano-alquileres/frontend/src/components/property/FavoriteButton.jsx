@@ -16,7 +16,7 @@ const FavoriteButton = ({ propertyId, className = "" }) => {
 
   const checkIsFavorite = async () => {
     try {
-      const response = await api.get(`/favorites/check/${propertyId}`);
+      const response = await api.get(`/api/favorites/check/${propertyId}`);
       setIsFavorite(response.data.isFavorite);
     } catch (error) {
       console.error('Erro ao verificar favorito:', error);
@@ -35,10 +35,10 @@ const FavoriteButton = ({ propertyId, className = "" }) => {
     setLoading(true);
     try {
       if (isFavorite) {
-        await api.delete(`/favorites/${propertyId}`);
+        await api.delete(`/api/favorites/${propertyId}`);
         setIsFavorite(false);
       } else {
-        await api.post(`/favorites/${propertyId}`);
+        await api.post(`/api/favorites/${propertyId}`);
         setIsFavorite(true);
       }
     } catch (error) {

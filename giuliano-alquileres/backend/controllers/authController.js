@@ -1,27 +1,37 @@
-const jwt = require("jsonwebtoken");
-const { User } = require("../models");
 const Joi = require("joi");
+const jwt = require("jsonwebtoken");
+const User = require("../models/User");
 
-// Esquemas de validação
+// Validação de registro
 const registerSchema = Joi.object({
-  name: Joi.string().min(2).max(100).required(),
-  email: Joi.string().email().required(),
-  password: Joi.string().min(6).required(),
-  phone: Joi.string()
-    .pattern(/^\+?[1-9]\d{1,14}$/)
-    .min(10)
-    .max(20)
-    .optional()
-    .messages({
-      "string.pattern.base":
-        "Telefone deve estar em formato internacional válido (ex: +5511999999999)",
-    }),
-  country: Joi.string().max(50).optional(),
+  name: Joi.string().min(2).max(100).required().messages({
+    "string.min": "Nome deve ter no mínimo 2 caracteres",
+    "string.max": "Nome deve ter no máximo 100 caracteres",
+    "any.required": "Nome é obrigatório",
+  }),
+  email: Joi.string().email().required().messages({
+    "string.email": "Email inválido",
+    "any.required": "Email é obrigatório",
+  }),
+  password: Joi.string().min(6).max(100).required().messages({
+    "string.min": "Senha deve ter no mínimo 6 caracteres",
+    "string.max": "Senha deve ter no máximo 100 caracteres",
+    "any.required": "Senha é obrigatória",
+  }),
+  phone: Joi.string().min(10).max(20).optional().allow(""),
+  country: Joi.string().max(50).optional().allow(""),
+  role: Joi.string().valid("client", "admin").optional(), // Apenas client ou admin podem se registrar
 });
 
+// Validação de login
 const loginSchema = Joi.object({
-  email: Joi.string().email().required(),
-  password: Joi.string().required(),
+  email: Joi.string().email().required().messages({
+    "string.email": "Email inválido",
+    "any.required": "Email é obrigatório",
+  }),
+  password: Joi.string().required().messages({
+    "any.required": "Senha é obrigatória",
+  }),
 });
 
 // Gerar JWT Token
@@ -31,128 +41,157 @@ const generateToken = (user) => {
       id: user.id,
       email: user.email,
       role: user.role,
+      status: user.status,
     },
     process.env.JWT_SECRET,
     { expiresIn: "7d" }
   );
 };
 
-// Registrar novo usuário
-const register = async (req, res) => {
+/**
+ * @desc    Registrar novo usuário (Cliente ou Admin)
+ * @route   POST /api/auth/register
+ * @access  Public
+ */
+exports.register = async (req, res) => {
   try {
-    // 1. Validar dados (seu código Joi já faz isso)
+    // Validar dados
     const { error, value } = registerSchema.validate(req.body);
     if (error) {
       return res.status(400).json({
-        error: "Dados inválidos",
-        details: error.details[0].message,
+        success: false,
+        error: error.details[0].message,
       });
     }
 
-    const { name, email, password, phone, country } = value;
+    const { name, email, password, phone, country, role } = value;
 
-    // 2. Verificar se email já existe (seu código já faz isso)
+    // Verificar se o email já existe
     const existingUser = await User.findByEmail(email);
     if (existingUser) {
-      return res.status(409).json({
-        error: "Email já está em uso",
+      return res.status(400).json({
+        success: false,
+        error: "Este email já está cadastrado",
       });
     }
 
-    // 3. Criar usuário (o modelo já define role='admin' e status='pending' por padrão)
-    const user = await User.createUser({
+    // Determinar role e status
+    const userRole = role || "client"; // Padrão é 'client'
+    const userStatus = userRole === "client" ? "approved" : "pending"; // Clientes aprovados automaticamente
+
+    // Criar usuário
+    const user = await User.create({
       name,
-      email,
-      password,
-      phone,
-      country,
+      email: email.toLowerCase().trim(),
+      password_hash: password,
+      phone: phone || null,
+      country: country || "Brasil",
+      role: userRole,
+      status: userStatus,
     });
 
-    // --- ALTERAÇÃO PRINCIPAL: NÃO GERAR E NÃO ENVIAR TOKEN ---
-    // Em vez disso, enviamos uma resposta clara para o frontend.
-    res.status(201).json({
-      message:
-        "Cadastro realizado com sucesso! Sua conta está aguardando aprovação do administrador.",
-      user: {
-        uuid: user.uuid,
-        email: user.email,
-      },
-    });
-  } catch (error) {
-    console.error("Erro no register:", error);
-    res.status(500).json({
-      error: "Erro interno do servidor",
-      details:
-        process.env.NODE_ENV === "development" ? error.message : undefined,
+    // Se for cliente, gerar token imediatamente (já está aprovado)
+    // Se for admin, aguardar aprovação
+    if (userRole === "client") {
+      const token = generateToken(user);
+
+      return res.status(201).json({
+        success: true,
+        message: "Cadastro realizado com sucesso! Você já pode fazer login.",
+        user: {
+          id: user.id,
+          uuid: user.uuid,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          status: user.status,
+        },
+        token,
+      });
+    } else {
+      // Admin precisa de aprovação
+      return res.status(201).json({
+        success: true,
+        message:
+          "Cadastro realizado! Sua conta de proprietário será analisada e você receberá um email quando for aprovada.",
+        user: {
+          id: user.id,
+          uuid: user.uuid,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          status: user.status,
+        },
+      });
+    }
+  } catch (err) {
+    console.error("Erro no registro:", err);
+    return res.status(500).json({
+      success: false,
+      error: "Erro ao registrar usuário. Tente novamente.",
     });
   }
 };
 
-// Login de usuário
-const login = async (req, res) => {
+/**
+ * @desc    Login de usuário
+ * @route   POST /api/auth/login
+ * @access  Public
+ */
+exports.login = async (req, res) => {
   try {
-    // 1. Validar dados (seu código Joi já faz isso perfeitamente)
+    // Validar dados
     const { error, value } = loginSchema.validate(req.body);
     if (error) {
       return res.status(400).json({
-        error: "Dados inválidos",
-        details: error.details[0].message,
+        success: false,
+        error: error.details[0].message,
       });
     }
 
     const { email, password } = value;
 
-    // 2. Buscar usuário (com as novas colunas)
-    const user = await User.findOne({
-      where: { email }, // Removemos 'is_active' para tratar o status manualmente
-      attributes: [
-        "id",
-        "uuid",
-        "name",
-        "email",
-        "phone",
-        "country",
-        "role",
-        "status", // <-- IMPORTANTE: Adicionar 'status' aos atributos
-        "password_hash",
-      ],
-    });
-
-    // 3. Verificar se usuário existe e a senha é válida
-    if (!user || !(await user.validatePassword(password))) {
+    // Buscar usuário
+    const user = await User.findByEmail(email);
+    if (!user) {
       return res.status(401).json({
+        success: false,
         error: "Email ou senha incorretos",
       });
     }
 
-    // --- ALTERAÇÃO PRINCIPAL: Verificar o status de aprovação ---
-    if (user.status !== "approved") {
-      if (user.status === "pending") {
-        return res.status(403).json({
-          // 403 Forbidden é mais semântico aqui
-          error: "Acesso negado",
-          message: "Sua conta está pendente de aprovação pelo administrador.",
-        });
-      }
-      if (user.status === "rejected") {
-        return res.status(403).json({
-          error: "Acesso negado",
-          message: "Sua conta foi rejeitada. Entre em contato com o suporte.",
-        });
-      }
-      // Caso haja algum outro status inesperado
-      return res.status(403).json({
-        error: "Acesso negado",
-        message: "Sua conta não está ativa. Contate o suporte.",
+    // Validar senha
+    const isPasswordValid = await user.validatePassword(password);
+    if (!isPasswordValid) {
+      return res.status(401).json({
+        success: false,
+        error: "Email ou senha incorretos",
       });
     }
 
-    // 4. Gerar token (sua função generateToken já inclui o 'role', o que é perfeito)
+    // Verificar status da conta
+    if (user.status === "pending") {
+      return res.status(403).json({
+        success: false,
+        error:
+          "Sua conta de proprietário está aguardando aprovação. Você receberá um email quando for aprovada.",
+      });
+    }
+
+    if (user.status === "rejected") {
+      return res.status(403).json({
+        success: false,
+        error:
+          "Sua conta foi rejeitada. Entre em contato com o suporte para mais informações.",
+      });
+    }
+
+    // Gerar token
     const token = generateToken(user);
 
-    // 5. Enviar resposta
-    res.json({
-      message: "Login realizado com sucesso",
+    return res.status(200).json({
+      success: true,
+      message: "Login realizado com sucesso!",
       user: {
         id: user.id,
         uuid: user.uuid,
@@ -161,27 +200,37 @@ const login = async (req, res) => {
         phone: user.phone,
         country: user.country,
         role: user.role,
-        status: user.status, // É bom enviar o status também
+        status: user.status,
       },
       token,
     });
-  } catch (error) {
-    console.error("Erro no login:", error);
-    res.status(500).json({
-      error: "Erro interno do servidor",
-      details:
-        process.env.NODE_ENV === "development" ? error.message : undefined,
+  } catch (err) {
+    console.error("Erro no login:", err);
+    return res.status(500).json({
+      success: false,
+      error: "Erro ao fazer login. Tente novamente.",
     });
   }
 };
 
-// Verificar token válido
-const verifyToken = async (req, res) => {
+/**
+ * @desc    Verificar token JWT
+ * @route   GET /api/auth/verify
+ * @access  Private
+ */
+exports.verify = async (req, res) => {
   try {
-    const user = req.user; // Vem do middleware de auth
+    const user = await User.findByPk(req.user.id);
 
-    res.json({
-      valid: true,
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        error: "Usuário não encontrado",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
       user: {
         id: user.id,
         uuid: user.uuid,
@@ -190,46 +239,57 @@ const verifyToken = async (req, res) => {
         phone: user.phone,
         country: user.country,
         role: user.role,
+        status: user.status,
       },
     });
-  } catch (error) {
-    console.error("Erro no verifyToken:", error);
-    res.status(500).json({
-      error: "Erro interno do servidor",
+  } catch (err) {
+    console.error("Erro ao verificar token:", err);
+    return res.status(500).json({
+      success: false,
+      error: "Erro ao verificar token",
     });
   }
 };
 
-// Refresh token
-const refreshToken = async (req, res) => {
+/**
+ * @desc    Renovar token JWT
+ * @route   POST /api/auth/refresh
+ * @access  Private
+ */
+exports.refresh = async (req, res) => {
   try {
-    const user = req.user; // Vem do middleware de auth
+    const user = await User.findByPk(req.user.id);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        error: "Usuário não encontrado",
+      });
+    }
+
+    // Verificar se o usuário ainda está ativo
+    if (user.status !== "approved") {
+      return res.status(403).json({
+        success: false,
+        error: "Sua conta não está mais ativa",
+      });
+    }
 
     // Gerar novo token
-    const newToken = generateToken(user);
+    const token = generateToken(user);
 
-    res.json({
+    return res.status(200).json({
+      success: true,
       message: "Token renovado com sucesso",
-      token: newToken,
-      user: {
-        id: user.id,
-        uuid: user.uuid,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-      },
+      token,
     });
-  } catch (error) {
-    console.error("Erro no refreshToken:", error);
-    res.status(500).json({
-      error: "Erro interno do servidor",
+  } catch (err) {
+    console.error("Erro ao renovar token:", err);
+    return res.status(500).json({
+      success: false,
+      error: "Erro ao renovar token",
     });
   }
 };
 
-module.exports = {
-  register,
-  login,
-  verifyToken,
-  refreshToken,
-};
+module.exports = exports;

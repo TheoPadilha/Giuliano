@@ -18,7 +18,7 @@ const Favorites = () => {
 
   const fetchFavorites = async () => {
     try {
-      const response = await api.get('/favorites');
+      const response = await api.get('/api/favorites');
       setFavorites(response.data.favorites);
     } catch (error) {
       console.error('Erro ao buscar favoritos:', error);

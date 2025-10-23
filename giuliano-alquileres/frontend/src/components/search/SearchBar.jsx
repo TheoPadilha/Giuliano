@@ -1,15 +1,16 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { FaMapMarkerAlt, FaCalendarAlt, FaUsers, FaSearch } from "react-icons/fa";
+import { FaMapMarkerAlt, FaCalendarAlt, FaUsers, FaSearch, FaDoorOpen } from "react-icons/fa";
 import DateRangePicker from "./DateRangePicker";
+import RoomsGuestsPicker from "./RoomsGuestsPicker";
 
 const SearchBar = () => {
   const navigate = useNavigate();
   const [destination, setDestination] = useState("");
   const [dates, setDates] = useState({ checkIn: null, checkOut: null });
-  const [guests, setGuests] = useState(2);
+  const [rooms, setRooms] = useState([{ adults: 2, children: [] }]);
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [showGuestsPicker, setShowGuestsPicker] = useState(false);
+  const [showRoomsPicker, setShowRoomsPicker] = useState(false);
 
   const handleSearch = () => {
     const params = new URLSearchParams();
@@ -17,9 +18,31 @@ const SearchBar = () => {
     if (destination) params.append("city", destination);
     if (dates.checkIn) params.append("checkIn", dates.checkIn);
     if (dates.checkOut) params.append("checkOut", dates.checkOut);
-    if (guests) params.append("guests", guests);
+
+    // Calcular total de hóspedes e quartos
+    const totalGuests = rooms.reduce((total, room) => {
+      return total + room.adults + room.children.length;
+    }, 0);
+
+    params.append("guests", totalGuests);
+    params.append("rooms", rooms.length);
+
+    // Passar dados completos dos quartos como JSON
+    params.append("roomsData", JSON.stringify(rooms));
 
     navigate(`/properties?${params.toString()}`);
+  };
+
+  // Função para formatar exibição de quartos e hóspedes
+  const formatRoomsGuests = () => {
+    const totalGuests = rooms.reduce((total, room) => {
+      return total + room.adults + room.children.length;
+    }, 0);
+
+    const roomsText = rooms.length === 1 ? "quarto" : "quartos";
+    const guestsText = totalGuests === 1 ? "hóspede" : "hóspedes";
+
+    return `${rooms.length} ${roomsText}, ${totalGuests} ${guestsText}`;
   };
 
   const formatDate = (date) => {
@@ -102,55 +125,34 @@ const SearchBar = () => {
           )}
         </div>
 
-        {/* Hóspedes */}
+        {/* Quartos e Hóspedes */}
         <div className="relative">
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Hóspedes
+            Quartos e Hóspedes
           </label>
           <div
             className="relative cursor-pointer"
-            onClick={() => setShowGuestsPicker(!showGuestsPicker)}
+            onClick={() => setShowRoomsPicker(!showRoomsPicker)}
           >
-            <FaUsers className="absolute left-3 top-1/2 -translate-y-1/2 text-primary-600" />
+            <FaDoorOpen className="absolute left-3 top-1/2 -translate-y-1/2 text-primary-600" />
             <input
               type="text"
-              placeholder="Quantos?"
-              value={`${guests} ${guests === 1 ? "hóspede" : "hóspedes"}`}
+              placeholder="Selecione"
+              value={formatRoomsGuests()}
               readOnly
               className="w-full pl-10 pr-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:border-primary-500 focus:ring-4 focus:ring-primary-100 transition-all duration-200 cursor-pointer"
             />
           </div>
 
-          {/* Guests Picker Dropdown */}
-          {showGuestsPicker && (
-            <div className="absolute top-full left-0 mt-2 z-50 bg-white shadow-2xl rounded-xl p-5 border-2 border-gray-200 w-64">
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-sm font-medium text-gray-700">
-                  Número de hóspedes
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <button
-                  onClick={() => setGuests(Math.max(1, guests - 1))}
-                  className="w-10 h-10 rounded-full border-2 border-gray-300 flex items-center justify-center text-gray-600 hover:border-primary-600 hover:text-primary-600 hover:bg-primary-50 transition-all duration-200"
-                >
-                  −
-                </button>
-                <span className="text-xl font-semibold text-gray-900">{guests}</span>
-                <button
-                  onClick={() => setGuests(Math.min(20, guests + 1))}
-                  className="w-10 h-10 rounded-full border-2 border-gray-300 flex items-center justify-center text-gray-600 hover:border-primary-600 hover:text-primary-600 hover:bg-primary-50 transition-all duration-200"
-                >
-                  +
-                </button>
-              </div>
-              <button
-                onClick={() => setShowGuestsPicker(false)}
-                className="mt-4 w-full bg-gradient-to-r from-primary-600 to-primary-700 text-white py-2.5 rounded-xl hover:from-primary-700 hover:to-primary-800 transition-all duration-200 font-semibold shadow-md hover:shadow-lg"
-              >
-                Confirmar
-              </button>
-            </div>
+          {/* Rooms & Guests Picker Dropdown */}
+          {showRoomsPicker && (
+            <RoomsGuestsPicker
+              rooms={rooms}
+              onChange={(newRooms) => {
+                setRooms(newRooms);
+              }}
+              onClose={() => setShowRoomsPicker(false)}
+            />
           )}
         </div>
 

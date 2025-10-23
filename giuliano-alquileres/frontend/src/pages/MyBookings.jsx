@@ -4,12 +4,15 @@ import api from '../services/api';
 import { FaCalendarAlt, FaMapMarkerAlt, FaUsers, FaCreditCard, FaStar, FaTimes } from 'react-icons/fa';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import CreateReviewModal from '../components/property/CreateReviewModal';
 
 const MyBookings = () => {
   const { user } = useAuth();
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
+  const [reviewModalOpen, setReviewModalOpen] = useState(false);
+  const [selectedBooking, setSelectedBooking] = useState(null);
 
   useEffect(() => {
     fetchBookings();
@@ -17,7 +20,7 @@ const MyBookings = () => {
 
   const fetchBookings = async () => {
     try {
-      const response = await api.get('/bookings/my');
+      const response = await api.get('/api/bookings/my');
       setBookings(response.data.bookings);
     } catch (error) {
       console.error('Erro ao buscar reservas:', error);
@@ -30,11 +33,21 @@ const MyBookings = () => {
     if (!confirm('Tem certeza que deseja cancelar esta reserva?')) return;
 
     try {
-      await api.put(`/bookings/${bookingId}/cancel`);
+      await api.put(`/api/bookings/${bookingId}/cancel`);
       fetchBookings();
     } catch (error) {
       console.error('Erro ao cancelar reserva:', error);
     }
+  };
+
+  const openReviewModal = (booking) => {
+    setSelectedBooking(booking);
+    setReviewModalOpen(true);
+  };
+
+  const handleReviewSuccess = () => {
+    fetchBookings(); // Recarregar reservas para atualizar status
+    alert('Avaliação enviada com sucesso!');
   };
 
   const getStatusColor = (status) => {
@@ -195,10 +208,20 @@ const MyBookings = () => {
                         )}
                         
                         {booking.status === 'completed' && !booking.review && (
-                          <button className="flex items-center px-3 py-1 text-sm text-blue-600 hover:text-blue-800 transition-colors">
+                          <button
+                            onClick={() => openReviewModal(booking)}
+                            className="flex items-center px-3 py-1 text-sm text-blue-600 hover:text-blue-800 transition-colors"
+                          >
                             <FaStar className="h-4 w-4 mr-1" />
                             Avaliar
                           </button>
+                        )}
+
+                        {booking.status === 'completed' && booking.review && (
+                          <span className="flex items-center px-3 py-1 text-sm text-green-600">
+                            <FaStar className="h-4 w-4 mr-1" />
+                            Avaliado
+                          </span>
                         )}
                       </div>
                     </div>
@@ -218,6 +241,14 @@ const MyBookings = () => {
           </div>
         )}
       </div>
+
+      {/* Modal de Avaliação */}
+      <CreateReviewModal
+        isOpen={reviewModalOpen}
+        onClose={() => setReviewModalOpen(false)}
+        booking={selectedBooking}
+        onSuccess={handleReviewSuccess}
+      />
     </div>
   );
 };

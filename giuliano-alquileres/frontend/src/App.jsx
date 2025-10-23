@@ -11,6 +11,10 @@ import PropertyDetails from "./pages/PropertyDetails";
 // --- Páginas de Autenticação ---
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
+import RegisterNew from "./pages/auth/RegisterNew";
+
+// --- Páginas de Perfil ---
+import Profile from "./pages/Profile";
 
 // --- Páginas Administrativas ---
 import AdminDashboard from "./pages/admin/AdminDashboard";
@@ -21,13 +25,17 @@ import UsersPage from "./pages/admin/UsersPage"; // <-- Importe a nova página q
 
 // --- Páginas de Pagamento ---
 import Checkout from "./pages/Checkout";
+import BookingCheckout from "./pages/BookingCheckout";
+import BookingConfirmation from "./pages/BookingConfirmation";
 import PaymentSuccess from "./pages/PaymentSuccess";
 import PaymentPending from "./pages/PaymentPending";
 import PaymentFailure from "./pages/PaymentFailure";
 
 // --- Páginas do Usuário ---
 import MyBookings from "./pages/MyBookings";
+import MyBookingsNew from "./pages/MyBookingsNew";
 import Favorites from "./pages/Favorites";
+import MyReviews from "./pages/MyReviews";
 
 // --- Páginas de Utilidade ---
 // É uma boa prática componentizar a página 404
@@ -46,7 +54,8 @@ function App() {
             <Route path="/properties" element={<Properties />} />
             <Route path="/property/:uuid" element={<PropertyDetails />} />
             <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
+            <Route path="/register" element={<RegisterNew />} />
+            <Route path="/register-old" element={<Register />} />
 
             {/* =====================================
                 ROTAS PROTEGIDAS PARA ADMINS
@@ -110,12 +119,32 @@ function App() {
                 ROTAS DE PAGAMENTO (Protegidas)
             ====================================== */}
 
-            {/* Página de Checkout */}
+            {/* Nova Página de Checkout Profissional */}
+            <Route
+              path="/booking-checkout"
+              element={
+                <ProtectedRoute>
+                  <BookingCheckout />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Página de Checkout Antiga (para bookings existentes) */}
             <Route
               path="/checkout/:bookingId"
               element={
                 <ProtectedRoute>
                   <Checkout />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Nova Página de Confirmação */}
+            <Route
+              path="/booking-confirmation"
+              element={
+                <ProtectedRoute>
+                  <BookingConfirmation />
                 </ProtectedRoute>
               }
             />
@@ -129,9 +158,29 @@ function App() {
                 ROTAS DO USUÁRIO (Protegidas)
             ====================================== */}
             
-            {/* Minhas Reservas */}
+            {/* Perfil do Usuário */}
+            <Route
+              path="/profile"
+              element={
+                <ProtectedRoute>
+                  <Profile />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Minhas Reservas - Nova Versão */}
             <Route
               path="/my-bookings"
+              element={
+                <ProtectedRoute>
+                  <MyBookingsNew />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Minhas Reservas - Versão Antiga (manter por compatibilidade) */}
+            <Route
+              path="/my-bookings-old"
               element={
                 <ProtectedRoute>
                   <MyBookings />
@@ -145,6 +194,16 @@ function App() {
               element={
                 <ProtectedRoute>
                   <Favorites />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Minhas Avaliações */}
+            <Route
+              path="/my-reviews"
+              element={
+                <ProtectedRoute>
+                  <MyReviews />
                 </ProtectedRoute>
               }
             />
