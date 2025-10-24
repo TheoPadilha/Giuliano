@@ -1,12 +1,30 @@
 import { useState } from "react";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 
-const CompactDatePicker = ({ selectedDate, onChange, onClose, occupiedDates = [], minDate = null }) => {
-  const [currentMonth, setCurrentMonth] = useState(selectedDate || new Date());
+const CompactDatePicker = ({
+  selectedDate,
+  onChange,
+  onClose,
+  occupiedDates = [],
+  minDate = null,
+}) => {
+  const [currentMonth, setCurrentMonth] = useState(
+    selectedDate ? new Date(selectedDate) : new Date()
+  );
 
   const months = [
-    "Jan", "Fev", "Mar", "Abr", "Mai", "Jun",
-    "Jul", "Ago", "Set", "Out", "Nov", "Dez",
+    "janeiro",
+    "fevereiro",
+    "março",
+    "abril",
+    "maio",
+    "junho",
+    "julho",
+    "agosto",
+    "setembro",
+    "outubro",
+    "novembro",
+    "dezembro",
   ];
 
   const weekDays = ["D", "S", "T", "Q", "Q", "S", "S"];
@@ -55,63 +73,78 @@ const CompactDatePicker = ({ selectedDate, onChange, onClose, occupiedDates = []
   };
 
   const handleDateClick = (date) => {
-    if (!date || isPastDate(date) || isDateOccupied(date) || isBeforeMinDate(date)) return;
+    if (
+      !date ||
+      isPastDate(date) ||
+      isDateOccupied(date) ||
+      isBeforeMinDate(date)
+    )
+      return;
     onChange(date.toISOString().split("T")[0]);
     onClose();
   };
 
   const goToPreviousMonth = () => {
-    setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1));
+    setCurrentMonth(
+      new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1)
+    );
   };
 
   const goToNextMonth = () => {
-    setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1));
+    setCurrentMonth(
+      new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1)
+    );
   };
 
   const days = getDaysInMonth(currentMonth);
 
   return (
-    <div className="bg-white rounded-lg shadow-xl border border-gray-200 p-4 w-[280px]">
+    <div className="bg-white rounded-3xl shadow-2xl border border-airbnb-grey-200 p-8 w-[340px]">
       {/* Header do mês */}
-      <div className="flex items-center justify-between mb-3">
+      <div className="flex items-center justify-between mb-6">
         <button
           onClick={goToPreviousMonth}
-          className="p-1.5 hover:bg-gray-100 text-gray-600 hover:text-red-600 rounded-full transition-colors"
+          className="p-2 hover:bg-airbnb-grey-50 rounded-full transition-colors"
         >
-          <FaChevronLeft className="text-xs" />
+          <FaChevronLeft className="text-sm text-airbnb-black" />
         </button>
-        <span className="font-semibold text-sm text-gray-800">
-          {months[currentMonth.getMonth()]} {currentMonth.getFullYear()}
+        <span className="font-semibold text-base text-airbnb-black">
+          {months[currentMonth.getMonth()]} de {currentMonth.getFullYear()}
         </span>
         <button
           onClick={goToNextMonth}
-          className="p-1.5 hover:bg-gray-100 text-gray-600 hover:text-red-600 rounded-full transition-colors"
+          className="p-2 hover:bg-airbnb-grey-50 rounded-full transition-colors"
         >
-          <FaChevronRight className="text-xs" />
+          <FaChevronRight className="text-sm text-airbnb-black" />
         </button>
       </div>
 
       {/* Dias da semana */}
-      <div className="grid grid-cols-7 gap-1 mb-2">
+      <div className="grid grid-cols-7 gap-2 mb-3">
         {weekDays.map((day, i) => (
-          <div key={i} className="text-center text-[10px] font-semibold text-gray-500 py-1">
+          <div
+            key={i}
+            className="text-center text-xs font-medium text-airbnb-grey-600 h-10 flex items-center justify-center"
+          >
             {day}
           </div>
         ))}
       </div>
 
       {/* Dias do mês */}
-      <div className="grid grid-cols-7 gap-1">
+      <div className="grid grid-cols-7 gap-2">
         {days.map((date, index) => {
           if (!date) {
-            return <div key={index} />;
+            return <div key={index} className="h-10" />;
           }
 
           const isOccupied = isDateOccupied(date);
           const isPast = isPastDate(date);
           const isBeforeMin = isBeforeMinDate(date);
           const isDisabled = isPast || isOccupied || isBeforeMin;
-          const isSelected = selectedDate && date.toDateString() === new Date(selectedDate).toDateString();
+          const isSelected =
+            selectedDate &&
+            date.toDateString() === new Date(selectedDate).toDateString();
 
           return (
             <button
@@ -119,10 +152,17 @@ const CompactDatePicker = ({ selectedDate, onChange, onClose, occupiedDates = []
               onClick={() => handleDateClick(date)}
               disabled={isDisabled}
               className={`
-                aspect-square rounded-md text-xs font-medium transition-all
-                ${isDisabled ? "text-gray-300 cursor-not-allowed bg-gray-50" : "hover:bg-red-50 hover:text-red-600"}
-                ${isSelected ? "bg-red-600 text-white hover:bg-red-700 shadow-sm" : ""}
-                ${!isDisabled && !isSelected ? "text-gray-700" : ""}
+                h-10 flex items-center justify-center rounded-full text-sm font-normal transition-all
+                ${
+                  isDisabled
+                    ? "text-airbnb-grey-300 cursor-not-allowed"
+                    : "text-airbnb-black hover:bg-airbnb-grey-50 hover:border hover:border-airbnb-black"
+                }
+                ${
+                  isSelected
+                    ? "bg-airbnb-black text-white hover:bg-airbnb-black hover:border-0"
+                    : ""
+                }
               `}
             >
               {date.getDate()}

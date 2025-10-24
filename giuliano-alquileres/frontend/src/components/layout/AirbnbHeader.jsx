@@ -5,8 +5,8 @@ import { FaSearch } from "react-icons/fa";
 import { FiMenu, FiUser, FiLogOut, FiSettings, FiGlobe } from "react-icons/fi";
 import { useAuth } from "../../contexts/AuthContext";
 import CompactDatePicker from "../search/CompactDatePicker";
-import RoomsGuestsPicker from "../search/RoomsGuestsPicker";
-
+// import RoomsGuestsPicker from "../search/RoomsGuestsPicker";
+import GuestsPicker from "../search/GuestsPicker";
 const AirbnbHeader = () => {
   const navigate = useNavigate();
   const { isAuthenticated, user, logout } = useAuth();
@@ -15,18 +15,27 @@ const AirbnbHeader = () => {
   const [destination, setDestination] = useState("");
   const [checkIn, setCheckIn] = useState(null);
   const [checkOut, setCheckOut] = useState(null);
-  const [rooms, setRooms] = useState([{ adults: 2, children: [] }]);
+  // const [rooms, setRooms] = useState([{ adults: 2, children: [] }]);
+
+  const [guests, setGuests] = useState({
+    adults: 2,
+    children: 0,
+    infants: 0,
+    pets: 0,
+  });
 
   // Estados dos dropdowns
   const [showCheckInPicker, setShowCheckInPicker] = useState(false);
   const [showCheckOutPicker, setShowCheckOutPicker] = useState(false);
-  const [showRoomsPicker, setShowRoomsPicker] = useState(false);
+  // const [showRoomsPicker, setShowRoomsPicker] = useState(false);
+  const [showGuestsPicker, setShowGuestsPicker] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
 
   // Refs para fechar dropdowns ao clicar fora
   const checkInRef = useRef(null);
   const checkOutRef = useRef(null);
-  const roomsRef = useRef(null);
+  // const roomsRef = useRef(null);
+  const guestsRef = useRef(null);
   const userMenuRef = useRef(null);
 
   useEffect(() => {
@@ -37,8 +46,11 @@ const AirbnbHeader = () => {
       if (checkOutRef.current && !checkOutRef.current.contains(event.target)) {
         setShowCheckOutPicker(false);
       }
-      if (roomsRef.current && !roomsRef.current.contains(event.target)) {
-        setShowRoomsPicker(false);
+      // if (roomsRef.current && !roomsRef.current.contains(event.target)) {
+      //   setShowRoomsPicker(false);
+      // }
+      if (guestsRef.current && !guestsRef.current.contains(event.target)) {
+        setShowGuestsPicker(false);
       }
       if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
         setIsUserMenuOpen(false);
@@ -49,6 +61,24 @@ const AirbnbHeader = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // const handleSearch = () => {
+  //   const params = new URLSearchParams();
+
+  //   if (destination) params.append("city", destination);
+  //   if (checkIn) params.append("checkIn", checkIn);
+  //   if (checkOut) params.append("checkOut", checkOut);
+
+  //   const totalGuests = rooms.reduce((total, room) => {
+  //     return total + room.adults + room.children.length;
+  //   }, 0);
+
+  //   params.append("guests", totalGuests);
+  //   params.append("rooms", rooms.length);
+  //   params.append("roomsData", JSON.stringify(rooms));
+
+  //   navigate(`/properties?${params.toString()}`);
+  // };
+
   const handleSearch = () => {
     const params = new URLSearchParams();
 
@@ -56,13 +86,11 @@ const AirbnbHeader = () => {
     if (checkIn) params.append("checkIn", checkIn);
     if (checkOut) params.append("checkOut", checkOut);
 
-    const totalGuests = rooms.reduce((total, room) => {
-      return total + room.adults + room.children.length;
-    }, 0);
-
+    const totalGuests = guests.adults + guests.children;
     params.append("guests", totalGuests);
-    params.append("rooms", rooms.length);
-    params.append("roomsData", JSON.stringify(rooms));
+
+    // Passar dados completos dos hóspedes
+    params.append("guestsData", JSON.stringify(guests));
 
     navigate(`/properties?${params.toString()}`);
   };
@@ -73,15 +101,38 @@ const AirbnbHeader = () => {
     navigate("/");
   };
 
-  const formatRoomsGuests = () => {
-    const totalGuests = rooms.reduce((total, room) => {
-      return total + room.adults + room.children.length;
-    }, 0);
+  // const formatRoomsGuests = () => {
+  //   const totalGuests = rooms.reduce((total, room) => {
+  //     return total + room.adults + room.children.length;
+  //   }, 0);
 
-    const roomsText = rooms.length === 1 ? "quarto" : "quartos";
-    const guestsText = totalGuests === 1 ? "hóspede" : "hóspedes";
+  //   const roomsText = rooms.length === 1 ? "quarto" : "quartos";
+  //   const guestsText = totalGuests === 1 ? "hóspede" : "hóspedes";
 
-    return `${rooms.length} ${roomsText}, ${totalGuests} ${guestsText}`;
+  //   return `${rooms.length} ${roomsText}, ${totalGuests} ${guestsText}`;
+  // };
+
+  const formatGuestsDisplay = () => {
+    const totalGuests = guests.adults + guests.children;
+    const parts = [];
+
+    if (totalGuests > 0) {
+      parts.push(
+        `${totalGuests} ${totalGuests === 1 ? "hóspede" : "hóspedes"}`
+      );
+    }
+
+    if (guests.infants > 0) {
+      parts.push(
+        `${guests.infants} ${guests.infants === 1 ? "bebê" : "bebês"}`
+      );
+    }
+
+    if (guests.pets > 0) {
+      parts.push(`${guests.pets} ${guests.pets === 1 ? "animal" : "animais"}`);
+    }
+
+    return parts.length > 0 ? parts.join(", ") : "Adicionar hóspedes";
   };
 
   const formatDate = (date) => {
@@ -102,7 +153,9 @@ const AirbnbHeader = () => {
               <div className="w-10 h-10 bg-gradient-to-br from-rausch to-rausch-dark rounded-xlarge flex items-center justify-center shadow-md">
                 <span className="text-white text-xl font-bold">Z</span>
               </div>
-              <span className="hidden lg:block text-xl font-bold text-rausch">Ziguealuga</span>
+              <span className="hidden lg:block text-xl font-bold text-rausch">
+                Ziguealuga
+              </span>
             </div>
           </Link>
 
@@ -124,7 +177,10 @@ const AirbnbHeader = () => {
               </div>
 
               {/* Check-in */}
-              <div className="flex-1 min-w-0 px-4 py-2.5 border-r border-airbnb-grey-200 relative" ref={checkInRef}>
+              <div
+                className="flex-1 min-w-0 px-4 py-2.5 border-r border-airbnb-grey-200 relative"
+                ref={checkInRef}
+              >
                 <div
                   className="cursor-pointer"
                   onClick={() => {
@@ -140,7 +196,9 @@ const AirbnbHeader = () => {
                     {checkIn ? (
                       formatDate(checkIn)
                     ) : (
-                      <span className="text-airbnb-grey-400">Adicionar data</span>
+                      <span className="text-airbnb-grey-400">
+                        Adicionar data
+                      </span>
                     )}
                   </div>
                 </div>
@@ -163,7 +221,10 @@ const AirbnbHeader = () => {
               </div>
 
               {/* Check-out */}
-              <div className="flex-1 min-w-0 px-4 py-2.5 border-r border-airbnb-grey-200 relative" ref={checkOutRef}>
+              <div
+                className="flex-1 min-w-0 px-4 py-2.5 border-r border-airbnb-grey-200 relative"
+                ref={checkOutRef}
+              >
                 <div
                   className="cursor-pointer"
                   onClick={() => {
@@ -179,7 +240,9 @@ const AirbnbHeader = () => {
                     {checkOut ? (
                       formatDate(checkOut)
                     ) : (
-                      <span className="text-airbnb-grey-400">Adicionar data</span>
+                      <span className="text-airbnb-grey-400">
+                        Adicionar data
+                      </span>
                     )}
                   </div>
                 </div>
@@ -200,7 +263,10 @@ const AirbnbHeader = () => {
               </div>
 
               {/* Quartos e Hóspedes */}
-              <div className="flex-1 min-w-0 px-4 py-2.5 relative" ref={roomsRef}>
+              {/* <div
+                className="flex-1 min-w-0 px-4 py-2.5 relative"
+                ref={roomsRef}
+              >
                 <div
                   className="cursor-pointer"
                   onClick={() => {
@@ -226,6 +292,37 @@ const AirbnbHeader = () => {
                     onClose={() => setShowRoomsPicker(false)}
                   />
                 )}
+              </div> */}
+
+              <div
+                className="flex-1 min-w-0 px-4 py-2.5 relative"
+                ref={guestsRef}
+              >
+                <div
+                  className="cursor-pointer"
+                  onClick={() => {
+                    setShowGuestsPicker(!showGuestsPicker);
+                    setShowCheckInPicker(false);
+                    setShowCheckOutPicker(false);
+                  }}
+                >
+                  <label className="block text-xs font-semibold text-airbnb-black mb-0.5">
+                    Hóspedes
+                  </label>
+                  <div className="text-sm text-airbnb-black truncate">
+                    {formatGuestsDisplay()}
+                  </div>
+                </div>
+
+                {showGuestsPicker && (
+                  <GuestsPicker
+                    guests={guests}
+                    onChange={(newGuests) => {
+                      setGuests(newGuests);
+                    }}
+                    onClose={() => setShowGuestsPicker(false)}
+                  />
+                )}
               </div>
 
               {/* Botão de Busca */}
@@ -246,8 +343,12 @@ const AirbnbHeader = () => {
           >
             <FaSearch className="text-airbnb-black" />
             <div className="flex flex-col items-start">
-              <span className="text-sm font-semibold text-airbnb-black">Para onde?</span>
-              <span className="text-xs text-airbnb-grey-400">Qualquer lugar • Qualquer semana</span>
+              <span className="text-sm font-semibold text-airbnb-black">
+                Para onde?
+              </span>
+              <span className="text-xs text-airbnb-grey-400">
+                Qualquer lugar • Qualquer semana
+              </span>
             </div>
           </button>
 
@@ -267,7 +368,7 @@ const AirbnbHeader = () => {
                 >
                   <FiMenu className="text-airbnb-black text-lg" />
                   <div className="w-7 h-7 bg-airbnb-grey-500 rounded-full flex items-center justify-center text-white text-sm font-semibold">
-                    {user?.name?.charAt(0).toUpperCase() || 'U'}
+                    {user?.name?.charAt(0).toUpperCase() || "U"}
                   </div>
                 </button>
 
@@ -301,7 +402,7 @@ const AirbnbHeader = () => {
                       <span>Favoritos</span>
                     </Link>
 
-                    {user?.role === 'admin' && (
+                    {user?.role === "admin" && (
                       <>
                         <div className="border-t border-airbnb-grey-200 my-2"></div>
                         <Link
