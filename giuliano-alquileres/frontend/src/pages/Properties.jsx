@@ -135,43 +135,40 @@ const Properties = () => {
       <AirbnbHeader />
 
       {/* Main Content */}
-      <div className="max-w-[1760px] mx-auto px-6 lg:px-12 py-8">
-        {/* Filtros Profissionais */}
-        <PropertyFiltersPro
-          filters={filters}
-          onFiltersChange={handleFiltersChange}
-          cities={cities}
-          amenities={amenities}
-          onSearch={handleSearch}
-          loading={loading}
-          className="mb-8"
-        />
+      <div className="max-w-[2520px] mx-auto px-6 sm:px-10 lg:px-20 xl:px-20">
+        {/* Filtros Minimalistas - Sticky e Compacto */}
+        <div className="sticky top-20 z-40 bg-white border-b border-airbnb-grey-200 -mx-6 sm:-mx-10 lg:-mx-20 xl:-mx-20 px-6 sm:px-10 lg:px-20 xl:px-20 py-3">
+          <PropertyFiltersPro
+            filters={filters}
+            onFiltersChange={handleFiltersChange}
+            cities={cities}
+            amenities={amenities}
+            onSearch={handleSearch}
+            loading={loading}
+          />
+        </div>
 
-        {/* Results */}
-        {loading ? (
-          <Loading text="Buscando imóveis..." />
-        ) : properties.length === 0 ? (
-          <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-3xl border-2 border-gray-200 p-16 text-center shadow-xl">
-            <div className="max-w-2xl mx-auto">
-              <div className="mb-8 relative">
-                <div className="w-32 h-32 bg-gradient-to-br from-gray-200 to-gray-300 rounded-full mx-auto flex items-center justify-center">
-                  <FaSearch className="text-6xl text-gray-400" />
-                </div>
-                <div className="absolute top-0 right-1/4 w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center">
-                  <FaFlag className="text-3xl text-primary-600" />
-                </div>
+        {/* Results Container */}
+        <div className="pt-8 pb-12">
+          {loading ? (
+            <div className="flex justify-center items-center py-20">
+              <Loading text="Buscando imóveis..." />
+            </div>
+          ) : properties.length === 0 ? (
+            // Empty State - Clean e Minimalista
+            <div className="bg-white rounded-xlarge p-12 text-center max-w-2xl mx-auto my-12">
+              <div className="w-20 h-20 bg-airbnb-grey-100 rounded-full mx-auto flex items-center justify-center mb-6">
+                <FaSearch className="text-3xl text-airbnb-grey-400" />
               </div>
 
-              <h3 className="text-4xl font-bold text-gray-900 mb-4">
-                Nenhum imóvel encontrado
+              <h3 className="text-2xl font-semibold text-airbnb-black mb-3">
+                Nenhuma estadia encontrada
               </h3>
-              <p className="text-gray-600 text-lg mb-8">
-                Não encontramos imóveis que correspondam aos seus critérios de busca.
-                <br />
-                <span className="text-sm">Tente ajustar os filtros ou fazer uma nova pesquisa.</span>
+              <p className="text-airbnb-grey-400 text-base mb-8 max-w-md mx-auto">
+                Tente ajustar seus filtros ou datas para ver mais opções disponíveis
               </p>
 
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
                 <button
                   onClick={() => {
                     setFilters({
@@ -193,139 +190,59 @@ const Properties = () => {
                     });
                     setSearchParams({});
                   }}
-                  className="bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 text-white px-8 py-4 rounded-xl font-bold transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center gap-3"
+                  className="px-6 py-3 bg-airbnb-black text-white rounded-medium font-semibold hover:bg-airbnb-grey-1000 transition-colors flex items-center gap-2"
                 >
-                  <FaRedo />
-                  <span>Limpar Todos os Filtros</span>
+                  <FaRedo className="text-sm" />
+                  <span>Limpar filtros</span>
                 </button>
 
                 <Link
                   to="/"
-                  className="px-8 py-4 bg-white border-2 border-gray-300 hover:border-primary-600 text-gray-700 hover:text-primary-600 rounded-xl font-bold transition-all duration-300 flex items-center gap-3 shadow-md"
+                  className="px-6 py-3 bg-white border border-airbnb-grey-300 text-airbnb-black rounded-medium font-semibold hover:border-airbnb-black transition-colors"
                 >
-                  <FaArrowLeft />
-                  <span>Voltar ao Início</span>
+                  Explorar todos os imóveis
                 </Link>
               </div>
-
-              <div className="mt-12 pt-8 border-t border-gray-300">
-                <p className="text-sm text-gray-600 mb-4 font-semibold">Sugestões:</p>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm text-gray-600">
-                  <div className="bg-white p-4 rounded-lg border border-gray-200">
-                    <p className="font-medium text-gray-900 mb-1">Expanda a busca</p>
-                    <p>Tente buscar em outras cidades ou regiões</p>
-                  </div>
-                  <div className="bg-white p-4 rounded-lg border border-gray-200">
-                    <p className="font-medium text-gray-900 mb-1">Ajuste o preço</p>
-                    <p>Aumente a faixa de preço para mais opções</p>
-                  </div>
-                  <div className="bg-white p-4 rounded-lg border border-gray-200">
-                    <p className="font-medium text-gray-900 mb-1">Reduza filtros</p>
-                    <p>Menos comodidades selecionadas = mais resultados</p>
-                  </div>
-                </div>
+            </div>
+          ) : (
+            <>
+              {/* Grid de Propriedades - Minimalista */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6 gap-x-6 gap-y-10 mb-16">
+                {properties.map((property, index) => (
+                  <PropertyCard
+                    key={property.uuid || property.id || `property-${index}`}
+                    property={property}
+                  />
+                ))}
               </div>
-            </div>
-          </div>
-        ) : (
-          <>
-            {/* Header de Resultados */}
-            <div className="mb-6">
-              <h1 className="text-2xl font-semibold text-airbnb-black mb-2">
-                {properties.length} {properties.length === 1 ? 'imóvel' : 'imóveis'}
-              </h1>
-              <p className="text-airbnb-grey-400 text-base">
-                Explore opções incríveis para sua próxima estadia
-              </p>
-            </div>
 
-            {/* Grid de Propriedades - Estilo Airbnb */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-10 mb-12">
-              {properties.map((property, index) => (
-                <PropertyCard
-                  key={property.uuid || property.id || `property-${index}`}
-                  property={property}
-                />
-              ))}
-            </div>
-
-            {/* Paginação Moderna */}
-            {pagination.totalPages > 1 && (
-              <div className="flex flex-col items-center space-y-4">
-                <div className="flex items-center space-x-3">
+              {/* Paginação Minimalista */}
+              {pagination.totalPages > 1 && (
+                <div className="flex justify-center items-center gap-3 pt-6 pb-4">
                   <button
                     onClick={() => handlePageChange(filters.page - 1)}
                     disabled={!pagination.hasPrevPage}
-                    className="px-5 py-3 bg-white border border-gray-200 rounded-xl hover:border-red-600 hover:text-red-600 transition-all duration-200 font-semibold disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:border-gray-200 disabled:hover:text-gray-900 shadow-sm"
+                    className="px-5 py-2.5 text-sm font-medium text-airbnb-black underline hover:bg-airbnb-grey-50 rounded-lg disabled:opacity-40 disabled:cursor-not-allowed disabled:no-underline transition-all"
                   >
-                    ← Anterior
+                    Anterior
                   </button>
 
-                  <div className="flex space-x-2">
-                    {Array.from(
-                      { length: Math.min(pagination.totalPages, 5) },
-                      (_, i) => {
-                        let page;
-                        if (pagination.totalPages <= 5) {
-                          page = i + 1;
-                        } else if (filters.page <= 3) {
-                          page = i + 1;
-                        } else if (filters.page >= pagination.totalPages - 2) {
-                          page = pagination.totalPages - 4 + i;
-                        } else {
-                          page = filters.page - 2 + i;
-                        }
-                        return page;
-                      }
-                    ).map((page) => (
-                      <button
-                        key={page}
-                        onClick={() => handlePageChange(page)}
-                        className={`w-12 h-12 rounded-xl font-semibold transition-all duration-200 ${
-                          page === filters.page
-                            ? "bg-red-600 text-white shadow-md"
-                            : "bg-white border border-gray-200 hover:border-red-600 hover:text-red-600"
-                        }`}
-                      >
-                        {page}
-                      </button>
-                    ))}
-                  </div>
+                  <span className="text-sm text-airbnb-grey-400 px-4">
+                    {filters.page} de {pagination.totalPages}
+                  </span>
 
                   <button
                     onClick={() => handlePageChange(filters.page + 1)}
                     disabled={!pagination.hasNextPage}
-                    className="px-5 py-3 bg-white border border-gray-200 rounded-xl hover:border-red-600 hover:text-red-600 transition-all duration-200 font-semibold disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:border-gray-200 disabled:hover:text-gray-900 shadow-sm"
+                    className="px-5 py-2.5 text-sm font-medium text-airbnb-black underline hover:bg-airbnb-grey-50 rounded-lg disabled:opacity-40 disabled:cursor-not-allowed disabled:no-underline transition-all"
                   >
-                    Próxima →
+                    Próxima
                   </button>
                 </div>
-
-                {/* Info de Paginação */}
-                {pagination.totalItems > 0 && (
-                  <div className="text-sm text-gray-600">
-                    Mostrando{" "}
-                    <span className="font-semibold text-gray-900">
-                      {(filters.page - 1) * filters.limit + 1}
-                    </span>{" "}
-                    a{" "}
-                    <span className="font-semibold text-gray-900">
-                      {Math.min(
-                        filters.page * filters.limit,
-                        pagination.totalItems
-                      )}
-                    </span>{" "}
-                    de{" "}
-                    <span className="font-semibold text-gray-900">
-                      {pagination.totalItems}
-                    </span>{" "}
-                    imóveis
-                  </div>
-                )}
-              </div>
-            )}
-          </>
-        )}
+              )}
+            </>
+          )}
+        </div>
       </div>
 
       {/* Footer */}
