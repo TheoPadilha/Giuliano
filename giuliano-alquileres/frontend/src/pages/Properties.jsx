@@ -6,6 +6,8 @@ import api from "../services/api";
 import PropertyCard from "../components/property/PropertyCard";
 import PropertyFilters from "../components/property/PropertyFilters";
 import PropertyFiltersPro from "../components/property/PropertyFiltersPro";
+import AirbnbHeader from "../components/layout/AirbnbHeader";
+import Footer from "../components/layout/Footer";
 import Loading from "../components/common/Loading";
 import { FaArrowLeft, FaSearch, FaRedo, FaFlag, FaSortAmountDown } from "react-icons/fa";
 
@@ -129,63 +131,11 @@ const Properties = () => {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Header Profissional */}
-      <header className="bg-gradient-to-r from-gray-900 to-gray-800 shadow-xl sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-6">
-              <Link
-                to="/"
-                className="text-white hover:text-gray-200 font-semibold text-sm flex items-center gap-2 transition-colors px-4 py-2 bg-white/10 rounded-lg hover:bg-white/20"
-              >
-                <FaArrowLeft />
-                <span>Voltar</span>
-              </Link>
-              <div className="border-l border-gray-600 pl-6">
-                <h1 className="text-3xl font-bold text-white flex items-center gap-3">
-                  <FaSearch className="text-primary-500" />
-                  <span>Imóveis Disponíveis</span>
-                </h1>
-                <div className="text-sm text-gray-300 mt-1 flex items-center gap-2">
-                  {loading ? (
-                    <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                      <span>Buscando imóveis...</span>
-                    </>
-                  ) : (
-                    <>
-                      <span className="font-semibold text-primary-400">{properties.length}</span>
-                      <span>
-                        {properties.length === 1
-                          ? "imóvel encontrado"
-                          : "imóveis encontrados"}
-                      </span>
-                    </>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* Stats Badge */}
-            {pagination.totalItems > 0 && (
-              <div className="hidden md:flex items-center gap-4 bg-white/10 backdrop-blur-sm rounded-xl px-6 py-3 border border-white/20">
-                <div className="text-center">
-                  <p className="text-2xl font-bold text-white">{pagination.totalItems}</p>
-                  <p className="text-xs text-gray-300">Total</p>
-                </div>
-                <div className="w-px h-10 bg-white/20" />
-                <div className="text-center">
-                  <p className="text-2xl font-bold text-white">{pagination.totalPages}</p>
-                  <p className="text-xs text-gray-300">Páginas</p>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      </header>
+      {/* Header Estilo Airbnb */}
+      <AirbnbHeader />
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-[1760px] mx-auto px-6 lg:px-12 py-8">
         {/* Filtros Profissionais */}
         <PropertyFiltersPro
           filters={filters}
@@ -279,8 +229,18 @@ const Properties = () => {
           </div>
         ) : (
           <>
-            {/* Grid de Propriedades */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+            {/* Header de Resultados */}
+            <div className="mb-6">
+              <h1 className="text-2xl font-semibold text-airbnb-black mb-2">
+                {properties.length} {properties.length === 1 ? 'imóvel' : 'imóveis'}
+              </h1>
+              <p className="text-airbnb-grey-400 text-base">
+                Explore opções incríveis para sua próxima estadia
+              </p>
+            </div>
+
+            {/* Grid de Propriedades - Estilo Airbnb */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-10 mb-12">
               {properties.map((property, index) => (
                 <PropertyCard
                   key={property.uuid || property.id || `property-${index}`}
@@ -367,6 +327,9 @@ const Properties = () => {
           </>
         )}
       </div>
+
+      {/* Footer */}
+      <Footer />
     </div>
   );
 };

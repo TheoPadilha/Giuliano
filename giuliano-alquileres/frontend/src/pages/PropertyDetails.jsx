@@ -13,6 +13,8 @@ import DateRangePicker from "../components/search/DateRangePicker";
 import RoomsGuestsPicker from "../components/search/RoomsGuestsPicker";
 import ReviewSection from "../components/property/ReviewSection";
 import FavoriteButton from "../components/property/FavoriteButton";
+import AirbnbHeader from "../components/layout/AirbnbHeader";
+import PropertyMap from "../components/property/PropertyMap";
 
 const PropertyDetails = () => {
   const { uuid } = useParams();
@@ -131,25 +133,26 @@ const PropertyDetails = () => {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Header Sticky */}
-      <header className="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <button
-              onClick={() => navigate(-1)}
-              className="flex items-center gap-2 text-gray-700 hover:text-gray-900 transition-colors font-medium"
-            >
-              <FaArrowLeft /> Voltar
+      {/* Header Estilo Airbnb */}
+      <AirbnbHeader />
+
+      {/* Back Button Row */}
+      <div className="max-w-[1120px] mx-auto px-6 lg:px-12 py-6">
+        <div className="flex items-center justify-between">
+          <button
+            onClick={() => navigate(-1)}
+            className="flex items-center gap-2 text-airbnb-black hover:text-airbnb-grey-1000 transition-colors font-medium"
+          >
+            <FaArrowLeft /> Voltar
+          </button>
+          <div className="flex items-center gap-4">
+            <button className="flex items-center gap-2 px-4 py-2 rounded-medium hover:bg-airbnb-grey-50 transition-colors font-medium">
+              <FaShare className="text-airbnb-black" /> Compartilhar
             </button>
-            <div className="flex items-center gap-4">
-              <button className="flex items-center gap-2 px-4 py-2 rounded-xl hover:bg-gray-100 transition-colors font-medium">
-                <FaShare className="text-red-600" /> Compartilhar
-              </button>
-              <FavoriteButton propertyId={property.id} size="lg" />
-            </div>
+            <FavoriteButton propertyId={property.id} size="lg" />
           </div>
         </div>
-      </header>
+      </div>
 
       {/* Galeria de Fotos - Estilo Airbnb */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -272,6 +275,17 @@ const PropertyDetails = () => {
                 )}
               </div>
             )}
+
+            {/* Localização no Mapa */}
+            <div className="border-b border-gray-200 pb-8">
+              <PropertyMap
+                latitude={property.latitude}
+                longitude={property.longitude}
+                address={property.address}
+                propertyTitle={property.title}
+                apiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY}
+              />
+            </div>
 
             {/* Calendário de Disponibilidade */}
             <div className="border-b border-gray-200 pb-8">

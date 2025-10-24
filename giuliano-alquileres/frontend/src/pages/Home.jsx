@@ -1,15 +1,15 @@
 // giuliano-alquileres/frontend/src/pages/Home.jsx
 
 import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import api from "../services/api";
 import PropertyCard from "../components/property/PropertyCard";
 import Loading from "../components/common/Loading";
-import SearchBar from "../components/search/SearchBar";
-import { FaStar, FaBuilding, FaHome, FaCrown, FaGem, FaTrophy, FaMapMarkerAlt, FaComments, FaWhatsapp } from "react-icons/fa";
+import AirbnbHeader from "../components/layout/AirbnbHeader";
+import Footer from "../components/layout/Footer";
+import { FaBuilding, FaHome, FaCrown, FaGem, FaTrophy, FaMapMarkerAlt, FaComments, FaWhatsapp } from "react-icons/fa";
 
 const Home = () => {
-  const navigate = useNavigate();
   const [featuredProperties, setFeaturedProperties] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -41,26 +41,13 @@ const Home = () => {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* 🎯 BOTÃO SIGN IN MINIMALISTA */}
-      <header className="absolute top-0 left-0 right-0 z-30 px-6 py-5">
-        <div className="max-w-7xl mx-auto flex justify-end">
-          <button
-            onClick={() => navigate("/login")}
-            className="group relative px-6 py-2.5 text-sm font-semibold text-white/90 hover:text-white transition-all duration-300"
-          >
-            <span className="relative z-10">Sign In</span>
-            {/* Borda que aparece no hover */}
-            <span className="absolute inset-0 border-2 border-white/30 rounded-full opacity-0 group-hover:opacity-100 group-hover:border-white transition-all duration-300"></span>
-            {/* Background que aparece no hover */}
-            <span className="absolute inset-0 bg-white/10 backdrop-blur-sm rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 scale-95 group-hover:scale-100"></span>
-          </button>
-        </div>
-      </header>
+      {/* Header Estilo Airbnb */}
+      <AirbnbHeader />
 
-      {/* Hero Section */}
-      <section className="relative h-[90vh] overflow-hidden">
-        {/* Background com Overlay mais escuro */}
-        <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/60 to-black/40 z-10"></div>
+      {/* Hero Section - Imagem logo abaixo do header */}
+      <section className="relative h-[700px] overflow-hidden">
+        {/* Background com Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-black/30 z-10"></div>
         <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
           style={{
@@ -72,37 +59,29 @@ const Home = () => {
         {/* Conteúdo Hero */}
         <div className="relative z-20 h-full flex items-center">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-            <div className="max-w-3xl">
-              {/* Badge Amarelo */}
-              <div className="inline-flex items-center bg-yellow-400 text-gray-900 px-5 py-2 rounded-full font-bold text-sm mb-8">
+            <div className="max-w-2xl">
+              {/* Badge */}
+              <div className="inline-flex items-center bg-yellow-400 text-gray-900 px-4 py-2 rounded-full font-bold text-xs mb-6">
                 <FaGem className="mr-2" />
                 Imóveis Premium em Balneário Camboriú
               </div>
 
-              <h1 className="text-5xl md:text-6xl font-bold text-white mb-6 leading-tight">
+              <h1 className="text-4xl md:text-5xl font-bold text-white mb-4 leading-tight">
                 Encontre seu
                 <span className="block text-red-500 mt-2">Lar dos Sonhos</span>
               </h1>
 
-              <p className="text-xl text-gray-200 mb-10 leading-relaxed">
+              <p className="text-lg text-gray-200 leading-relaxed">
                 Descubra os melhores imóveis para compra e aluguel na cidade
-                mais desejada de Santa Catarina. Qualidade, conforto e
-                localização privilegiada.
+                mais desejada de Santa Catarina.
               </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* 🔥 NOVA SEÇÃO DE BUSCA COM CALENDÁRIO */}
-      <section className="relative -mt-24 z-30 pb-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <SearchBar />
-        </div>
-      </section>
-
-      {/* Seção de estatísticas movida para baixo */}
-      <section className="py-12 bg-white">
+      {/* Seção de estatísticas */}
+      <section className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-3 gap-8 max-w-4xl mx-auto">
             <div className="text-center">
@@ -217,26 +196,21 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Imóveis em Destaque */}
+      {/* Imóveis em Destaque - Grid Estilo Airbnb */}
       {featuredProperties.length > 0 && (
-        <section className="py-20 bg-white">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-12">
-              <div className="inline-flex items-center bg-yellow-400 text-gray-900 px-5 py-2 rounded-full font-bold text-sm mb-6">
-                <FaStar className="mr-2" />
-                Seleção Premium
-              </div>
-              <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-                Imóveis em <span className="text-red-600">Destaque</span>
+        <section className="py-12 bg-white">
+          <div className="max-w-[1760px] mx-auto px-6 lg:px-12">
+            <div className="mb-8">
+              <h2 className="text-3xl md:text-4xl font-semibold text-airbnb-black mb-2">
+                Imóveis em Destaque
               </h2>
-              <p className="text-gray-600 text-lg max-w-2xl mx-auto">
-                Propriedades cuidadosamente selecionadas com as melhores
-                localizações e comodidades
+              <p className="text-airbnb-grey-400 text-base">
+                Propriedades cuidadosamente selecionadas
               </p>
-              <div className="w-20 h-1 bg-red-600 mx-auto mt-6 rounded-full"></div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {/* Grid Responsivo - Estilo Airbnb */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-10">
               {featuredProperties.map((property, index) => (
                 <PropertyCard
                   key={property.uuid || property.id || `property-${index}`}
@@ -248,10 +222,10 @@ const Home = () => {
             <div className="text-center mt-12">
               <Link
                 to="/properties"
-                className="inline-flex items-center bg-red-600 hover:bg-red-700 text-white font-bold py-4 px-10 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+                className="inline-flex items-center bg-airbnb-black hover:bg-airbnb-grey-1000 text-white font-medium py-3 px-8 rounded-medium shadow-sm hover:shadow-md transition-all duration-200"
               >
-                <span>Ver Todos os Imóveis</span>
-                <span className="ml-2 text-xl">→</span>
+                <span>Mostrar todos os imóveis</span>
+                <span className="ml-2">→</span>
               </Link>
             </div>
           </div>
@@ -348,6 +322,9 @@ const Home = () => {
           </div>
         </div>
       </section>
+
+      {/* Footer - Estilo Airbnb */}
+      <Footer />
     </div>
   );
 };

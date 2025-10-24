@@ -9,7 +9,9 @@
       "Bash(npm start)",
       "Bash(npm run build:*)",
       "Bash(netstat:*)",
-      "Bash(findstr:*)"
+      "Bash(findstr:*)",
+      "Bash(find:*)",
+      "Bash(Get-Date)"
     ],
     "deny": [],
     "ask": []

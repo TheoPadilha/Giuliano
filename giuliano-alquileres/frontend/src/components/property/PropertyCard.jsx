@@ -1,14 +1,14 @@
-// giuliano-alquileres/frontend/src/components/property/PropertyCard.jsx
+// AIRBNB STYLE PropertyCard - Cópia Exata do Design
 import { Link } from "react-router-dom";
 import PropTypes from "prop-types";
-import { FaHome, FaStar, FaBed, FaShower, FaUsers, FaMapMarkerAlt, FaArrowRight } from "react-icons/fa";
+import { FaStar } from "react-icons/fa";
 import FavoriteButton from "./FavoriteButton";
 
 const PropertyCard = ({ property }) => {
   const getTypeLabel = (type) => {
     const types = {
       apartment: "Apartamento",
-      house: "Casa",
+      house: "Casa inteira",
       studio: "Studio",
       penthouse: "Cobertura",
     };
@@ -17,25 +17,20 @@ const PropertyCard = ({ property }) => {
 
   const formatPrice = (price) => {
     return parseFloat(price).toLocaleString("pt-BR", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
     });
   };
 
-  // 🔧 CORREÇÃO: Garantir que temos o UUID correto
   const propertyId = property.uuid || property.id;
 
-  // 🔧 CORREÇÃO: URL da foto usando o backend
   const getPhotoUrl = (filename) => {
     if (!filename) return null;
-    // Se já é uma URL completa, usa direto
     if (filename.startsWith("http")) return filename;
-    // Caso contrário, monta a URL do backend (usar variável de ambiente)
     const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
     return `${API_URL}/uploads/properties/${filename}`;
   };
 
-  // Pegar a primeira foto
   const mainPhoto =
     property.photos && property.photos.length > 0
       ? typeof property.photos[0] === "string"
@@ -43,105 +38,86 @@ const PropertyCard = ({ property }) => {
         : property.photos[0].filename
       : null;
 
+  // Rating fictício (pode vir do backend)
+  const rating = property.rating || 4.8;
+  const reviewCount = property.review_count || 124;
+
   return (
     <Link to={`/property/${propertyId}`} className="group block">
-      <div className="bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-300 border border-gray-100 hover:border-amber-400/30 transform hover:-translate-y-2">
-        {/* Imagem */}
-        <div className="relative h-64 overflow-hidden">
-          {mainPhoto ? (
-            <img
-              src={getPhotoUrl(mainPhoto)}
-              alt={property.title}
-              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-              onError={(e) => {
-                console.error("Erro ao carregar imagem:", mainPhoto);
-                e.target.src =
-                  "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIGZpbGw9IiNGM0Y0RjYiLz48L3N2Zz4=";
-              }}
-            />
-          ) : (
-            <div className="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
-              <FaHome className="text-6xl text-gray-400" />
-            </div>
-          )}
+      <div className="w-full">
+        {/* Container da Imagem - Estilo Airbnb */}
+        <div className="relative mb-3">
+          {/* Imagem Principal */}
+          <div className="relative aspect-[20/19] rounded-xlarge overflow-hidden">
+            {mainPhoto ? (
+              <img
+                src={getPhotoUrl(mainPhoto)}
+                alt={property.title}
+                className="w-full h-full object-cover group-hover:brightness-95 transition-all duration-200"
+                loading="lazy"
+                onError={(e) => {
+                  e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300'%3E%3Crect width='400' height='300' fill='%23F7F7F7'/%3E%3C/svg%3E";
+                }}
+              />
+            ) : (
+              <div className="w-full h-full bg-airbnb-grey-50 flex items-center justify-center">
+                <div className="text-airbnb-grey-300 text-4xl">🏠</div>
+              </div>
+            )}
 
-          {/* Badge Featured */}
+            {/* Loading Skeleton */}
+            <div className="absolute inset-0 bg-gradient-to-r from-airbnb-grey-50 via-airbnb-grey-100 to-airbnb-grey-50 bg-[length:200%_100%] animate-shimmer opacity-0 group-hover:opacity-0"></div>
+          </div>
+
+          {/* Botão Favorito - Top Right */}
+          <div className="absolute top-3 right-3 z-10">
+            <FavoriteButton propertyId={property.id} />
+          </div>
+
+          {/* Badge Superhost (se aplicável) */}
           {property.is_featured && (
-            <div className="absolute top-4 right-4 bg-gradient-to-r from-amber-400 to-yellow-500 text-gray-900 px-3 py-1 rounded-full font-bold text-xs shadow-lg flex items-center gap-1">
-              <FaStar />
-              <span>Destaque</span>
+            <div className="absolute top-3 left-3 bg-white text-airbnb-black text-xs font-semibold px-2 py-1 rounded-small shadow-sm">
+              Superhost
             </div>
           )}
-
-          {/* Badge Tipo */}
-          <div className="absolute top-4 left-4 bg-white/95 backdrop-blur-sm text-gray-900 px-3 py-1 rounded-full font-semibold text-xs shadow-md">
-            {getTypeLabel(property.type)}
-          </div>
-
-          {/* Botão de Favorito */}
-          <div className="absolute top-4 right-4">
-            <FavoriteButton propertyId={property.id} className="shadow-lg" />
-          </div>
-
-          {/* Overlay de Preço */}
-          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent p-4">
-            <div className="flex items-end justify-between">
-              <div>
-                <p className="text-gray-300 text-xs mb-1">A partir de</p>
-                <p className="text-white text-2xl font-bold">
-                  R$ {formatPrice(property.price_per_night)}
-                </p>
-                <p className="text-gray-300 text-xs">por noite</p>
-              </div>
-              <div className="bg-white/20 backdrop-blur-sm rounded-full px-3 py-1 flex items-center gap-1">
-                <span className="text-white text-sm font-semibold">
-                  {property.bedrooms}
-                </span>
-                <FaBed className="text-white" />
-              </div>
-            </div>
-          </div>
         </div>
 
-        {/* Conteúdo */}
-        <div className="p-5">
-          {/* Título */}
-          <h3 className="text-xl font-bold text-gray-900 mb-2 line-clamp-1 group-hover:text-primary-700 transition-colors">
-            {property.title}
-          </h3>
+        {/* Informações do Card - Estilo Airbnb */}
+        <div className="flex flex-col">
+          {/* Rating e Reviews */}
+          <div className="flex items-center mb-1">
+            <FaStar className="text-airbnb-black text-xs mr-1" />
+            <span className="text-airbnb-black text-sm font-normal">
+              {rating.toFixed(1)}
+            </span>
+            <span className="text-airbnb-grey-400 text-sm ml-1">
+              ({reviewCount})
+            </span>
+          </div>
 
           {/* Localização */}
-          <p className="text-gray-600 text-sm mb-4 flex items-center line-clamp-1">
-            <FaMapMarkerAlt className="mr-1" />
-            {property.address}
+          <h3 className="text-airbnb-black text-base font-normal mb-0.5 line-clamp-1">
+            {property.address?.split(',')[0] || property.city || "Brasil"}
+          </h3>
+
+          {/* Tipo de Propriedade */}
+          <p className="text-airbnb-grey-400 text-sm font-normal mb-1 line-clamp-1">
+            {getTypeLabel(property.type)}
           </p>
 
-          {/* Divisor Dourado */}
-          <div className="w-full h-px bg-gradient-to-r from-transparent via-amber-400 to-transparent mb-4"></div>
+          {/* Detalhes (quartos, hóspedes) */}
+          <p className="text-airbnb-grey-400 text-sm font-normal mb-2">
+            {property.max_guests} hóspedes · {property.bedrooms} quarto{property.bedrooms > 1 ? 's' : ''} · {property.bathrooms} banheiro{property.bathrooms > 1 ? 's' : ''}
+          </p>
 
-          {/* Características */}
-          <div className="flex items-center justify-between text-sm">
-            <div className="flex items-center gap-4">
-              <div className="flex items-center text-gray-700">
-                <FaBed className="mr-1" />
-                <span className="font-semibold">{property.bedrooms}</span>
-              </div>
-              <div className="flex items-center text-gray-700">
-                <FaShower className="mr-1" />
-                <span className="font-semibold">{property.bathrooms}</span>
-              </div>
-              {property.max_guests && (
-                <div className="flex items-center text-gray-700">
-                  <FaUsers className="mr-1" />
-                  <span className="font-semibold">{property.max_guests}</span>
-                </div>
-              )}
-            </div>
-
-            {/* Ícone de seta */}
-            <div className="w-8 h-8 rounded-full bg-gradient-to-r from-primary-600 to-amber-500 flex items-center justify-center group-hover:scale-110 transition-transform">
-              <FaArrowRight className="text-white text-sm" />
-            </div>
+          {/* Preço */}
+          <div className="flex items-baseline">
+            <span className="text-airbnb-black text-base font-semibold">
+              R$ {formatPrice(property.price_per_night)}
+            </span>
+            <span className="text-airbnb-black text-sm font-normal ml-1">
+              / noite
+            </span>
           </div>
         </div>
       </div>
