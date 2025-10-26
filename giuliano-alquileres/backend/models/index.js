@@ -11,6 +11,7 @@ const Booking = require("./Booking");
 const PropertyAvailability = require("./PropertyAvailability");
 const Payment = require("./Payment");
 const Review = require("./Review");
+const CityGuide = require("./CityGuide");
 
 // ============================================
 // RELACIONAMENTOS
@@ -198,5 +199,6 @@ module.exports = {
   PropertyAvailability,
   Payment,
   Review,
+  CityGuide,
   syncModels,
 };

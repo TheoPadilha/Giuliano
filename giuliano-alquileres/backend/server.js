@@ -25,7 +25,7 @@ process.env.NODE_ENV = process.env.NODE_ENV || "production";
 
 // Importar configuração do banco e models
 const { sequelize } = require("./config/database");
-const { syncModels, User, City, Property } = require("./models");
+const { syncModels, User, City, Property, CityGuide } = require("./models");
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -78,9 +78,9 @@ const generalLimiter = rateLimit({
   handler: (req, res) => {
     res.status(429).json({
       success: false,
-      error: "Muitas requisições. Tente novamente em 15 minutos."
+      error: "Muitas requisições. Tente novamente em 15 minutos.",
     });
-  }
+  },
 });
 
 // Rate limiter específico para autenticação (mais restritivo)
@@ -91,9 +91,9 @@ const authLimiter = rateLimit({
   handler: (req, res) => {
     res.status(429).json({
       success: false,
-      error: "Muitas tentativas de login. Tente novamente em 15 minutos."
+      error: "Muitas tentativas de login. Tente novamente em 15 minutos.",
     });
-  }
+  },
 });
 
 // Rate limiter para cadastro
@@ -103,9 +103,9 @@ const registerLimiter = rateLimit({
   handler: (req, res) => {
     res.status(429).json({
       success: false,
-      error: "Muitos cadastros. Tente novamente em 1 hora."
+      error: "Muitos cadastros. Tente novamente em 1 hora.",
     });
-  }
+  },
 });
 
 app.use("/api/", generalLimiter);
@@ -137,6 +137,7 @@ app.use("/api/bookings", require("./routes/bookings"));
 app.use("/api/payments", require("./routes/payments"));
 app.use("/api/reviews", require("./routes/reviews"));
 app.use("/api/favorites", require("./routes/favorites"));
+app.use("/api/city-guides", require("./routes/cityGuides"));
 
 // Middleware de erro global
 app.use((err, req, res, next) => {

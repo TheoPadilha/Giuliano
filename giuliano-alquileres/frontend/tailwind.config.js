@@ -93,6 +93,9 @@ export default {
         'red-glow': '0 0 20px rgba(220, 38, 38, 0.3)',
         'red-strong': '0 10px 40px -4px rgba(220, 38, 38, 0.4)',
       },
+      maxWidth: {
+        '2520': '2520px',
+      },
       spacing: {
         '4.5': '1.125rem', // 18px
         '15': '3.75rem', // 60px

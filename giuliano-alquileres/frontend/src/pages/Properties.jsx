@@ -1,15 +1,20 @@
-// giuliano-alquileres/frontend/src/pages/Properties.jsx
-
+// Properties.jsx - Versão Corrigida e Melhorada
 import { useState, useEffect } from "react";
 import { useSearchParams, Link } from "react-router-dom";
 import api from "../services/api";
 import PropertyCard from "../components/property/PropertyCard";
-import PropertyFilters from "../components/property/PropertyFilters";
 import PropertyFiltersPro from "../components/property/PropertyFiltersPro";
 import AirbnbHeader from "../components/layout/AirbnbHeader";
 import Footer from "../components/layout/Footer";
 import Loading from "../components/common/Loading";
-import { FaArrowLeft, FaSearch, FaRedo, FaFlag, FaSortAmountDown } from "react-icons/fa";
+import {
+  FaSearch,
+  FaRedo,
+  FaThLarge,
+  FaList,
+  FaMapMarkedAlt,
+} from "react-icons/fa";
+import { trackPageView, trackPropertySearch } from "../utils/googleAnalytics";
 
 const Properties = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -18,13 +23,15 @@ const Properties = () => {
   const [amenities, setAmenities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [pagination, setPagination] = useState({});
+  const [viewMode, setViewMode] = useState("grid"); // grid, list, map
 
   // Estado dos filtros
   const [filters, setFilters] = useState({
     search: searchParams.get("search") || "",
     city_id: searchParams.get("city_id") || "",
     type: searchParams.get("type") || "",
-    max_guests: searchParams.get("max_guests") || searchParams.get("guests") || "",
+    max_guests:
+      searchParams.get("max_guests") || searchParams.get("guests") || "",
     min_price: searchParams.get("min_price") || "",
     max_price: searchParams.get("max_price") || "",
     bedrooms: searchParams.get("bedrooms") || "",
@@ -35,11 +42,14 @@ const Properties = () => {
     checkOut: searchParams.get("checkOut") || "",
     rooms: [],
     page: parseInt(searchParams.get("page")) || 1,
-    limit: parseInt(searchParams.get("limit")) || 12,
+    limit: parseInt(searchParams.get("limit")) || 20,
   });
 
   // Carregar dados auxiliares (cidades e amenidades)
   useEffect(() => {
+    // Rastrear visualização da página
+    trackPageView("/properties", "Buscar Propriedades");
+
     const fetchAuxData = async () => {
       try {
         const [citiesRes, amenitiesRes] = await Promise.all([
@@ -120,6 +130,8 @@ const Properties = () => {
 
   // Aplicar filtros
   const handleSearch = () => {
+    // Rastrear busca de propriedade
+    trackPropertySearch(filters);
     fetchProperties();
   };
 
@@ -129,115 +141,273 @@ const Properties = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
+  // Limpar todos os filtros
+  const clearAllFilters = () => {
+    setFilters({
+      search: "",
+      city_id: "",
+      type: "",
+      max_guests: "",
+      min_price: "",
+      max_price: "",
+      bedrooms: "",
+      bathrooms: "",
+      featured: "",
+      amenities: [],
+      checkIn: "",
+      checkOut: "",
+      rooms: [],
+      page: 1,
+      limit: 20,
+    });
+    setSearchParams({});
+  };
+
   return (
     <div className="min-h-screen bg-white">
-      {/* Header Estilo Airbnb */}
+      {/* Header com animação */}
       <AirbnbHeader />
 
-      {/* Main Content */}
-      <div className="max-w-[2520px] mx-auto px-6 sm:px-10 lg:px-20 xl:px-20">
-        {/* Filtros Minimalistas - Sticky e Compacto */}
-        <div className="sticky top-20 z-40 bg-white border-b border-airbnb-grey-200 -mx-6 sm:-mx-10 lg:-mx-20 xl:-mx-20 px-6 sm:px-10 lg:px-20 xl:px-20 py-3">
-          <PropertyFiltersPro
-            filters={filters}
-            onFiltersChange={handleFiltersChange}
-            cities={cities}
-            amenities={amenities}
-            onSearch={handleSearch}
-            loading={loading}
-          />
+      {/* Filtros Sticky - MELHORADO */}
+      <div className="sticky top-[80px] z-40 bg-white shadow-sm transition-all duration-300">
+        <div className="border-b border-airbnb-grey-200">
+          <div className="max-w-[2520px] mx-auto px-5 sm:px-10 lg:px-20 py-4">
+            <PropertyFiltersPro
+              filters={filters}
+              onFiltersChange={handleFiltersChange}
+              cities={cities}
+              amenities={amenities}
+              onSearch={handleSearch}
+              loading={loading}
+            />
+          </div>
         </div>
+      </div>
 
-        {/* Results Container */}
-        <div className="pt-8 pb-12">
+      {/* Main Content */}
+      <div className="max-w-[2520px] mx-auto px-5 sm:px-10 lg:px-20">
+        {/* Barra de Resultados e Controles - CORRIGIDA */}
+        {!loading && properties.length > 0 && (
+          <div className="flex items-center justify-between py-6 border-b border-airbnb-grey-200">
+            {/* Info de Resultados */}
+            <div className="flex items-center gap-4">
+              <h2 className="text-sm text-airbnb-grey-600">
+                {pagination.total > 0 ? (
+                  <>
+                    <span className="font-semibold text-airbnb-black">
+                      {pagination.total}
+                    </span>{" "}
+                    {pagination.total === 1
+                      ? "imóvel encontrado"
+                      : "imóveis encontrados"}
+                  </>
+                ) : null}
+              </h2>
+            </div>
+
+            {/* Controles de Visualização */}
+            <div className="hidden md:flex items-center gap-2">
+              <button
+                onClick={() => setViewMode("grid")}
+                className={`p-2.5 rounded-lg transition-all ${
+                  viewMode === "grid"
+                    ? "bg-airbnb-black text-white"
+                    : "bg-white text-airbnb-grey-600 hover:bg-airbnb-grey-50 border border-airbnb-grey-200"
+                }`}
+                title="Visualização em grade"
+              >
+                <FaThLarge className="text-sm" />
+              </button>
+
+              <button
+                onClick={() => setViewMode("list")}
+                className={`p-2.5 rounded-lg transition-all ${
+                  viewMode === "list"
+                    ? "bg-airbnb-black text-white"
+                    : "bg-white text-airbnb-grey-600 hover:bg-airbnb-grey-50 border border-airbnb-grey-200"
+                }`}
+                title="Visualização em lista"
+              >
+                <FaList className="text-sm" />
+              </button>
+
+              {/* Botão Mapa - Para futuro */}
+              <button
+                onClick={() => setViewMode("map")}
+                disabled
+                className="p-2.5 rounded-lg bg-white text-airbnb-grey-300 border border-airbnb-grey-200 cursor-not-allowed opacity-50"
+                title="Visualização em mapa (em breve)"
+              >
+                <FaMapMarkedAlt className="text-sm" />
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Área de Conteúdo - LÓGICA CORRIGIDA */}
+        <div className="py-8">
           {loading ? (
-            <div className="flex justify-center items-center py-20">
+            // Loading State
+            <div className="flex flex-col justify-center items-center py-32">
               <Loading text="Buscando imóveis..." />
             </div>
           ) : properties.length === 0 ? (
-            // Empty State - Clean e Minimalista
-            <div className="bg-white rounded-xlarge p-12 text-center max-w-2xl mx-auto my-12">
-              <div className="w-20 h-20 bg-airbnb-grey-100 rounded-full mx-auto flex items-center justify-center mb-6">
-                <FaSearch className="text-3xl text-airbnb-grey-400" />
-              </div>
+            // Empty State - SÓ MOSTRA QUANDO REALMENTE NÃO TEM IMÓVEIS
+            <div className="flex flex-col items-center justify-center py-24 px-4">
+              <div className="max-w-md text-center">
+                {/* Ícone */}
+                <div className="w-24 h-24 mx-auto mb-8 bg-airbnb-grey-50 rounded-full flex items-center justify-center">
+                  <FaSearch className="text-4xl text-airbnb-grey-300" />
+                </div>
 
-              <h3 className="text-2xl font-semibold text-airbnb-black mb-3">
-                Nenhuma estadia encontrada
-              </h3>
-              <p className="text-airbnb-grey-400 text-base mb-8 max-w-md mx-auto">
-                Tente ajustar seus filtros ou datas para ver mais opções disponíveis
-              </p>
+                {/* Título */}
+                <h2 className="text-3xl font-semibold text-airbnb-black mb-4">
+                  Nenhum imóvel encontrado
+                </h2>
 
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-                <button
-                  onClick={() => {
-                    setFilters({
-                      search: "",
-                      city_id: "",
-                      type: "",
-                      max_guests: "",
-                      min_price: "",
-                      max_price: "",
-                      bedrooms: "",
-                      bathrooms: "",
-                      featured: "",
-                      amenities: [],
-                      checkIn: "",
-                      checkOut: "",
-                      rooms: [],
-                      page: 1,
-                      limit: 12,
-                    });
-                    setSearchParams({});
-                  }}
-                  className="px-6 py-3 bg-airbnb-black text-white rounded-medium font-semibold hover:bg-airbnb-grey-1000 transition-colors flex items-center gap-2"
-                >
-                  <FaRedo className="text-sm" />
-                  <span>Limpar filtros</span>
-                </button>
+                {/* Descrição */}
+                <p className="text-base text-airbnb-grey-600 mb-10 leading-relaxed">
+                  Não encontramos imóveis que correspondam aos seus critérios de
+                  busca. Tente ajustar os filtros ou explorar outras opções.
+                </p>
 
-                <Link
-                  to="/"
-                  className="px-6 py-3 bg-white border border-airbnb-grey-300 text-airbnb-black rounded-medium font-semibold hover:border-airbnb-black transition-colors"
-                >
-                  Explorar todos os imóveis
-                </Link>
+                {/* Ações */}
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+                  <button
+                    onClick={clearAllFilters}
+                    className="w-full sm:w-auto px-6 py-3 bg-rausch hover:bg-rausch-dark text-white rounded-lg font-semibold transition-colors flex items-center justify-center gap-2 shadow-sm"
+                  >
+                    <FaRedo className="text-sm" />
+                    <span>Limpar filtros</span>
+                  </button>
+
+                  <Link
+                    to="/"
+                    className="w-full sm:w-auto px-6 py-3 bg-white border-2 border-airbnb-grey-300 text-airbnb-black rounded-lg font-semibold hover:border-airbnb-black transition-colors"
+                  >
+                    Voltar ao início
+                  </Link>
+                </div>
               </div>
             </div>
           ) : (
+            // TEM IMÓVEIS - MOSTRAR GRID/LISTA
             <>
-              {/* Grid de Propriedades - Minimalista */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6 gap-x-6 gap-y-10 mb-16">
-                {properties.map((property, index) => (
-                  <PropertyCard
-                    key={property.uuid || property.id || `property-${index}`}
-                    property={property}
-                  />
-                ))}
-              </div>
+              {/* Grid de Propriedades */}
+              {viewMode === "grid" && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-x-6 gap-y-10">
+                  {properties.map((property, index) => (
+                    <PropertyCard
+                      key={property.uuid || property.id || `property-${index}`}
+                      property={property}
+                    />
+                  ))}
+                </div>
+              )}
+
+              {/* Lista de Propriedades */}
+              {viewMode === "list" && (
+                <div className="space-y-6">
+                  {properties.map((property, index) => (
+                    <PropertyCard
+                      key={property.uuid || property.id || `property-${index}`}
+                      property={property}
+                      layout="horizontal"
+                    />
+                  ))}
+                </div>
+              )}
+
+              {/* Mapa de Propriedades - Placeholder */}
+              {viewMode === "map" && (
+                <div className="flex items-center justify-center py-32 bg-airbnb-grey-50 rounded-xlarge">
+                  <div className="text-center">
+                    <FaMapMarkedAlt className="text-6xl text-airbnb-grey-300 mx-auto mb-4" />
+                    <p className="text-airbnb-grey-600 text-lg font-medium">
+                      Visualização em mapa em desenvolvimento
+                    </p>
+                  </div>
+                </div>
+              )}
 
               {/* Paginação Minimalista */}
               {pagination.totalPages > 1 && (
-                <div className="flex justify-center items-center gap-3 pt-6 pb-4">
-                  <button
-                    onClick={() => handlePageChange(filters.page - 1)}
-                    disabled={!pagination.hasPrevPage}
-                    className="px-5 py-2.5 text-sm font-medium text-airbnb-black underline hover:bg-airbnb-grey-50 rounded-lg disabled:opacity-40 disabled:cursor-not-allowed disabled:no-underline transition-all"
-                  >
-                    Anterior
-                  </button>
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-16 pt-8 border-t border-airbnb-grey-200">
+                  {/* Info de Página */}
+                  <div className="text-sm text-airbnb-grey-600">
+                    Mostrando{" "}
+                    <span className="font-semibold text-airbnb-black">
+                      {(filters.page - 1) * filters.limit + 1}
+                    </span>
+                    {" - "}
+                    <span className="font-semibold text-airbnb-black">
+                      {Math.min(filters.page * filters.limit, pagination.total)}
+                    </span>
+                    {" de "}
+                    <span className="font-semibold text-airbnb-black">
+                      {pagination.total}
+                    </span>
+                    {" imóveis"}
+                  </div>
 
-                  <span className="text-sm text-airbnb-grey-400 px-4">
-                    {filters.page} de {pagination.totalPages}
-                  </span>
+                  {/* Controles de Página */}
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => handlePageChange(filters.page - 1)}
+                      disabled={!pagination.hasPrevPage}
+                      className="px-6 py-2.5 text-sm font-semibold text-airbnb-black bg-white border border-airbnb-grey-300 rounded-lg hover:border-airbnb-black hover:bg-airbnb-grey-50 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:border-airbnb-grey-300 disabled:hover:bg-white transition-all"
+                    >
+                      Anterior
+                    </button>
 
-                  <button
-                    onClick={() => handlePageChange(filters.page + 1)}
-                    disabled={!pagination.hasNextPage}
-                    className="px-5 py-2.5 text-sm font-medium text-airbnb-black underline hover:bg-airbnb-grey-50 rounded-lg disabled:opacity-40 disabled:cursor-not-allowed disabled:no-underline transition-all"
-                  >
-                    Próxima
-                  </button>
+                    {/* Números de Página */}
+                    <div className="hidden sm:flex items-center gap-1 px-4">
+                      {[...Array(Math.min(5, pagination.totalPages))].map(
+                        (_, i) => {
+                          let pageNum;
+                          if (pagination.totalPages <= 5) {
+                            pageNum = i + 1;
+                          } else if (filters.page <= 3) {
+                            pageNum = i + 1;
+                          } else if (
+                            filters.page >=
+                            pagination.totalPages - 2
+                          ) {
+                            pageNum = pagination.totalPages - 4 + i;
+                          } else {
+                            pageNum = filters.page - 2 + i;
+                          }
+
+                          return (
+                            <button
+                              key={i}
+                              onClick={() => handlePageChange(pageNum)}
+                              className={`w-10 h-10 rounded-lg font-semibold text-sm transition-all ${
+                                pageNum === filters.page
+                                  ? "bg-airbnb-black text-white"
+                                  : "text-airbnb-grey-600 hover:bg-airbnb-grey-50"
+                              }`}
+                            >
+                              {pageNum}
+                            </button>
+                          );
+                        }
+                      )}
+                    </div>
+
+                    {/* Info mobile */}
+                    <div className="sm:hidden px-4 text-sm font-medium text-airbnb-grey-600">
+                      {filters.page} / {pagination.totalPages}
+                    </div>
+
+                    <button
+                      onClick={() => handlePageChange(filters.page + 1)}
+                      disabled={!pagination.hasNextPage}
+                      className="px-6 py-2.5 text-sm font-semibold text-white bg-airbnb-black rounded-lg hover:bg-rausch disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-airbnb-black transition-all"
+                    >
+                      Próxima
+                    </button>
+                  </div>
                 </div>
               )}
             </>

@@ -1,5 +1,4 @@
-// giuliano-alquileres/frontend/src/pages/Home.jsx
-
+// Home.jsx - Design Minimalista e Clean (estilo ZAP Imóveis)
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import api from "../services/api";
@@ -7,18 +6,35 @@ import PropertyCard from "../components/property/PropertyCard";
 import Loading from "../components/common/Loading";
 import AirbnbHeader from "../components/layout/AirbnbHeader";
 import Footer from "../components/layout/Footer";
-import { FaBuilding, FaHome, FaCrown, FaGem, FaTrophy, FaMapMarkerAlt, FaComments, FaWhatsapp } from "react-icons/fa";
+import {
+  FaBuilding,
+  FaHome,
+  FaCrown,
+  FaGem,
+  FaSearch,
+  FaMapMarkerAlt,
+  FaCalendarAlt,
+  FaUsers,
+  FaShieldAlt,
+  FaHeadset,
+  FaCreditCard,
+  FaStar,
+} from "react-icons/fa";
+import { trackPageView } from "../utils/googleAnalytics";
 
 const Home = () => {
   const [featuredProperties, setFeaturedProperties] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Rastrear visualização da página inicial
+    trackPageView("/", "Página Inicial");
+
     const fetchProperties = async () => {
       try {
         setLoading(true);
         const response = await api.get("/api/properties", {
-          params: { status: "available" }
+          params: { status: "available" },
         });
         const allProperties = response.data.properties || [];
 
@@ -36,294 +52,254 @@ const Home = () => {
   }, []);
 
   if (loading) {
-    return <Loading text="Carregando imóveis incríveis..." />;
+    return <Loading text="Carregando acomodações..." />;
   }
+
+  const categories = [
+    {
+      icon: FaBuilding,
+      title: "Apartamentos",
+      description: "Conforto e localização",
+      type: "apartment",
+      count: "200+",
+    },
+    {
+      icon: FaHome,
+      title: "Casas",
+      description: "Espaço e privacidade",
+      type: "house",
+      count: "150+",
+    },
+    {
+      icon: FaCrown,
+      title: "Coberturas",
+      description: "Luxo e exclusividade",
+      type: "penthouse",
+      count: "80+",
+    },
+    {
+      icon: FaGem,
+      title: "Studios",
+      description: "Praticidade e economia",
+      type: "studio",
+      count: "120+",
+    },
+  ];
+
+  const benefits = [
+    {
+      icon: FaShieldAlt,
+      title: "Reserva Segura",
+      description: "Pagamento 100% protegido",
+    },
+    {
+      icon: FaHeadset,
+      title: "Suporte 24/7",
+      description: "Estamos aqui para ajudar",
+    },
+    {
+      icon: FaCreditCard,
+      title: "Melhor Preço",
+      description: "Sem taxas escondidas",
+    },
+  ];
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Header Estilo Airbnb */}
       <AirbnbHeader />
 
-      {/* Hero Section - Imagem logo abaixo do header */}
-      <section className="relative h-[700px] overflow-hidden">
-        {/* Background com Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-black/30 z-10"></div>
-        <div
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-          style={{
-            backgroundImage:
-              "url('https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=2075')",
-          }}
-        ></div>
+      {/* Hero Section - Com Imagem de Fundo (estilo ZAP) */}
+      <section className="relative bg-gray-900 py-32 md:py-40">
+        {/* Imagem de Fundo */}
+        <div className="absolute inset-0 z-0">
+          <img
+            src="https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?q=80&w=2070&auto=format&fit=crop"
+            alt="Balneário Camboriú"
+            className="w-full h-full object-cover"
+          />
+          {/* Overlay escuro */}
+          <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/60 to-black/50"></div>
+        </div>
 
-        {/* Conteúdo Hero */}
-        <div className="relative z-20 h-full flex items-center">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-            <div className="max-w-2xl">
-              {/* Badge */}
-              <div className="inline-flex items-center bg-yellow-400 text-gray-900 px-4 py-2 rounded-full font-bold text-xs mb-6">
-                <FaGem className="mr-2" />
-                Imóveis Premium em Balneário Camboriú
-              </div>
-
-              <h1 className="text-4xl md:text-5xl font-bold text-white mb-4 leading-tight">
-                Encontre seu
-                <span className="block text-red-500 mt-2">Lar dos Sonhos</span>
-              </h1>
-
-              <p className="text-lg text-gray-200 leading-relaxed">
-                Descubra os melhores imóveis para compra e aluguel na cidade
-                mais desejada de Santa Catarina.
-              </p>
-            </div>
+        {/* Conteúdo - Apenas Texto */}
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-3xl">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight">
+              Encontre a acomodação perfeita para suas férias
+            </h1>
+            <p className="text-xl md:text-2xl text-white/90 mb-8">
+              Mais de 500 opções de aluguel por temporada em Balneário Camboriú
+            </p>
+            <Link
+              to="/properties"
+              className="inline-block bg-rausch hover:bg-rausch-dark text-white font-semibold py-4 px-8 rounded-lg transition-colors duration-200 text-lg"
+            >
+              Explorar acomodações
+            </Link>
           </div>
         </div>
       </section>
 
-      {/* Seção de estatísticas */}
+      {/* Categories Section - Grid Clean */}
       <section className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-3 gap-8 max-w-4xl mx-auto">
-            <div className="text-center">
-              <div className="text-5xl font-bold text-red-600 mb-2">500+</div>
-              <div className="text-gray-600 text-sm uppercase tracking-wide">
-                Imóveis
-              </div>
-              <div className="w-16 h-1 bg-yellow-400 mx-auto mt-3 rounded-full"></div>
-            </div>
-            <div className="text-center">
-              <div className="text-5xl font-bold text-red-600 mb-2">98%</div>
-              <div className="text-gray-600 text-sm uppercase tracking-wide">
-                Satisfação
-              </div>
-              <div className="w-16 h-1 bg-yellow-400 mx-auto mt-3 rounded-full"></div>
-            </div>
-            <div className="text-center">
-              <div className="text-5xl font-bold text-red-600 mb-2">24/7</div>
-              <div className="text-gray-600 text-sm uppercase tracking-wide">
-                Suporte
-              </div>
-              <div className="w-16 h-1 bg-yellow-400 mx-auto mt-3 rounded-full"></div>
-            </div>
+          <div className="mb-10">
+            <h2 className="text-3xl font-bold text-gray-900 mb-2">
+              Explore por categoria
+            </h2>
+            <p className="text-gray-600">
+              Encontre o tipo de acomodação ideal para você
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {categories.map((category, index) => {
+              const Icon = category.icon;
+              return (
+                <Link
+                  key={index}
+                  to={`/properties?type=${category.type}`}
+                  className="group bg-white border border-gray-200 rounded-xl p-6 hover:border-rausch hover:shadow-lg transition-all duration-200"
+                >
+                  <div className="flex flex-col items-start">
+                    <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center mb-4 group-hover:bg-rausch/10 transition-colors">
+                      <Icon className="text-2xl text-gray-700 group-hover:text-rausch transition-colors" />
+                    </div>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-1">
+                      {category.title}
+                    </h3>
+                    <p className="text-sm text-gray-500 mb-2">
+                      {category.description}
+                    </p>
+                    <span className="text-xs font-medium text-rausch">
+                      {category.count} disponíveis
+                    </span>
+                  </div>
+                </Link>
+              );
+            })}
           </div>
         </div>
       </section>
 
-      {/* Categorias Rápidas */}
-      <section className="py-16 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            <Link
-              to="/properties?type=apartment"
-              className="group relative overflow-hidden rounded-xl h-56 shadow-md hover:shadow-xl transition-all duration-300"
-            >
-              <div
-                className="absolute inset-0 bg-cover bg-center group-hover:scale-110 transition-transform duration-500"
-                style={{
-                  backgroundImage:
-                    "url('https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?q=80&w=1035')",
-                }}
-              ></div>
-              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent"></div>
-              <div className="absolute bottom-6 left-6 right-6 z-10">
-                <FaBuilding className="text-4xl mb-3 text-white" />
-                <h3 className="text-white font-bold text-xl mb-2">
-                  Apartamentos
-                </h3>
-                <div className="w-12 h-1 bg-yellow-400 rounded-full group-hover:w-full transition-all duration-300"></div>
-              </div>
-            </Link>
-
-            <Link
-              to="/properties?type=house"
-              className="group relative overflow-hidden rounded-xl h-56 shadow-md hover:shadow-xl transition-all duration-300"
-            >
-              <div
-                className="absolute inset-0 bg-cover bg-center group-hover:scale-110 transition-transform duration-500"
-                style={{
-                  backgroundImage:
-                    "url('https://images.unsplash.com/photo-1568605114967-8130f3a36994?q=80&w=1170')",
-                }}
-              ></div>
-              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent"></div>
-              <div className="absolute bottom-6 left-6 right-6 z-10">
-                <FaHome className="text-4xl mb-3 text-white" />
-                <h3 className="text-white font-bold text-xl mb-2">Casas</h3>
-                <div className="w-12 h-1 bg-yellow-400 rounded-full group-hover:w-full transition-all duration-300"></div>
-              </div>
-            </Link>
-
-            <Link
-              to="/properties?type=penthouse"
-              className="group relative overflow-hidden rounded-xl h-56 shadow-md hover:shadow-xl transition-all duration-300"
-            >
-              <div
-                className="absolute inset-0 bg-cover bg-center group-hover:scale-110 transition-transform duration-500"
-                style={{
-                  backgroundImage:
-                    "url('https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=1170')",
-                }}
-              ></div>
-              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent"></div>
-              <div className="absolute bottom-6 left-6 right-6 z-10">
-                <FaCrown className="text-4xl mb-3 text-white" />
-                <h3 className="text-white font-bold text-xl mb-2">
-                  Coberturas
-                </h3>
-                <div className="w-12 h-1 bg-yellow-400 rounded-full group-hover:w-full transition-all duration-300"></div>
-              </div>
-            </Link>
-
-            <Link
-              to="/properties?type=studio"
-              className="group relative overflow-hidden rounded-xl h-56 shadow-md hover:shadow-xl transition-all duration-300"
-            >
-              <div
-                className="absolute inset-0 bg-cover bg-center group-hover:scale-110 transition-transform duration-500"
-                style={{
-                  backgroundImage:
-                    "url('https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?q=80&w=1080')",
-                }}
-              ></div>
-              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent"></div>
-              <div className="absolute bottom-6 left-6 right-6 z-10">
-                <FaGem className="text-4xl mb-3 text-white" />
-                <h3 className="text-white font-bold text-xl mb-2">Studios</h3>
-                <div className="w-12 h-1 bg-yellow-400 rounded-full group-hover:w-full transition-all duration-300"></div>
-              </div>
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* Imóveis em Destaque - Grid Estilo Airbnb */}
+      {/* Featured Properties */}
       {featuredProperties.length > 0 && (
-        <section className="py-12 bg-white">
-          <div className="max-w-[1760px] mx-auto px-6 lg:px-12">
-            <div className="mb-8">
-              <h2 className="text-3xl md:text-4xl font-semibold text-airbnb-black mb-2">
-                Imóveis em Destaque
-              </h2>
-              <p className="text-airbnb-grey-400 text-base">
-                Propriedades cuidadosamente selecionadas
-              </p>
+        <section className="py-16 bg-gray-50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex items-center justify-between mb-10">
+              <div>
+                <h2 className="text-3xl font-bold text-gray-900 mb-2">
+                  Acomodações em destaque
+                </h2>
+                <p className="text-gray-600">
+                  Escolhidas especialmente para você
+                </p>
+              </div>
+              <Link
+                to="/properties"
+                className="hidden md:block text-rausch font-semibold hover:text-rausch-dark transition-colors"
+              >
+                Ver todas →
+              </Link>
             </div>
 
-            {/* Grid Responsivo - Estilo Airbnb */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-10">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {featuredProperties.map((property, index) => (
-                <PropertyCard
-                  key={property.uuid || property.id || `property-${index}`}
-                  property={property}
-                />
+                <PropertyCard key={property.uuid || index} property={property} />
               ))}
             </div>
 
-            <div className="text-center mt-12">
+            <div className="mt-8 text-center md:hidden">
               <Link
                 to="/properties"
-                className="inline-flex items-center bg-airbnb-black hover:bg-airbnb-grey-1000 text-white font-medium py-3 px-8 rounded-medium shadow-sm hover:shadow-md transition-all duration-200"
+                className="inline-block bg-white border-2 border-gray-300 text-gray-700 font-semibold py-3 px-8 rounded-lg hover:border-rausch hover:text-rausch transition-all"
               >
-                <span>Mostrar todos os imóveis</span>
-                <span className="ml-2">→</span>
+                Ver todas as acomodações
               </Link>
             </div>
           </div>
         </section>
       )}
 
-      {/* Seção de Benefícios */}
-      <section className="py-20 bg-gray-50">
+      {/* Benefits Section - Clean */}
+      <section className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-              Por que escolher{" "}
-              <span className="text-red-600">nossos imóveis?</span>
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-gray-900 mb-2">
+              Por que escolher a Ziguealuga?
             </h2>
-            <div className="w-20 h-1 bg-red-600 mx-auto mt-6 rounded-full"></div>
+            <p className="text-gray-600">
+              Sua tranquilidade é nossa prioridade
+            </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="text-center p-8 bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300">
-              <div className="inline-flex items-center justify-center w-20 h-20 bg-red-600 rounded-xl mb-6 shadow-md">
-                <FaTrophy className="text-4xl text-white" />
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-3">
-                Qualidade Garantida
-              </h3>
-              <p className="text-gray-600 leading-relaxed">
-                Todos os imóveis passam por rigorosa seleção e verificação de
-                qualidade
-              </p>
-            </div>
+            {benefits.map((benefit, index) => {
+              const Icon = benefit.icon;
+              return (
+                <div
+                  key={index}
+                  className="text-center p-8 bg-gray-50 rounded-xl"
+                >
+                  <div className="inline-flex items-center justify-center w-16 h-16 bg-rausch/10 rounded-full mb-4">
+                    <Icon className="text-3xl text-rausch" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                    {benefit.title}
+                  </h3>
+                  <p className="text-gray-600">{benefit.description}</p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
 
-            <div className="text-center p-8 bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300">
-              <div className="inline-flex items-center justify-center w-20 h-20 bg-red-600 rounded-xl mb-6 shadow-md">
-                <FaMapMarkerAlt className="text-4xl text-white" />
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-3">
-                Localização Premium
-              </h3>
-              <p className="text-gray-600 leading-relaxed">
-                Imóveis nas melhores regiões de Balneário Camboriú e arredores
-              </p>
+      {/* Stats Section */}
+      <section className="py-16 bg-gradient-to-br from-rausch to-rausch-dark text-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+            <div>
+              <div className="text-4xl font-bold mb-2">500+</div>
+              <div className="text-white/80">Acomodações</div>
             </div>
-
-            <div className="text-center p-8 bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300">
-              <div className="inline-flex items-center justify-center w-20 h-20 bg-red-600 rounded-xl mb-6 shadow-md">
-                <FaComments className="text-4xl text-white" />
+            <div>
+              <div className="text-4xl font-bold mb-2">2000+</div>
+              <div className="text-white/80">Hóspedes Felizes</div>
+            </div>
+            <div>
+              <div className="text-4xl font-bold mb-2">4.9</div>
+              <div className="text-white/80 flex items-center justify-center gap-1">
+                <FaStar className="text-yellow-300" />
+                Avaliação Média
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-3">
-                Atendimento Exclusivo
-              </h3>
-              <p className="text-gray-600 leading-relaxed">
-                Suporte personalizado 24/7 para auxiliar em todas as suas
-                necessidades
-              </p>
+            </div>
+            <div>
+              <div className="text-4xl font-bold mb-2">24/7</div>
+              <div className="text-white/80">Suporte</div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Call to Action Final */}
-      <section className="py-20 bg-gradient-to-r from-red-600 via-red-700 to-red-600 relative overflow-hidden">
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-0 left-0 w-96 h-96 bg-yellow-400 rounded-full blur-3xl"></div>
-          <div className="absolute bottom-0 right-0 w-96 h-96 bg-yellow-400 rounded-full blur-3xl"></div>
-        </div>
-
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
-          <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
-            Pronto para encontrar seu próximo lar?
+      {/* CTA Section - Minimalista */}
+      <section className="py-20 bg-gray-50">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+            Pronto para suas próximas férias?
           </h2>
-          <p className="text-xl text-gray-100 mb-10 max-w-2xl mx-auto">
-            Entre em contato conosco e descubra as melhores oportunidades em
-            imóveis
+          <p className="text-lg text-gray-600 mb-8">
+            Reserve agora e garanta o melhor preço
           </p>
-
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link
-              to="/properties"
-              className="inline-flex items-center justify-center bg-white text-red-600 font-bold py-4 px-10 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
-            >
-              <span>Explorar Imóveis</span>
-              <FaHome className="ml-2" />
-            </Link>
-
-            <a
-              href="https://wa.me/5547989105580"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center justify-center bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-bold py-4 px-10 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
-            >
-              <span>Falar no WhatsApp</span>
-              <FaWhatsapp className="ml-2" />
-            </a>
-          </div>
+          <Link
+            to="/properties"
+            className="inline-block bg-rausch hover:bg-rausch-dark text-white font-semibold py-4 px-10 rounded-lg transition-colors duration-200 text-lg"
+          >
+            Explorar acomodações
+          </Link>
         </div>
       </section>
 
-      {/* Footer - Estilo Airbnb */}
       <Footer />
     </div>
   );

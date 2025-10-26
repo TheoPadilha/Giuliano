@@ -1,7 +1,11 @@
 // src/App.jsx - VERSÃO COMPLETA E CORRIGIDA
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { useEffect } from "react";
 import { AuthProvider } from "./contexts/AuthContext";
+import { FavoritesProvider } from "./contexts/FavoritesContext";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
+import { initGA, initGTM } from "./utils/googleAnalytics";
+import CookieConsent from "./components/common/CookieConsent";
 
 // --- Páginas Públicas ---
 import Home from "./pages/Home";
@@ -15,13 +19,17 @@ import RegisterNew from "./pages/auth/RegisterNew";
 
 // --- Páginas de Perfil ---
 import Profile from "./pages/Profile";
+import ProfileAirbnb from "./pages/ProfileAirbnb";
 
 // --- Páginas Administrativas ---
 import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminDashboardNew from "./pages/admin/AdminDashboardNew";
 import AdminProperties from "./pages/admin/AdminProperties";
 import AdminNewProperty from "./pages/admin/AdminNewProperty";
+import AdminNewPropertyAirbnb from "./pages/admin/AdminNewPropertyAirbnb";
 import EditProperty from "./pages/admin/EditProperty";
-import UsersPage from "./pages/admin/UsersPage"; // <-- Importe a nova página que vamos criar
+import UsersPage from "./pages/admin/UsersPage";
+import AdminCityGuides from "./pages/admin/AdminCityGuides";
 
 // --- Páginas de Pagamento ---
 import Checkout from "./pages/Checkout";
@@ -38,14 +46,22 @@ import Favorites from "./pages/Favorites";
 import MyReviews from "./pages/MyReviews";
 
 // --- Páginas de Utilidade ---
+import WhatsAppButton from "./components/common/WhatsAppButton";
 // É uma boa prática componentizar a página 404
 import NotFoundPage from "./pages/NotFoundPage";
 
 function App() {
+  // Inicializar Google Analytics e GTM quando o app carrega
+  useEffect(() => {
+    initGA();
+    initGTM();
+  }, []);
+
   return (
     <AuthProvider>
-      <Router>
-        <div className="min-h-screen bg-gray-50">
+      <FavoritesProvider>
+        <Router>
+          <div className="min-h-screen bg-gray-50">
           <Routes>
             {/* =====================================
                 ROTAS PÚBLICAS E DE AUTENTICAÇÃO
@@ -75,9 +91,19 @@ function App() {
             {/* --- Rotas que AMBOS (admin e admin_master) podem acessar --- */}
             {/* Graças à nossa lógica no ProtectedRoute, o admin_master também terá acesso aqui. */}
 
-            {/* Dashboard Principal do Admin */}
+            {/* Dashboard Principal do Admin - Nova Versão */}
             <Route
               path="/admin"
+              element={
+                <ProtectedRoute requiredRole="admin">
+                  <AdminDashboardNew />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Dashboard Antigo */}
+            <Route
+              path="/admin/dashboard-old"
               element={
                 <ProtectedRoute requiredRole="admin">
                   <AdminDashboard />
@@ -95,9 +121,19 @@ function App() {
               }
             />
 
-            {/* Criar Novo Imóvel */}
+            {/* Criar Novo Imóvel - Versão Airbnb */}
             <Route
               path="/admin/properties/new"
+              element={
+                <ProtectedRoute requiredRole="admin">
+                  <AdminNewPropertyAirbnb />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Criar Novo Imóvel - Versão Antiga */}
+            <Route
+              path="/admin/properties/new-old"
               element={
                 <ProtectedRoute requiredRole="admin">
                   <AdminNewProperty />
@@ -111,6 +147,16 @@ function App() {
               element={
                 <ProtectedRoute requiredRole="admin">
                   <EditProperty />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Guias de Turismo - Admin */}
+            <Route
+              path="/admin/city-guides"
+              element={
+                <ProtectedRoute requiredRole="admin">
+                  <AdminCityGuides />
                 </ProtectedRoute>
               }
             />
@@ -157,10 +203,20 @@ function App() {
             {/* =====================================
                 ROTAS DO USUÁRIO (Protegidas)
             ====================================== */}
-            
-            {/* Perfil do Usuário */}
+
+            {/* Perfil do Usuário - Estilo Airbnb */}
             <Route
               path="/profile"
+              element={
+                <ProtectedRoute>
+                  <ProfileAirbnb />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Perfil Antigo - Para Backup */}
+            <Route
+              path="/profile-old"
               element={
                 <ProtectedRoute>
                   <Profile />
@@ -187,7 +243,7 @@ function App() {
                 </ProtectedRoute>
               }
             />
-            
+
             {/* Meus Favoritos */}
             <Route
               path="/favorites"
@@ -213,8 +269,11 @@ function App() {
             ====================================== */}
             <Route path="*" element={<NotFoundPage />} />
           </Routes>
-        </div>
-      </Router>
+          <WhatsAppButton />
+          <CookieConsent />
+          </div>
+        </Router>
+      </FavoritesProvider>
     </AuthProvider>
   );
 }

@@ -1,145 +1,319 @@
-// AIRBNB STYLE PropertyCard - Cópia Exata do Design
+// PropertyCard.jsx - Versão Minimalista e Elegante (SEM Context)
+import { useState } from "react";
 import { Link } from "react-router-dom";
-import PropTypes from "prop-types";
-import { FaStar } from "react-icons/fa";
-import FavoriteButton from "./FavoriteButton";
+import { FaHeart, FaRegHeart, FaStar } from "react-icons/fa";
+import { IoBedOutline, IoLocationOutline } from "react-icons/io5";
+import { BsPeople } from "react-icons/bs";
+import { MdBathtub } from "react-icons/md";
+import { trackPropertyClick, trackAddToWishlist } from "../../utils/googleAnalytics";
 
-const PropertyCard = ({ property }) => {
-  const getTypeLabel = (type) => {
-    const types = {
-      apartment: "Apartamento",
-      house: "Casa inteira",
-      studio: "Studio",
-      penthouse: "Cobertura",
-    };
-    return types[type] || type;
+const PropertyCard = ({ property, layout = "vertical" }) => {
+  // Estado local para favorito (sem dependência de Context)
+  const [isFavorite, setIsFavorite] = useState(false);
+  const [imageError, setImageError] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  // Toggle simples de favorito
+  const handleFavoriteClick = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const newFavoriteState = !isFavorite;
+    setIsFavorite(newFavoriteState);
+
+    // Rastrear adição aos favoritos
+    if (newFavoriteState) {
+      trackAddToWishlist(property);
+    }
   };
 
+  // Rastrear clique no card
+  const handleCardClick = () => {
+    trackPropertyClick(property, 0);
+  };
+
+  // Pegar primeira imagem ou usar placeholder
+  const getImageUrl = () => {
+    if (imageError) {
+      return "https://placehold.co/800x600/e0e0e0/666666?text=Sem+Imagem";
+    }
+
+    // Backend pode retornar photos, images ou property_images
+    const images = property.photos || property.images || property.property_images || [];
+
+    if (images.length > 0) {
+      const image = images[currentImageIndex] || images[0];
+
+      // Se tem filename, construir URL completa
+      if (image.filename) {
+        return `http://localhost:5000/uploads/properties/${image.filename}`;
+      }
+
+      // Senão tentar pegar de image_url, url ou o próprio objeto (string)
+      return image.image_url || image.url || image;
+    }
+
+    return "https://placehold.co/800x600/e0e0e0/666666?text=Sem+Imagem";
+  };
+
+  // Formatar preço
   const formatPrice = (price) => {
-    return parseFloat(price).toLocaleString("pt-BR", {
+    return new Intl.NumberFormat("pt-BR", {
+      style: "currency",
+      currency: "BRL",
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
-    });
+    }).format(price);
   };
 
-  const propertyId = property.uuid || property.id;
+  // Calcular média de avaliações
+  const averageRating = property.average_rating || 0;
+  const reviewsCount = property.reviews_count || 0;
 
-  const getPhotoUrl = (filename) => {
-    if (!filename) return null;
-    if (filename.startsWith("http")) return filename;
-    const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
-    return `${API_URL}/uploads/properties/${filename}`;
-  };
+  // Layout Vertical (Grid)
+  if (layout === "vertical") {
+    return (
+      <Link
+        to={`/property/${property.uuid || property.id}`}
+        className="group block"
+        onClick={handleCardClick}
+      >
+        <div className="relative">
+          {/* Container da Imagem */}
+          <div className="relative aspect-square rounded-xlarge overflow-hidden bg-airbnb-grey-100 mb-3">
+            <img
+              src={getImageUrl()}
+              alt={property.title || property.name}
+              onError={() => setImageError(true)}
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              loading="lazy"
+            />
 
-  const mainPhoto =
-    property.photos && property.photos.length > 0
-      ? typeof property.photos[0] === "string"
-        ? property.photos[0]
-        : property.photos[0].filename
-      : null;
+            {/* Botão de Favorito */}
+            <button
+              onClick={handleFavoriteClick}
+              className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center bg-white/90 backdrop-blur-sm rounded-full hover:scale-110 active:scale-95 transition-all shadow-sm z-10"
+            >
+              {isFavorite ? (
+                <FaHeart className="text-rausch text-base" />
+              ) : (
+                <FaRegHeart className="text-airbnb-black text-base" />
+              )}
+            </button>
 
-  // Rating fictício (pode vir do backend)
-  const rating = property.rating || 4.8;
-  const reviewCount = property.review_count || 124;
-
-  return (
-    <Link to={`/property/${propertyId}`} className="group block">
-      <div className="w-full">
-        {/* Container da Imagem - Estilo Airbnb */}
-        <div className="relative mb-3">
-          {/* Imagem Principal */}
-          <div className="relative aspect-[20/19] rounded-xlarge overflow-hidden">
-            {mainPhoto ? (
-              <img
-                src={getPhotoUrl(mainPhoto)}
-                alt={property.title}
-                className="w-full h-full object-cover group-hover:brightness-95 transition-all duration-200"
-                loading="lazy"
-                onError={(e) => {
-                  e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300'%3E%3Crect width='400' height='300' fill='%23F7F7F7'/%3E%3C/svg%3E";
-                }}
-              />
-            ) : (
-              <div className="w-full h-full bg-airbnb-grey-50 flex items-center justify-center">
-                <div className="text-airbnb-grey-300 text-4xl">🏠</div>
+            {/* Badge de Destaque */}
+            {property.is_featured && (
+              <div className="absolute top-3 left-3 px-3 py-1.5 bg-rausch text-white text-xs font-semibold rounded-full shadow-sm">
+                Destaque
               </div>
             )}
 
-            {/* Loading Skeleton */}
-            <div className="absolute inset-0 bg-gradient-to-r from-airbnb-grey-50 via-airbnb-grey-100 to-airbnb-grey-50 bg-[length:200%_100%] animate-shimmer opacity-0 group-hover:opacity-0"></div>
+            {/* Indicadores de Imagem */}
+            {(property.photos || property.images)?.length > 1 && (
+              <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-1.5">
+                {(property.photos || property.images || []).slice(0, 5).map((_, idx) => (
+                  <div
+                    key={idx}
+                    className={`w-1.5 h-1.5 rounded-full transition-all ${
+                      idx === currentImageIndex
+                        ? "bg-white w-6"
+                        : "bg-white/60"
+                    }`}
+                  />
+                ))}
+              </div>
+            )}
           </div>
 
-          {/* Botão Favorito - Top Right */}
-          <div className="absolute top-3 right-3 z-10">
-            <FavoriteButton propertyId={property.id} />
-          </div>
-
-          {/* Badge Superhost (se aplicável) */}
-          {property.is_featured && (
-            <div className="absolute top-3 left-3 bg-white text-airbnb-black text-xs font-semibold px-2 py-1 rounded-small shadow-sm">
-              Superhost
+          {/* Informações */}
+          <div className="space-y-1">
+            {/* Localização e Avaliação */}
+            <div className="flex items-center justify-between gap-2">
+              <h3 className="font-semibold text-airbnb-black text-[15px] truncate flex-1">
+                {property.city?.name || property.location || "Localização"}
+              </h3>
+              
+              {averageRating > 0 && (
+                <div className="flex items-center gap-1 flex-shrink-0">
+                  <FaStar className="text-xs text-airbnb-black" />
+                  <span className="text-sm font-medium text-airbnb-black">
+                    {averageRating.toFixed(1)}
+                  </span>
+                </div>
+              )}
             </div>
-          )}
-        </div>
 
-        {/* Informações do Card - Estilo Airbnb */}
-        <div className="flex flex-col">
-          {/* Rating e Reviews */}
-          <div className="flex items-center mb-1">
-            <FaStar className="text-airbnb-black text-xs mr-1" />
-            <span className="text-airbnb-black text-sm font-normal">
-              {rating.toFixed(1)}
-            </span>
-            <span className="text-airbnb-grey-400 text-sm ml-1">
-              ({reviewCount})
-            </span>
-          </div>
+            {/* Título */}
+            <p className="text-airbnb-grey-600 text-[15px] truncate">
+              {property.title || property.name || "Propriedade"}
+            </p>
 
-          {/* Localização */}
-          <h3 className="text-airbnb-black text-base font-normal mb-0.5 line-clamp-1">
-            {property.address?.split(',')[0] || property.city || "Brasil"}
-          </h3>
+            {/* Detalhes */}
+            <div className="flex items-center gap-3 text-airbnb-grey-600 text-sm">
+              {property.max_guests && (
+                <div className="flex items-center gap-1">
+                  <BsPeople className="text-sm" />
+                  <span>{property.max_guests}</span>
+                </div>
+              )}
+              
+              {property.bedrooms > 0 && (
+                <div className="flex items-center gap-1">
+                  <IoBedOutline className="text-sm" />
+                  <span>{property.bedrooms}</span>
+                </div>
+              )}
+              
+              {property.bathrooms > 0 && (
+                <div className="flex items-center gap-1">
+                  <MdBathtub className="text-sm" />
+                  <span>{property.bathrooms}</span>
+                </div>
+              )}
+            </div>
 
-          {/* Tipo de Propriedade */}
-          <p className="text-airbnb-grey-400 text-sm font-normal mb-1 line-clamp-1">
-            {getTypeLabel(property.type)}
-          </p>
-
-          {/* Detalhes (quartos, hóspedes) */}
-          <p className="text-airbnb-grey-400 text-sm font-normal mb-2">
-            {property.max_guests} hóspedes · {property.bedrooms} quarto{property.bedrooms > 1 ? 's' : ''} · {property.bathrooms} banheiro{property.bathrooms > 1 ? 's' : ''}
-          </p>
-
-          {/* Preço */}
-          <div className="flex items-baseline">
-            <span className="text-airbnb-black text-base font-semibold">
-              R$ {formatPrice(property.price_per_night)}
-            </span>
-            <span className="text-airbnb-black text-sm font-normal ml-1">
-              / noite
-            </span>
+            {/* Preço */}
+            <div className="pt-1">
+              <p className="text-airbnb-black font-semibold text-[15px]">
+                {formatPrice(property.price_per_night || property.price || 0)}
+                <span className="font-normal text-airbnb-grey-600"> / noite</span>
+              </p>
+            </div>
           </div>
         </div>
-      </div>
-    </Link>
-  );
-};
+      </Link>
+    );
+  }
 
-PropertyCard.propTypes = {
-  property: PropTypes.shape({
-    uuid: PropTypes.string,
-    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-    title: PropTypes.string.isRequired,
-    address: PropTypes.string.isRequired,
-    type: PropTypes.string.isRequired,
-    price_per_night: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
-      .isRequired,
-    bedrooms: PropTypes.number.isRequired,
-    bathrooms: PropTypes.number.isRequired,
-    max_guests: PropTypes.number,
-    photos: PropTypes.array,
-    is_featured: PropTypes.bool,
-  }).isRequired,
+  // Layout Horizontal (Lista)
+  if (layout === "horizontal") {
+    return (
+      <Link
+        to={`/property/${property.uuid || property.id}`}
+        className="group block"
+        onClick={handleCardClick}
+      >
+        <div className="flex gap-4 p-4 bg-white border border-airbnb-grey-200 rounded-xlarge hover:shadow-lg transition-all duration-200">
+          {/* Imagem */}
+          <div className="relative w-64 flex-shrink-0">
+            <div className="aspect-square rounded-lg overflow-hidden bg-airbnb-grey-100">
+              <img
+                src={getImageUrl()}
+                alt={property.title || property.name}
+                onError={() => setImageError(true)}
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                loading="lazy"
+              />
+            </div>
+
+            {/* Botão de Favorito */}
+            <button
+              onClick={handleFavoriteClick}
+              className="absolute top-2 right-2 w-8 h-8 flex items-center justify-center bg-white/90 backdrop-blur-sm rounded-full hover:scale-110 active:scale-95 transition-all shadow-sm"
+            >
+              {isFavorite ? (
+                <FaHeart className="text-rausch text-base" />
+              ) : (
+                <FaRegHeart className="text-airbnb-black text-base" />
+              )}
+            </button>
+
+            {/* Badge */}
+            {property.is_featured && (
+              <div className="absolute top-2 left-2 px-2.5 py-1 bg-rausch text-white text-xs font-semibold rounded-full">
+                Destaque
+              </div>
+            )}
+          </div>
+
+          {/* Informações */}
+          <div className="flex-1 flex flex-col justify-between py-1">
+            {/* Topo */}
+            <div>
+              <div className="flex items-start justify-between gap-4 mb-2">
+                <div className="flex-1">
+                  <h3 className="text-xl font-semibold text-airbnb-black mb-1 line-clamp-2">
+                    {property.title || property.name || "Propriedade"}
+                  </h3>
+                  
+                  <div className="flex items-center gap-1 text-airbnb-grey-600 text-sm mb-3">
+                    <IoLocationOutline className="text-base" />
+                    <span>{property.city?.name || property.location || "Localização"}</span>
+                  </div>
+                </div>
+
+                {averageRating > 0 && (
+                  <div className="flex items-center gap-1.5 flex-shrink-0">
+                    <FaStar className="text-sm text-airbnb-black" />
+                    <span className="text-base font-semibold text-airbnb-black">
+                      {averageRating.toFixed(1)}
+                    </span>
+                    {reviewsCount > 0 && (
+                      <span className="text-sm text-airbnb-grey-600">
+                        ({reviewsCount})
+                      </span>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Descrição */}
+              {property.description && (
+                <p className="text-airbnb-grey-600 text-sm line-clamp-2 mb-4">
+                  {property.description}
+                </p>
+              )}
+
+              {/* Detalhes */}
+              <div className="flex items-center gap-4 text-airbnb-grey-600">
+                {property.max_guests && (
+                  <div className="flex items-center gap-1.5">
+                    <BsPeople className="text-base" />
+                    <span className="text-sm">{property.max_guests} hóspedes</span>
+                  </div>
+                )}
+                
+                {property.bedrooms > 0 && (
+                  <div className="flex items-center gap-1.5">
+                    <IoBedOutline className="text-base" />
+                    <span className="text-sm">
+                      {property.bedrooms} {property.bedrooms === 1 ? "quarto" : "quartos"}
+                    </span>
+                  </div>
+                )}
+                
+                {property.bathrooms > 0 && (
+                  <div className="flex items-center gap-1.5">
+                    <MdBathtub className="text-base" />
+                    <span className="text-sm">
+                      {property.bathrooms} {property.bathrooms === 1 ? "banheiro" : "banheiros"}
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Rodapé - Preço */}
+            <div className="flex items-end justify-between pt-4 border-t border-airbnb-grey-200 mt-4">
+              <div>
+                <p className="text-sm text-airbnb-grey-600 mb-1">A partir de</p>
+                <p className="text-2xl font-semibold text-airbnb-black">
+                  {formatPrice(property.price_per_night || property.price || 0)}
+                  <span className="text-base font-normal text-airbnb-grey-600"> / noite</span>
+                </p>
+              </div>
+
+              <button className="px-6 py-2.5 bg-rausch hover:bg-rausch-dark text-white font-semibold rounded-lg transition-colors">
+                Ver detalhes
+              </button>
+            </div>
+          </div>
+        </div>
+      </Link>
+    );
+  }
+
+  return null;
 };
 
 export default PropertyCard;

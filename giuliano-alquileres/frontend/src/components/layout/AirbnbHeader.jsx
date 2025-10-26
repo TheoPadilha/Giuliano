@@ -1,4 +1,4 @@
-// AirbnbHeader - Header com busca completa estilo Airbnb
+// AirbnbHeader - Header com busca completa estilo Airbnb + Animação de Scroll
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { FaSearch } from "react-icons/fa";
@@ -7,9 +7,13 @@ import { useAuth } from "../../contexts/AuthContext";
 import CompactDatePicker from "../search/CompactDatePicker";
 // import RoomsGuestsPicker from "../search/RoomsGuestsPicker";
 import GuestsPicker from "../search/GuestsPicker";
+
 const AirbnbHeader = () => {
   const navigate = useNavigate();
   const { isAuthenticated, user, logout } = useAuth();
+
+  // Estado para controlar o scroll
+  const [isScrolled, setIsScrolled] = useState(false);
 
   // Estados da busca
   const [destination, setDestination] = useState("");
@@ -37,6 +41,26 @@ const AirbnbHeader = () => {
   // const roomsRef = useRef(null);
   const guestsRef = useRef(null);
   const userMenuRef = useRef(null);
+
+  // useEffect para detectar o scroll da página
+  useEffect(() => {
+    const handleScroll = () => {
+      // Muda o estado quando o scroll passar de 50px
+      if (window.scrollY > 50) {
+        setIsScrolled(true);
+      } else {
+        setIsScrolled(false);
+      }
+    };
+
+    // Adiciona o event listener
+    window.addEventListener("scroll", handleScroll);
+
+    // Cleanup - remove o event listener quando o componente for desmontado
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -144,16 +168,38 @@ const AirbnbHeader = () => {
   };
 
   return (
-    <header className="sticky top-0 z-50 bg-white border-b border-airbnb-grey-200 shadow-sm">
+    <header 
+      className={`sticky top-0 z-50 bg-white border-b border-airbnb-grey-200 shadow-sm transition-all duration-300 ease-in-out ${
+        isScrolled ? 'py-2' : 'py-3'
+      }`}
+    >
       <div className="max-w-[2520px] mx-auto px-5 sm:px-10 lg:px-20">
-        <div className="flex items-center justify-between h-20">
+        <div 
+          className={`flex items-center justify-between transition-all duration-300 ease-in-out ${
+            isScrolled ? 'h-16' : 'h-20'
+          }`}
+        >
           {/* Logo - Esquerda */}
           <Link to="/" className="flex items-center flex-shrink-0 gap-2">
             <div className="flex items-center gap-2">
-              <div className="w-10 h-10 bg-gradient-to-br from-rausch to-rausch-dark rounded-xlarge flex items-center justify-center shadow-md">
-                <span className="text-white text-xl font-bold">Z</span>
+              <div 
+                className={`bg-gradient-to-br from-rausch to-rausch-dark rounded-xlarge flex items-center justify-center shadow-md transition-all duration-300 ease-in-out ${
+                  isScrolled ? 'w-9 h-9' : 'w-10 h-10'
+                }`}
+              >
+                <span 
+                  className={`text-white font-bold transition-all duration-300 ease-in-out ${
+                    isScrolled ? 'text-lg' : 'text-xl'
+                  }`}
+                >
+                  Z
+                </span>
               </div>
-              <span className="hidden lg:block text-xl font-bold text-rausch">
+              <span 
+                className={`hidden lg:block font-bold text-rausch transition-all duration-300 ease-in-out ${
+                  isScrolled ? 'text-lg' : 'text-xl'
+                }`}
+              >
                 Ziguealuga
               </span>
             </div>
@@ -161,10 +207,22 @@ const AirbnbHeader = () => {
 
           {/* Barra de Busca Completa - Centro */}
           <div className="hidden md:flex flex-1 max-w-[850px] mx-auto">
-            <div className="flex items-center w-full bg-white border border-airbnb-grey-200 rounded-full shadow-sm hover:shadow-md transition-shadow duration-200">
+            <div 
+              className={`flex items-center w-full bg-white border border-airbnb-grey-200 rounded-full shadow-sm hover:shadow-md transition-all duration-300 ease-in-out ${
+                isScrolled ? 'scale-95' : 'scale-100'
+              }`}
+            >
               {/* Destino */}
-              <div className="flex-1 min-w-0 pl-6 pr-4 py-2.5 border-r border-airbnb-grey-200">
-                <label className="block text-xs font-semibold text-airbnb-black mb-0.5">
+              <div 
+                className={`flex-1 min-w-0 pr-4 border-r border-airbnb-grey-200 transition-all duration-300 ease-in-out ${
+                  isScrolled ? 'pl-5 py-2' : 'pl-6 py-2.5'
+                }`}
+              >
+                <label 
+                  className={`block font-semibold text-airbnb-black mb-0.5 transition-all duration-300 ease-in-out ${
+                    isScrolled ? 'text-[10px]' : 'text-xs'
+                  }`}
+                >
                   Localização
                 </label>
                 <input
@@ -172,13 +230,17 @@ const AirbnbHeader = () => {
                   placeholder="Para onde?"
                   value={destination}
                   onChange={(e) => setDestination(e.target.value)}
-                  className="w-full bg-transparent text-sm text-airbnb-black placeholder-airbnb-grey-400 focus:outline-none"
+                  className={`w-full bg-transparent text-airbnb-black placeholder-airbnb-grey-400 focus:outline-none transition-all duration-300 ease-in-out ${
+                    isScrolled ? 'text-xs' : 'text-sm'
+                  }`}
                 />
               </div>
 
               {/* Check-in */}
               <div
-                className="flex-1 min-w-0 px-4 py-2.5 border-r border-airbnb-grey-200 relative"
+                className={`flex-1 min-w-0 px-4 border-r border-airbnb-grey-200 relative transition-all duration-300 ease-in-out ${
+                  isScrolled ? 'py-2' : 'py-2.5'
+                }`}
                 ref={checkInRef}
               >
                 <div
@@ -186,43 +248,52 @@ const AirbnbHeader = () => {
                   onClick={() => {
                     setShowCheckInPicker(!showCheckInPicker);
                     setShowCheckOutPicker(false);
-                    setShowRoomsPicker(false);
+                    setShowGuestsPicker(false);
                   }}
                 >
-                  <label className="block text-xs font-semibold text-airbnb-black mb-0.5">
+                  <label 
+                    className={`block font-semibold text-airbnb-black mb-0.5 transition-all duration-300 ease-in-out ${
+                      isScrolled ? 'text-[10px]' : 'text-xs'
+                    }`}
+                  >
                     Check-in
                   </label>
-                  <div className="text-sm text-airbnb-black">
+                  <div 
+                    className={`text-airbnb-black transition-all duration-300 ease-in-out ${
+                      isScrolled ? 'text-xs' : 'text-sm'
+                    }`}
+                  >
                     {checkIn ? (
                       formatDate(checkIn)
                     ) : (
                       <span className="text-airbnb-grey-400">
-                        Adicionar data
+                        Insira as datas
                       </span>
                     )}
                   </div>
                 </div>
 
                 {showCheckInPicker && (
-                  <div className="absolute top-full left-0 mt-2 z-50">
-                    <CompactDatePicker
-                      selectedDate={checkIn}
-                      onChange={(date) => {
-                        setCheckIn(date);
+                  <CompactDatePicker
+                    selectedDate={checkIn}
+                    onDateChange={(date) => {
+                      setCheckIn(date);
+                      if (date && !checkOut) {
                         setShowCheckInPicker(false);
-                        if (checkOut && new Date(date) >= new Date(checkOut)) {
-                          setCheckOut(null);
-                        }
-                      }}
-                      onClose={() => setShowCheckInPicker(false)}
-                    />
-                  </div>
+                        setShowCheckOutPicker(true);
+                      }
+                    }}
+                    minDate={new Date()}
+                    onClose={() => setShowCheckInPicker(false)}
+                  />
                 )}
               </div>
 
               {/* Check-out */}
               <div
-                className="flex-1 min-w-0 px-4 py-2.5 border-r border-airbnb-grey-200 relative"
+                className={`flex-1 min-w-0 px-4 border-r border-airbnb-grey-200 relative transition-all duration-300 ease-in-out ${
+                  isScrolled ? 'py-2' : 'py-2.5'
+                }`}
                 ref={checkOutRef}
               >
                 <div
@@ -230,35 +301,41 @@ const AirbnbHeader = () => {
                   onClick={() => {
                     setShowCheckOutPicker(!showCheckOutPicker);
                     setShowCheckInPicker(false);
-                    setShowRoomsPicker(false);
+                    setShowGuestsPicker(false);
                   }}
                 >
-                  <label className="block text-xs font-semibold text-airbnb-black mb-0.5">
+                  <label 
+                    className={`block font-semibold text-airbnb-black mb-0.5 transition-all duration-300 ease-in-out ${
+                      isScrolled ? 'text-[10px]' : 'text-xs'
+                    }`}
+                  >
                     Check-out
                   </label>
-                  <div className="text-sm text-airbnb-black">
+                  <div 
+                    className={`text-airbnb-black transition-all duration-300 ease-in-out ${
+                      isScrolled ? 'text-xs' : 'text-sm'
+                    }`}
+                  >
                     {checkOut ? (
                       formatDate(checkOut)
                     ) : (
                       <span className="text-airbnb-grey-400">
-                        Adicionar data
+                        Insira as datas
                       </span>
                     )}
                   </div>
                 </div>
 
                 {showCheckOutPicker && (
-                  <div className="absolute top-full left-0 mt-2 z-50">
-                    <CompactDatePicker
-                      selectedDate={checkOut}
-                      onChange={(date) => {
-                        setCheckOut(date);
-                        setShowCheckOutPicker(false);
-                      }}
-                      onClose={() => setShowCheckOutPicker(false)}
-                      minDate={checkIn ? new Date(checkIn) : null}
-                    />
-                  </div>
+                  <CompactDatePicker
+                    selectedDate={checkOut}
+                    onDateChange={(date) => {
+                      setCheckOut(date);
+                      setShowCheckOutPicker(false);
+                    }}
+                    minDate={checkIn ? new Date(checkIn) : new Date()}
+                    onClose={() => setShowCheckOutPicker(false)}
+                  />
                 )}
               </div>
 
@@ -295,7 +372,9 @@ const AirbnbHeader = () => {
               </div> */}
 
               <div
-                className="flex-1 min-w-0 px-4 py-2.5 relative"
+                className={`flex-1 min-w-0 px-4 relative transition-all duration-300 ease-in-out ${
+                  isScrolled ? 'py-2' : 'py-2.5'
+                }`}
                 ref={guestsRef}
               >
                 <div
@@ -306,10 +385,18 @@ const AirbnbHeader = () => {
                     setShowCheckOutPicker(false);
                   }}
                 >
-                  <label className="block text-xs font-semibold text-airbnb-black mb-0.5">
+                  <label 
+                    className={`block font-semibold text-airbnb-black mb-0.5 transition-all duration-300 ease-in-out ${
+                      isScrolled ? 'text-[10px]' : 'text-xs'
+                    }`}
+                  >
                     Hóspedes
                   </label>
-                  <div className="text-sm text-airbnb-black truncate">
+                  <div 
+                    className={`text-airbnb-black truncate transition-all duration-300 ease-in-out ${
+                      isScrolled ? 'text-xs' : 'text-sm'
+                    }`}
+                  >
                     {formatGuestsDisplay()}
                   </div>
                 </div>
@@ -328,10 +415,16 @@ const AirbnbHeader = () => {
               {/* Botão de Busca */}
               <button
                 onClick={handleSearch}
-                className="mr-2 w-12 h-12 bg-rausch hover:bg-rausch-dark text-white rounded-full flex items-center justify-center transition-colors duration-200 flex-shrink-0"
+                className={`mr-2 bg-rausch hover:bg-rausch-dark text-white rounded-full flex items-center justify-center transition-all duration-300 ease-in-out flex-shrink-0 ${
+                  isScrolled ? 'w-10 h-10' : 'w-12 h-12'
+                }`}
                 aria-label="Buscar"
               >
-                <FaSearch className="text-lg" />
+                <FaSearch 
+                  className={`transition-all duration-300 ease-in-out ${
+                    isScrolled ? 'text-base' : 'text-lg'
+                  }`} 
+                />
               </button>
             </div>
           </div>
@@ -339,14 +432,24 @@ const AirbnbHeader = () => {
           {/* Versão Mobile - Busca Simples */}
           <button
             onClick={handleSearch}
-            className="md:hidden flex items-center gap-3 flex-1 ml-4 border border-airbnb-grey-200 rounded-full py-2.5 px-4 shadow-sm"
+            className={`md:hidden flex items-center gap-3 flex-1 ml-4 border border-airbnb-grey-200 rounded-full px-4 shadow-sm transition-all duration-300 ease-in-out ${
+              isScrolled ? 'py-2' : 'py-2.5'
+            }`}
           >
             <FaSearch className="text-airbnb-black" />
             <div className="flex flex-col items-start">
-              <span className="text-sm font-semibold text-airbnb-black">
+              <span 
+                className={`font-semibold text-airbnb-black transition-all duration-300 ease-in-out ${
+                  isScrolled ? 'text-xs' : 'text-sm'
+                }`}
+              >
                 Para onde?
               </span>
-              <span className="text-xs text-airbnb-grey-400">
+              <span 
+                className={`text-airbnb-grey-400 transition-all duration-300 ease-in-out ${
+                  isScrolled ? 'text-[10px]' : 'text-xs'
+                }`}
+              >
                 Qualquer lugar • Qualquer semana
               </span>
             </div>
@@ -354,9 +457,29 @@ const AirbnbHeader = () => {
 
           {/* Menu Direita */}
           <div className="flex items-center gap-2 flex-shrink-0">
+            {/* Botão "Anunciar seu espaço" - Apenas para admins ou usuários não logados */}
+            {(!isAuthenticated || (user?.role === "admin" || user?.role === "admin_master")) && (
+              <Link
+                to={isAuthenticated ? "/admin" : "/login?redirect=/admin"}
+                className={`hidden lg:block px-4 font-semibold text-airbnb-black hover:bg-airbnb-grey-50 rounded-full transition-all duration-300 ease-in-out whitespace-nowrap ${
+                  isScrolled ? 'py-2 text-xs' : 'py-3 text-sm'
+                }`}
+              >
+                Anunciar seu espaço
+              </Link>
+            )}
+
             {/* Botão Idioma */}
-            <button className="hidden lg:block p-3 hover:bg-airbnb-grey-50 rounded-full transition-colors">
-              <FiGlobe className="text-airbnb-black text-lg" />
+            <button 
+              className={`hidden lg:block hover:bg-airbnb-grey-50 rounded-full transition-all duration-300 ease-in-out ${
+                isScrolled ? 'p-2' : 'p-3'
+              }`}
+            >
+              <FiGlobe 
+                className={`text-airbnb-black transition-all duration-300 ease-in-out ${
+                  isScrolled ? 'text-base' : 'text-lg'
+                }`} 
+              />
             </button>
 
             {/* Menu de Usuário */}
@@ -364,10 +487,20 @@ const AirbnbHeader = () => {
               <div className="relative" ref={userMenuRef}>
                 <button
                   onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                  className="flex items-center gap-3 border border-airbnb-grey-300 hover:shadow-md rounded-full pl-3 pr-2 py-2 transition-all duration-200"
+                  className={`flex items-center gap-3 border border-airbnb-grey-300 hover:shadow-md rounded-full pr-2 transition-all duration-300 ease-in-out ${
+                    isScrolled ? 'pl-2 py-1.5' : 'pl-3 py-2'
+                  }`}
                 >
-                  <FiMenu className="text-airbnb-black text-lg" />
-                  <div className="w-7 h-7 bg-airbnb-grey-500 rounded-full flex items-center justify-center text-white text-sm font-semibold">
+                  <FiMenu 
+                    className={`text-airbnb-black transition-all duration-300 ease-in-out ${
+                      isScrolled ? 'text-base' : 'text-lg'
+                    }`} 
+                  />
+                  <div 
+                    className={`bg-airbnb-grey-500 rounded-full flex items-center justify-center text-white font-semibold transition-all duration-300 ease-in-out ${
+                      isScrolled ? 'w-6 h-6 text-xs' : 'w-7 h-7 text-sm'
+                    }`}
+                  >
                     {user?.name?.charAt(0).toUpperCase() || "U"}
                   </div>
                 </button>
@@ -402,11 +535,22 @@ const AirbnbHeader = () => {
                       <span>Favoritos</span>
                     </Link>
 
-                    {user?.role === "admin" && (
+                    <div className="border-t border-airbnb-grey-200 my-2"></div>
+
+                    <Link
+                      to="/profile"
+                      onClick={() => setIsUserMenuOpen(false)}
+                      className="flex items-center gap-3 px-4 py-3 text-airbnb-black hover:bg-airbnb-grey-50 transition-colors text-sm"
+                    >
+                      <FiUser className="text-lg" />
+                      <span>Perfil</span>
+                    </Link>
+
+                    {(user?.role === "admin" || user?.role === "admin_master") && (
                       <>
                         <div className="border-t border-airbnb-grey-200 my-2"></div>
                         <Link
-                          to="/admin/properties"
+                          to="/admin"
                           onClick={() => setIsUserMenuOpen(false)}
                           className="flex items-center gap-3 px-4 py-3 text-airbnb-black hover:bg-airbnb-grey-50 transition-colors text-sm"
                         >
@@ -432,13 +576,17 @@ const AirbnbHeader = () => {
               <div className="flex items-center gap-2">
                 <Link
                   to="/login"
-                  className="hidden sm:block px-4 py-2 text-sm font-semibold text-airbnb-black hover:bg-airbnb-grey-50 rounded-full transition-colors"
+                  className={`hidden sm:block px-4 font-semibold text-airbnb-black hover:bg-airbnb-grey-50 rounded-full transition-all duration-300 ease-in-out ${
+                    isScrolled ? 'py-1.5 text-xs' : 'py-2 text-sm'
+                  }`}
                 >
                   Entrar
                 </Link>
                 <Link
                   to="/register"
-                  className="px-4 py-2 text-sm font-semibold text-white bg-rausch hover:bg-rausch-dark rounded-full transition-colors"
+                  className={`px-4 font-semibold text-white bg-rausch hover:bg-rausch-dark rounded-full transition-all duration-300 ease-in-out ${
+                    isScrolled ? 'py-1.5 text-xs' : 'py-2 text-sm'
+                  }`}
                 >
                   Cadastrar
                 </Link>
