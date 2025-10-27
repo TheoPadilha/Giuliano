@@ -1,6 +1,7 @@
 // AirbnbHeader - Header com busca completa estilo Airbnb + Animação de Scroll
 import { useState, useEffect, useRef } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useLocation } from "react-router-dom";
+
 import { FaSearch } from "react-icons/fa";
 import { FiMenu, FiUser, FiLogOut, FiSettings, FiGlobe } from "react-icons/fi";
 import { useAuth } from "../../contexts/AuthContext";
@@ -8,9 +9,11 @@ import CompactDatePicker from "../search/CompactDatePicker";
 // import RoomsGuestsPicker from "../search/RoomsGuestsPicker";
 import GuestsPicker from "../search/GuestsPicker";
 
-const AirbnbHeader = () => {
+const AirbnbHeader = ({ onFilterButtonClick }) => {
   const navigate = useNavigate();
   const { isAuthenticated, user, logout } = useAuth();
+  const location = useLocation();
+  const isPropertiesPage = location.pathname === "/properties";
 
   // Estado para controlar o scroll
   const [isScrolled, setIsScrolled] = useState(false);
@@ -413,19 +416,41 @@ const AirbnbHeader = () => {
               </div>
 
               {/* Botão de Busca */}
-              <button
-                onClick={handleSearch}
-                className={`mr-2 bg-rausch hover:bg-rausch-dark text-white rounded-full flex items-center justify-center transition-all duration-300 ease-in-out flex-shrink-0 ${
-                  isScrolled ? 'w-10 h-10' : 'w-12 h-12'
-                }`}
-                aria-label="Buscar"
-              >
-                <FaSearch 
-                  className={`transition-all duration-300 ease-in-out ${
-                    isScrolled ? 'text-base' : 'text-lg'
-                  }`} 
-                />
-              </button>
+		              {/* Botão de Filtros (condicional) */}
+			              {isPropertiesPage && (
+			                <button
+			                  onClick={onFilterButtonClick} 
+			                  className={`flex items-center gap-2 border border-airbnb-grey-300 hover:border-airbnb-black rounded-full transition-all duration-300 ease-in-out flex-shrink-0 ${
+			                    isScrolled ? 'px-3 py-2 text-xs' : 'px-4 py-2.5 text-sm'
+			                  }`}
+			                >
+			                  <svg 
+			                    xmlns="http://www.w3.org/2000/svg" 
+			                    viewBox="0 0 512 512" 
+			                    className={`fill-current text-airbnb-black transition-all duration-300 ease-in-out ${
+			                      isScrolled ? 'w-3 h-3' : 'w-4 h-4'
+			                    }`}
+			                  >
+			                    <path d="M3.9 54.9C10.5 45.7 22.3 41.5 32.2 44.6l406.8 127.3c15.8 4.9 20.3 23.9 9.1 34.2L304.5 365.9c-2.4 2.2-3.7 5.2-3.5 8.3v130.1c-1.3 12.5 7.3 24.3 19.9 26.6l102.4 19.2c12.5 2.3 24.3-6.9 26.6-19.5l25.6-137.9c.7-3.9 2.5-7.6 5.4-10.4L490.1 190.5c9.2-8.6 8.5-23.7-1.7-31.5L412.3 93.7c-9.2-7.1-22.3-5.2-29.4 4l-40 56c-1.2 1.7-2.6 3.1-4.2 4.2L288 224l-112 112L128 384l-48-48 104-104c1.2-1.2 2.3-2.6 3.1-4.2l56-40c8.9-6.9 10.8-20.1 3.7-29.4L188.7 48.7C179.5 39.5 164.4 39.7 155.2 48.3L3.9 54.9z"/>
+			                  </svg>
+			                  <span className="font-semibold">Filtros</span>
+			                </button>
+			               )}
+
+		              {/* Botão de Busca */}
+		              <button
+		                onClick={handleSearch}
+		                className={`mr-2 bg-rausch hover:bg-rausch-dark text-white rounded-full flex items-center justify-center transition-all duration-300 ease-in-out flex-shrink-0 ${
+		                  isPropertiesPage ? 'w-10 h-10' : (isScrolled ? 'w-10 h-10' : 'w-12 h-12')
+		                }`}
+		                aria-label="Buscar"
+		              >
+		                <FaSearch 
+		                  className={`transition-all duration-300 ease-in-out ${
+		                    isPropertiesPage ? 'text-base' : (isScrolled ? 'text-base' : 'text-lg')
+		                  }`} 
+		                />
+		              </button>
             </div>
           </div>
 
