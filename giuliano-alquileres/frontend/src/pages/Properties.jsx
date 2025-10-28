@@ -4,6 +4,8 @@ import { useSearchParams, Link } from "react-router-dom";
 import api from "../services/api";
 import PropertyCard from "../components/property/PropertyCard";
 import PropertyFiltersPro from "../components/property/PropertyFiltersPro";
+import SortDropdown from "../components/property/SortDropdown";
+import MapView from "../components/property/MapView";
 import AirbnbHeader from "../components/layout/AirbnbHeader";
 // import Modal from "../components/common/Modal"; // Assumindo que existe um componente Modal genérico
 import Footer from "../components/layout/Footer";
@@ -47,6 +49,9 @@ const Properties = () => {
     limit: parseInt(searchParams.get("limit")) || 20,
   });
 
+  // Estado de ordenação
+  const [sortBy, setSortBy] = useState(searchParams.get("sort") || "");
+
   // Carregar dados auxiliares (cidades e amenidades)
   useEffect(() => {
     // Rastrear visualização da página
@@ -69,10 +74,28 @@ const Properties = () => {
     fetchAuxData();
   }, []);
 
-  // Buscar propriedades quando filtros mudarem
+  // Função para ordenar propriedades no frontend
+  const sortProperties = (props, sortType) => {
+    const sorted = [...props];
+
+    switch (sortType) {
+      case "price_asc":
+        return sorted.sort((a, b) => (a.price_per_night || 0) - (b.price_per_night || 0));
+      case "price_desc":
+        return sorted.sort((a, b) => (b.price_per_night || 0) - (a.price_per_night || 0));
+      case "rating":
+        return sorted.sort((a, b) => (b.average_rating || 0) - (a.average_rating || 0));
+      case "newest":
+        return sorted.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+      default:
+        return sorted;
+    }
+  };
+
+  // Buscar propriedades quando filtros ou ordenação mudarem
   useEffect(() => {
     fetchProperties();
-  }, [filters]);
+  }, [filters, sortBy]);
 
   const fetchProperties = async () => {
     try {
@@ -91,13 +114,25 @@ const Properties = () => {
         }
       });
 
+      // Adicionar ordenação
+      if (sortBy) {
+        params.append("sort", sortBy);
+      }
+
       console.log("🔍 Buscando com params:", params.toString());
 
       const response = await api.get(`/api/properties?${params.toString()}`);
 
       console.log("📦 Propriedades encontradas:", response.data);
 
-      setProperties(response.data.properties || []);
+      let fetchedProperties = response.data.properties || [];
+
+      // Ordenação no frontend (caso o backend não suporte)
+      if (sortBy) {
+        fetchedProperties = sortProperties(fetchedProperties, sortBy);
+      }
+
+      setProperties(fetchedProperties);
       setPagination(response.data.pagination || {});
     } catch (error) {
       console.error("Erro ao buscar propriedades:", error);
@@ -208,7 +243,7 @@ const Properties = () => {
       <div className="max-w-[2520px] mx-auto px-5 sm:px-10 lg:px-20">
         {/* Barra de Resultados e Controles - CORRIGIDA */}
         {!loading && properties.length > 0 && (
-          <div className="flex items-center justify-between py-6 border-b border-airbnb-grey-200">
+          <div className="flex items-center justify-between py-6 border-b border-airbnb-grey-200 flex-wrap gap-4">
             {/* Info de Resultados */}
             <div className="flex items-center gap-4">
               <h2 className="text-sm text-airbnb-grey-600">
@@ -225,8 +260,13 @@ const Properties = () => {
               </h2>
             </div>
 
-            {/* Controles de Visualização */}
-            <div className="hidden md:flex items-center gap-2">
+            {/* Controles de Ordenação e Visualização */}
+            <div className="flex items-center gap-3">
+              {/* Dropdown de Ordenação */}
+              <SortDropdown value={sortBy} onChange={setSortBy} />
+
+              {/* Controles de Visualização */}
+              <div className="hidden md:flex items-center gap-2 ml-2 pl-2 border-l border-airbnb-grey-200">
               <button
                 onClick={() => setViewMode("grid")}
                 className={`p-2.5 rounded-lg transition-all ${
@@ -251,15 +291,19 @@ const Properties = () => {
                 <FaList className="text-sm" />
               </button>
 
-              {/* Botão Mapa - Para futuro */}
+              {/* Botão Mapa - ATIVADO! */}
               <button
                 onClick={() => setViewMode("map")}
-                disabled
-                className="p-2.5 rounded-lg bg-white text-airbnb-grey-300 border border-airbnb-grey-200 cursor-not-allowed opacity-50"
-                title="Visualização em mapa (em breve)"
+                className={`p-2.5 rounded-lg transition-all ${
+                  viewMode === "map"
+                    ? "bg-airbnb-black text-white"
+                    : "bg-white text-airbnb-grey-600 hover:bg-airbnb-grey-50 border border-airbnb-grey-200"
+                }`}
+                title="Visualização em mapa"
               >
                 <FaMapMarkedAlt className="text-sm" />
               </button>
+              </div>
             </div>
           </div>
         )}
@@ -338,6 +382,9 @@ const Properties = () => {
                   ))}
                 </div>
               )}
+
+              {/* Visualização em Mapa */}
+              {viewMode === "map" && <MapView properties={properties} />}
 
               {/* Paginação */}
               {pagination.totalPages > 1 && (

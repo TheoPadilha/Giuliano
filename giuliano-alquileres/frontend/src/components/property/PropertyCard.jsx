@@ -1,13 +1,14 @@
 // PropertyCard.jsx - Versão Minimalista e Elegante (SEM Context)
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { FaHeart, FaRegHeart, FaStar } from "react-icons/fa";
+import { FaHeart, FaRegHeart, FaStar, FaCrown } from "react-icons/fa";
 import { IoBedOutline, IoLocationOutline } from "react-icons/io5";
 import { BsPeople } from "react-icons/bs";
 import { MdBathtub } from "react-icons/md";
 import { trackPropertyClick, trackAddToWishlist } from "../../utils/googleAnalytics";
+import { UPLOADS_URL } from "../../services/api";
 
-const PropertyCard = ({ property, layout = "vertical" }) => {
+const PropertyCard = ({ property, layout = "vertical", showPremiumBadge = false }) => {
   // Estado local para favorito (sem dependência de Context)
   const [isFavorite, setIsFavorite] = useState(false);
   const [imageError, setImageError] = useState(false);
@@ -46,7 +47,7 @@ const PropertyCard = ({ property, layout = "vertical" }) => {
 
       // Se tem filename, construir URL completa
       if (image.filename) {
-        return `http://localhost:5000/uploads/properties/${image.filename}`;
+        return `${UPLOADS_URL}/properties/${image.filename}`;
       }
 
       // Senão tentar pegar de image_url, url ou o próprio objeto (string)
@@ -101,10 +102,11 @@ const PropertyCard = ({ property, layout = "vertical" }) => {
               )}
             </button>
 
-            {/* Badge de Destaque */}
-            {property.is_featured && (
-              <div className="absolute top-3 left-3 px-3 py-1.5 bg-rausch text-white text-xs font-semibold rounded-full shadow-sm">
-                Destaque
+            {/* Badge de Destaque Premium */}
+            {(property.is_featured || showPremiumBadge) && (
+              <div className="absolute top-3 left-3 px-3 py-1.5 bg-gradient-to-r from-yellow-500 to-orange-500 text-white text-xs font-bold rounded-full shadow-lg flex items-center gap-1.5 animate-pulse">
+                <FaCrown className="text-xs" />
+                PREMIUM
               </div>
             )}
 
@@ -218,10 +220,11 @@ const PropertyCard = ({ property, layout = "vertical" }) => {
               )}
             </button>
 
-            {/* Badge */}
-            {property.is_featured && (
-              <div className="absolute top-2 left-2 px-2.5 py-1 bg-rausch text-white text-xs font-semibold rounded-full">
-                Destaque
+            {/* Badge Premium - Horizontal */}
+            {(property.is_featured || showPremiumBadge) && (
+              <div className="absolute top-2 left-2 px-3 py-1.5 bg-gradient-to-r from-yellow-500 to-orange-500 text-white text-xs font-bold rounded-full shadow-lg flex items-center gap-1.5">
+                <FaCrown className="text-xs" />
+                PREMIUM
               </div>
             )}
           </div>

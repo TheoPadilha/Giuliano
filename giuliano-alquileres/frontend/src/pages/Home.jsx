@@ -1,7 +1,7 @@
 // Home.jsx - Design Minimalista e Clean (estilo ZAP Imóveis)
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import api from "../services/api";
+import { propertiesAPI } from "../services/api";
 import PropertyCard from "../components/property/PropertyCard";
 import Loading from "../components/common/Loading";
 import AirbnbHeader from "../components/layout/AirbnbHeader";
@@ -33,16 +33,29 @@ const Home = () => {
     const fetchProperties = async () => {
       try {
         setLoading(true);
-        const response = await api.get("/api/properties", {
-          params: { status: "available" },
-        });
-        const allProperties = response.data.properties || [];
 
-        setFeaturedProperties(
-          allProperties.filter((p) => p.is_featured).slice(0, 6)
-        );
+        // Tentar buscar propriedades em destaque primeiro
+        const featuredResponse = await propertiesAPI.getFeatured();
+        let featured = featuredResponse.data.properties || featuredResponse.data || [];
+
+        // Se tiver menos de 6 propriedades featured, buscar todas disponíveis
+        if (featured.length < 6) {
+          const allResponse = await propertiesAPI.getAll({
+            status: "available",
+            limit: 6
+          });
+          const allProperties = allResponse.data.properties || [];
+
+          // Misturar featured com não-featured até completar 6
+          const featuredIds = featured.map(p => p.id);
+          const nonFeatured = allProperties.filter(p => !featuredIds.includes(p.id));
+          featured = [...featured, ...nonFeatured].slice(0, 6);
+        }
+
+        setFeaturedProperties(featured);
       } catch (error) {
         console.error("Erro ao carregar propriedades:", error);
+        setFeaturedProperties([]);
       } finally {
         setLoading(false);
       }
@@ -187,16 +200,19 @@ const Home = () => {
         <section className="py-16 bg-gray-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between mb-10">
-              <div>
-                <h2 className="text-3xl font-bold text-gray-900 mb-2">
-                  Acomodações em destaque
-                </h2>
-                <p className="text-gray-600">
-                  Escolhidas especialmente para você
-                </p>
+              <div className="flex items-center gap-3">
+                <FaStar className="text-3xl text-yellow-500" />
+                <div>
+                  <h2 className="text-3xl font-bold text-gray-900 mb-1">
+                    Acomodações Premium
+                  </h2>
+                  <p className="text-gray-600">
+                    Nossos imóveis mais bem avaliados e exclusivos
+                  </p>
+                </div>
               </div>
               <Link
-                to="/properties"
+                to="/properties?featured=true"
                 className="hidden md:block text-rausch font-semibold hover:text-rausch-dark transition-colors"
               >
                 Ver todas →
@@ -205,7 +221,11 @@ const Home = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {featuredProperties.map((property, index) => (
-                <PropertyCard key={property.uuid || index} property={property} />
+                <PropertyCard
+                  key={property.uuid || index}
+                  property={property}
+                  showPremiumBadge={true}
+                />
               ))}
             </div>
 

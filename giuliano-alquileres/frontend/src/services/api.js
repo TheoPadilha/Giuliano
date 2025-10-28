@@ -131,6 +131,7 @@ export const authAPI = {
 // ===== EXPORTS NOMEADOS PARA PROPRIEDADES =====
 export const propertiesAPI = {
   getAll: (params) => api.get("/api/properties", { params }),
+  getFeatured: () => api.get("/api/properties/featured"),
   getById: (id) => api.get(`/api/properties/${id}`),
   create: (data) => api.post("/api/properties", data),
   update: (id, data) => api.put(`/api/properties/${id}`, data),
@@ -155,6 +156,9 @@ export default api;
 
 // ===== EXPORT DA URL BASE =====
 export { API_URL };
+
+// ===== EXPORT DA URL DE UPLOADS =====
+export const UPLOADS_URL = import.meta.env.VITE_UPLOADS_URL || `${API_URL}/uploads`;
 
 
 

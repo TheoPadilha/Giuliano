@@ -39,7 +39,7 @@ app.use(
 
 // CORS Configuration - Remover null para maior segurança
 const allowedOrigins = [
-  process.env.CORS_ORIGIN || "http://localhost:5173",
+  process.env.CORS_ORIGIN || "http://localhost:5173", //https://ziguealuga.com
   "http://localhost:3000",
   "http://localhost:3001",
   "http://localhost:3002",
@@ -133,6 +133,7 @@ app.use("/api/properties", require("./routes/properties"));
 app.use("/api/utilities", require("./routes/utilities"));
 app.use("/api/uploads", require("./routes/uploads"));
 app.use("/api/admin", require("./routes/admin"));
+app.use("/api/stats", require("./routes/stats"));
 app.use("/api/bookings", require("./routes/bookings"));
 app.use("/api/payments", require("./routes/payments"));
 app.use("/api/reviews", require("./routes/reviews"));
