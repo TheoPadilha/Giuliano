@@ -5,7 +5,7 @@ import { AuthProvider } from "./contexts/AuthContext";
 import { FavoritesProvider } from "./contexts/FavoritesContext";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import { initGA, initGTM } from "./utils/googleAnalytics";
-import CookieConsent from "./components/common/CookieConsent";
+// import CookieConsent from "./components/common/CookieConsent";
 
 // --- Páginas Públicas ---
 import Home from "./pages/Home";
@@ -270,7 +270,7 @@ function App() {
             <Route path="*" element={<NotFoundPage />} />
           </Routes>
           <WhatsAppButton />
-          <CookieConsent />
+          {/* <CookieConsent /> */}
           </div>
         </Router>
       </FavoritesProvider>
