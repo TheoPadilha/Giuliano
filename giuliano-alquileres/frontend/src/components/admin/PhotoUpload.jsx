@@ -26,8 +26,8 @@ const PhotoUpload = ({ propertyUuid, onUploadComplete }) => {
         `/api/uploads/properties/${propertyUuid}/photos`
       );
       setPhotos(response.data.photos || []);
-    } catch (err) {
-      console.error("Erro ao carregar fotos:", err);
+    } catch (_err) {
+      console.error("Erro ao carregar fotos:", _err);
       setError("Erro ao carregar fotos existentes");
     } finally {
       setLoading(false);
@@ -128,13 +128,13 @@ const PhotoUpload = ({ propertyUuid, onUploadComplete }) => {
       setSuccess("Foto principal definida!");
       await fetchPhotos();
       setTimeout(() => setSuccess(""), 2000);
-    } catch (err) {
+    } catch {
       setError("Erro ao definir foto principal");
     }
   };
 
   // Deletar foto
-  const deletePhoto = async (photoId, filename) => {
+  const deletePhoto = async (photoId, _filename) => {
     const confirmed = window.confirm(
       "Tem certeza que deseja excluir esta foto?"
     );
@@ -146,7 +146,7 @@ const PhotoUpload = ({ propertyUuid, onUploadComplete }) => {
       setSuccess("Foto excluída com sucesso!");
       await fetchPhotos();
       setTimeout(() => setSuccess(""), 2000);
-    } catch (err) {
+    } catch {
       setError("Erro ao excluir foto");
     }
   };

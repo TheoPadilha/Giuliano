@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { useAuth } from "../../contexts/AuthContext";
 import {
   FaUser, FaEnvelope, FaLock, FaPhone, FaGlobe,
   FaUserTie, FaHome, FaCheckCircle, FaArrowRight
@@ -8,7 +7,6 @@ import {
 
 const RegisterNew = () => {
   const navigate = useNavigate();
-  const { login } = useAuth();
 
   const [step, setStep] = useState(1); // 1: Escolher tipo, 2: Formulário
   const [accountType, setAccountType] = useState(""); // 'client' ou 'admin'
@@ -113,16 +111,16 @@ const RegisterNew = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-white flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-6xl w-full">
         {/* Header */}
-        <div className="text-center mb-8">
+        <div className="text-center mb-10">
           <Link to="/" className="inline-block mb-6">
-            <h2 className="text-4xl font-bold text-gray-900">
-              Giuliano <span className="text-primary-600">Alquileres</span>
+            <h2 className="text-4xl font-bold text-airbnb-black">
+              Giuliano <span className="text-rausch">Alquileres</span>
             </h2>
           </Link>
-          <p className="text-gray-600 text-lg">
+          <p className="body-large text-airbnb-grey-600">
             {step === 1 ? "Como você deseja usar nossa plataforma?" : "Complete seu cadastro"}
           </p>
         </div>
@@ -133,40 +131,40 @@ const RegisterNew = () => {
             {/* Cliente / Hóspede */}
             <button
               onClick={() => handleAccountTypeSelect("client")}
-              className="group bg-white rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300 p-10 border-2 border-gray-200 hover:border-primary-500 transform hover:scale-105"
+              className="group card p-10 border-2 border-airbnb-grey-200 hover:border-rausch transition-all duration-300 transform hover:scale-105"
             >
-              <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
+              <div className="w-20 h-20 bg-gradient-to-br from-rausch to-rausch-dark rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform shadow-lg">
                 <FaUser className="text-white text-4xl" />
               </div>
 
-              <h3 className="text-2xl font-bold text-gray-900 mb-3">
+              <h3 className="heading-3 mb-3">
                 Sou Hóspede
               </h3>
 
-              <p className="text-gray-600 mb-6 leading-relaxed">
+              <p className="body-base text-airbnb-grey-600 mb-6 leading-relaxed">
                 Quero buscar e reservar imóveis para minhas viagens e estadias
               </p>
 
               <div className="space-y-3 text-left mb-6">
-                <div className="flex items-center gap-3 text-gray-700">
+                <div className="flex items-center gap-3 text-airbnb-grey-700">
                   <FaCheckCircle className="text-green-600" />
                   <span className="text-sm">Buscar imóveis disponíveis</span>
                 </div>
-                <div className="flex items-center gap-3 text-gray-700">
+                <div className="flex items-center gap-3 text-airbnb-grey-700">
                   <FaCheckCircle className="text-green-600" />
                   <span className="text-sm">Fazer reservas online</span>
                 </div>
-                <div className="flex items-center gap-3 text-gray-700">
+                <div className="flex items-center gap-3 text-airbnb-grey-700">
                   <FaCheckCircle className="text-green-600" />
                   <span className="text-sm">Avaliar hospedagens</span>
                 </div>
-                <div className="flex items-center gap-3 text-gray-700">
+                <div className="flex items-center gap-3 text-airbnb-grey-700">
                   <FaCheckCircle className="text-green-600" />
                   <span className="text-sm">Acesso imediato</span>
                 </div>
               </div>
 
-              <div className="flex items-center justify-center gap-2 text-primary-600 font-semibold group-hover:gap-4 transition-all">
+              <div className="flex items-center justify-center gap-2 text-rausch font-semibold group-hover:gap-4 transition-all">
                 <span>Continuar</span>
                 <FaArrowRight className="group-hover:translate-x-1 transition-transform" />
               </div>
@@ -175,40 +173,40 @@ const RegisterNew = () => {
             {/* Proprietário / Admin */}
             <button
               onClick={() => handleAccountTypeSelect("admin")}
-              className="group bg-white rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300 p-10 border-2 border-gray-200 hover:border-amber-500 transform hover:scale-105"
+              className="group card p-10 border-2 border-airbnb-grey-200 hover:border-rausch transition-all duration-300 transform hover:scale-105"
             >
-              <div className="w-20 h-20 bg-gradient-to-br from-amber-500 to-yellow-600 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
+              <div className="w-20 h-20 bg-gradient-to-br from-rausch to-rausch-dark rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform shadow-lg">
                 <FaHome className="text-white text-4xl" />
               </div>
 
-              <h3 className="text-2xl font-bold text-gray-900 mb-3">
+              <h3 className="heading-3 mb-3">
                 Sou Proprietário
               </h3>
 
-              <p className="text-gray-600 mb-6 leading-relaxed">
+              <p className="body-base text-airbnb-grey-600 mb-6 leading-relaxed">
                 Quero anunciar meus imóveis e gerenciar reservas
               </p>
 
               <div className="space-y-3 text-left mb-6">
-                <div className="flex items-center gap-3 text-gray-700">
-                  <FaCheckCircle className="text-amber-600" />
+                <div className="flex items-center gap-3 text-airbnb-grey-700">
+                  <FaCheckCircle className="text-rausch" />
                   <span className="text-sm">Anunciar seus imóveis</span>
                 </div>
-                <div className="flex items-center gap-3 text-gray-700">
-                  <FaCheckCircle className="text-amber-600" />
+                <div className="flex items-center gap-3 text-airbnb-grey-700">
+                  <FaCheckCircle className="text-rausch" />
                   <span className="text-sm">Gerenciar reservas</span>
                 </div>
-                <div className="flex items-center gap-3 text-gray-700">
-                  <FaCheckCircle className="text-amber-600" />
+                <div className="flex items-center gap-3 text-airbnb-grey-700">
+                  <FaCheckCircle className="text-rausch" />
                   <span className="text-sm">Dashboard completo</span>
                 </div>
-                <div className="flex items-center gap-3 text-gray-700">
-                  <FaCheckCircle className="text-amber-600" />
+                <div className="flex items-center gap-3 text-airbnb-grey-700">
+                  <FaCheckCircle className="text-rausch" />
                   <span className="text-sm">Requer aprovação</span>
                 </div>
               </div>
 
-              <div className="flex items-center justify-center gap-2 text-amber-600 font-semibold group-hover:gap-4 transition-all">
+              <div className="flex items-center justify-center gap-2 text-rausch font-semibold group-hover:gap-4 transition-all">
                 <span>Continuar</span>
                 <FaArrowRight className="group-hover:translate-x-1 transition-transform" />
               </div>
@@ -219,187 +217,197 @@ const RegisterNew = () => {
         {/* Step 2: Formulário */}
         {step === 2 && (
           <div className="max-w-md mx-auto">
-            <div className="bg-white rounded-3xl shadow-2xl p-8 border-2 border-gray-200">
-              {/* Header do Formulário */}
-              <div className="text-center mb-8">
-                <div className={`w-16 h-16 ${accountType === 'client' ? 'bg-blue-100' : 'bg-amber-100'} rounded-2xl flex items-center justify-center mx-auto mb-4`}>
-                  {accountType === 'client' ? (
-                    <FaUser className="text-blue-600 text-2xl" />
-                  ) : (
-                    <FaHome className="text-amber-600 text-2xl" />
-                  )}
-                </div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-2">
-                  {accountType === 'client' ? 'Cadastro de Hóspede' : 'Cadastro de Proprietário'}
-                </h3>
-                <p className="text-gray-600 text-sm">
-                  Preencha seus dados para continuar
-                </p>
-              </div>
-
-              {/* Mensagens */}
-              {error && (
-                <div className="mb-6 bg-red-50 border-2 border-red-200 rounded-xl p-4">
-                  <p className="text-red-800 text-sm font-medium">{error}</p>
-                </div>
-              )}
-
-              {success && (
-                <div className="mb-6 bg-green-50 border-2 border-green-200 rounded-xl p-4">
-                  <p className="text-green-800 text-sm font-medium">{success}</p>
-                </div>
-              )}
-
-              {/* Formulário */}
-              <form onSubmit={handleSubmit} className="space-y-5">
-                {/* Nome */}
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Nome Completo *
-                  </label>
-                  <div className="relative">
-                    <FaUser className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
-                    <input
-                      type="text"
-                      name="name"
-                      value={formData.name}
-                      onChange={handleChange}
-                      placeholder="Seu nome completo"
-                      required
-                      className="w-full pl-12 pr-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:border-primary-500 focus:ring-4 focus:ring-primary-100 transition-all"
-                    />
+            <div className="card">
+              <div className="card-body">
+                {/* Header do Formulário */}
+                <div className="text-center mb-8">
+                  <div className="w-16 h-16 bg-gradient-to-br from-rausch to-rausch-dark rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+                    {accountType === 'client' ? (
+                      <FaUser className="text-white text-2xl" />
+                    ) : (
+                      <FaHome className="text-white text-2xl" />
+                    )}
                   </div>
+                  <h3 className="heading-3 mb-2">
+                    {accountType === 'client' ? 'Cadastro de Hóspede' : 'Cadastro de Proprietário'}
+                  </h3>
+                  <p className="body-small text-airbnb-grey-600">
+                    Preencha seus dados para continuar
+                  </p>
                 </div>
 
-                {/* Email */}
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Email *
-                  </label>
-                  <div className="relative">
-                    <FaEnvelope className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
-                    <input
-                      type="email"
-                      name="email"
-                      value={formData.email}
-                      onChange={handleChange}
-                      placeholder="seu@email.com"
-                      required
-                      className="w-full pl-12 pr-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:border-primary-500 focus:ring-4 focus:ring-primary-100 transition-all"
-                    />
+                {/* Mensagens */}
+                {error && (
+                  <div className="alert-error mb-6">
+                    <p className="text-sm font-medium">{error}</p>
                   </div>
-                </div>
+                )}
 
-                {/* Telefone */}
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Telefone (Opcional)
-                  </label>
-                  <div className="relative">
-                    <FaPhone className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
-                    <input
-                      type="tel"
-                      name="phone"
-                      value={formData.phone}
-                      onChange={handleChange}
-                      placeholder="(XX) XXXXX-XXXX"
-                      className="w-full pl-12 pr-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:border-primary-500 focus:ring-4 focus:ring-primary-100 transition-all"
-                    />
+                {success && (
+                  <div className="alert-success mb-6">
+                    <p className="text-sm font-medium">{success}</p>
                   </div>
-                </div>
+                )}
 
-                {/* País */}
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    País
-                  </label>
-                  <div className="relative">
-                    <FaGlobe className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
-                    <select
-                      name="country"
-                      value={formData.country}
-                      onChange={handleChange}
-                      className="w-full pl-12 pr-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:border-primary-500 focus:ring-4 focus:ring-primary-100 transition-all appearance-none bg-white"
+                {/* Formulário */}
+                <form onSubmit={handleSubmit} className="space-y-6">
+                  {/* Nome */}
+                  <div className="form-group">
+                    <label className="label">
+                      Nome Completo *
+                    </label>
+                    <div className="relative">
+                      <FaUser className="absolute left-4 top-1/2 -translate-y-1/2 text-airbnb-grey-400" />
+                      <input
+                        type="text"
+                        name="name"
+                        value={formData.name}
+                        onChange={handleChange}
+                        placeholder="Seu nome completo"
+                        required
+                        className="input pl-12"
+                        autoComplete="name"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Email */}
+                  <div className="form-group">
+                    <label className="label">
+                      Email *
+                    </label>
+                    <div className="relative">
+                      <FaEnvelope className="absolute left-4 top-1/2 -translate-y-1/2 text-airbnb-grey-400" />
+                      <input
+                        type="email"
+                        name="email"
+                        value={formData.email}
+                        onChange={handleChange}
+                        placeholder="seu@email.com"
+                        required
+                        className="input pl-12"
+                        autoComplete="email"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Telefone */}
+                  <div className="form-group">
+                    <label className="label">
+                      Telefone (Opcional)
+                    </label>
+                    <div className="relative">
+                      <FaPhone className="absolute left-4 top-1/2 -translate-y-1/2 text-airbnb-grey-400" />
+                      <input
+                        type="tel"
+                        name="phone"
+                        value={formData.phone}
+                        onChange={handleChange}
+                        placeholder="(XX) XXXXX-XXXX"
+                        className="input pl-12"
+                        autoComplete="tel"
+                      />
+                    </div>
+                  </div>
+
+                  {/* País */}
+                  <div className="form-group">
+                    <label className="label">
+                      País
+                    </label>
+                    <div className="relative">
+                      <FaGlobe className="absolute left-4 top-1/2 -translate-y-1/2 text-airbnb-grey-400" />
+                      <select
+                        name="country"
+                        value={formData.country}
+                        onChange={handleChange}
+                        className="input pl-12 appearance-none"
+                      >
+                        <option value="Brasil">Brasil</option>
+                        <option value="Argentina">Argentina</option>
+                        <option value="Uruguai">Uruguai</option>
+                        <option value="Paraguai">Paraguai</option>
+                        <option value="Chile">Chile</option>
+                        <option value="Outro">Outro</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Senha */}
+                  <div className="form-group">
+                    <label className="label">
+                      Senha *
+                    </label>
+                    <div className="relative">
+                      <FaLock className="absolute left-4 top-1/2 -translate-y-1/2 text-airbnb-grey-400" />
+                      <input
+                        type="password"
+                        name="password"
+                        value={formData.password}
+                        onChange={handleChange}
+                        placeholder="Mínimo 6 caracteres"
+                        required
+                        className="input pl-12"
+                        autoComplete="new-password"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Confirmar Senha */}
+                  <div className="form-group">
+                    <label className="label">
+                      Confirmar Senha *
+                    </label>
+                    <div className="relative">
+                      <FaLock className="absolute left-4 top-1/2 -translate-y-1/2 text-airbnb-grey-400" />
+                      <input
+                        type="password"
+                        name="confirmPassword"
+                        value={formData.confirmPassword}
+                        onChange={handleChange}
+                        placeholder="Digite a senha novamente"
+                        required
+                        className="input pl-12"
+                        autoComplete="new-password"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Botões */}
+                  <div className="flex gap-3 pt-4">
+                    <button
+                      type="button"
+                      onClick={() => setStep(1)}
+                      className="btn-secondary flex-1"
                     >
-                      <option value="Brasil">Brasil</option>
-                      <option value="Argentina">Argentina</option>
-                      <option value="Uruguai">Uruguai</option>
-                      <option value="Paraguai">Paraguai</option>
-                      <option value="Chile">Chile</option>
-                      <option value="Outro">Outro</option>
-                    </select>
+                      Voltar
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={loading}
+                      className="btn-primary flex-1"
+                    >
+                      {loading ? (
+                        <div className="flex items-center justify-center">
+                          <div className="spinner-sm mr-2"></div>
+                          Criando...
+                        </div>
+                      ) : (
+                        'Criar Conta'
+                      )}
+                    </button>
                   </div>
-                </div>
+                </form>
 
-                {/* Senha */}
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Senha *
-                  </label>
-                  <div className="relative">
-                    <FaLock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
-                    <input
-                      type="password"
-                      name="password"
-                      value={formData.password}
-                      onChange={handleChange}
-                      placeholder="Mínimo 6 caracteres"
-                      required
-                      className="w-full pl-12 pr-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:border-primary-500 focus:ring-4 focus:ring-primary-100 transition-all"
-                    />
-                  </div>
+                {/* Link para Login */}
+                <div className="mt-6 text-center">
+                  <p className="body-small text-airbnb-grey-600">
+                    Já tem uma conta?{' '}
+                    <Link to="/login" className="link font-semibold">
+                      Faça login
+                    </Link>
+                  </p>
                 </div>
-
-                {/* Confirmar Senha */}
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Confirmar Senha *
-                  </label>
-                  <div className="relative">
-                    <FaLock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
-                    <input
-                      type="password"
-                      name="confirmPassword"
-                      value={formData.confirmPassword}
-                      onChange={handleChange}
-                      placeholder="Digite a senha novamente"
-                      required
-                      className="w-full pl-12 pr-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:border-primary-500 focus:ring-4 focus:ring-primary-100 transition-all"
-                    />
-                  </div>
-                </div>
-
-                {/* Botões */}
-                <div className="flex gap-3 pt-4">
-                  <button
-                    type="button"
-                    onClick={() => setStep(1)}
-                    className="flex-1 py-3 px-6 border-2 border-gray-300 text-gray-700 rounded-xl font-bold hover:bg-gray-50 transition-all"
-                  >
-                    Voltar
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className={`flex-1 py-3 px-6 rounded-xl font-bold text-white transition-all transform hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none ${
-                      accountType === 'client'
-                        ? 'bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800'
-                        : 'bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-700 hover:to-yellow-700'
-                    }`}
-                  >
-                    {loading ? 'Criando...' : 'Criar Conta'}
-                  </button>
-                </div>
-              </form>
-
-              {/* Link para Login */}
-              <div className="mt-6 text-center">
-                <p className="text-gray-600 text-sm">
-                  Já tem uma conta?{' '}
-                  <Link to="/login" className="text-primary-600 font-semibold hover:underline">
-                    Faça login
-                  </Link>
-                </p>
               </div>
             </div>
           </div>
@@ -408,9 +416,9 @@ const RegisterNew = () => {
         {/* Link para voltar ao início */}
         {step === 1 && (
           <div className="text-center mt-8">
-            <p className="text-gray-600 text-sm">
+            <p className="body-small text-airbnb-grey-600">
               Já tem uma conta?{' '}
-              <Link to="/login" className="text-primary-600 font-semibold hover:underline">
+              <Link to="/login" className="link font-semibold">
                 Faça login
               </Link>
             </p>

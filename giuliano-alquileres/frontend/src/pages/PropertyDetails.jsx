@@ -72,11 +72,14 @@ const PropertyDetails = () => {
   };
 
   const fetchOccupiedDates = async () => {
+    if (!property?.uuid) return;
+
     try {
-      const response = await api.get(`/api/bookings/property/${property.id}/occupied`);
+      const response = await api.get(`/api/bookings/property/${property.uuid}/occupied`);
       setOccupiedDates(response.data.occupiedDates || []);
     } catch (error) {
-      console.error("Erro ao buscar datas ocupadas:", error);
+      // Silenciosamente definir array vazio se houver erro
+      setOccupiedDates([]);
     }
   };
 

@@ -1,6 +1,6 @@
 import { FiMinus, FiPlus } from "react-icons/fi";
 
-const GuestsPicker = ({ guests, onChange, onClose }) => {
+const GuestsPicker = ({ guests, onChange }) => {
   const { adults = 0, children = 0, infants = 0, pets = 0 } = guests;
 
   const updateGuests = (type, value) => {
@@ -9,25 +9,6 @@ const GuestsPicker = ({ guests, onChange, onClose }) => {
 
   const getTotalGuests = () => {
     return adults + children;
-  };
-
-  const formatSummary = () => {
-    const total = getTotalGuests();
-    const parts = [];
-
-    if (total > 0) {
-      parts.push(`${total} ${total === 1 ? "hóspede" : "hóspedes"}`);
-    }
-
-    if (infants > 0) {
-      parts.push(`${infants} ${infants === 1 ? "bebê" : "bebês"}`);
-    }
-
-    if (pets > 0) {
-      parts.push(`${pets} ${pets === 1 ? "animal" : "animais"}`);
-    }
-
-    return parts.length > 0 ? parts.join(", ") : "Adicionar hóspedes";
   };
 
   return (

@@ -5,6 +5,36 @@
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Ziguealuga - Aluguel de Imóveis</title>
+
+    <!-- Prevent flash of wrong theme - runs before page renders -->
+    <script>
+      (function() {
+        // Get theme from localStorage
+        const savedTheme = localStorage.getItem('theme');
+
+        // Function to get system preference
+        function getSystemPreference() {
+          if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            return 'dark';
+          }
+          return 'light';
+        }
+
+        // Calculate effective theme
+        let effectiveTheme = 'light';
+
+        if (savedTheme === 'dark') {
+          effectiveTheme = 'dark';
+        } else if (savedTheme === 'light') {
+          effectiveTheme = 'light';
+        } else if (savedTheme === 'system' || !savedTheme) {
+          effectiveTheme = getSystemPreference();
+        }
+
+        // Apply theme class immediately
+        document.documentElement.classList.add(effectiveTheme);
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

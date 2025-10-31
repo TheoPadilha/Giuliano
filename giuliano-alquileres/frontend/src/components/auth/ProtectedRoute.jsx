@@ -17,9 +17,14 @@ const ProtectedRoute = ({ children, requiredRole = null }) => {
     );
   }
 
-  // Se não estiver autenticado, redirecionar para login
+  // Se não estiver autenticado, redirecionar para login apropriado
   if (!isAuthenticated) {
-    return <Navigate to="/login" state={{ from: location }} replace />;
+    // Se a rota requer admin, redireciona para login admin
+    // Caso contrário, redireciona para login de hóspede
+    const loginPath = requiredRole && (requiredRole === "admin" || requiredRole === "admin_master")
+      ? "/login"
+      : "/guest-login";
+    return <Navigate to={loginPath} state={{ from: location }} replace />;
   }
 
   // ====================================================================
@@ -46,7 +51,13 @@ const ProtectedRoute = ({ children, requiredRole = null }) => {
         hasPermission = true;
       }
     }
-    // (Você poderia adicionar mais cenários aqui, como 'requiredRole === "client"', etc.)
+    // Cenário 3: A rota requer 'client' (hóspede)
+    else if (requiredRole === "client") {
+      // Apenas clientes têm permissão
+      if (userRole === "client") {
+        hasPermission = true;
+      }
+    }
 
     // Se, após todas as verificações, o usuário não tiver permissão...
     if (!hasPermission) {

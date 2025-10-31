@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "../../contexts/AuthContext";
+import AdminLayout from "../../components/admin/AdminLayout";
 
 const UsersPage = () => {
   const [allUsers, setAllUsers] = useState([]);
@@ -76,16 +77,14 @@ const UsersPage = () => {
 
   // Componente para o badge de status
   const StatusBadge = ({ status }) => {
-    const styles = {
-      pending: "bg-yellow-100 text-yellow-800",
-      approved: "bg-green-100 text-green-800",
-      rejected: "bg-red-100 text-red-800",
+    const badgeClasses = {
+      pending: "badge-warning",
+      approved: "badge-success",
+      rejected: "badge-error",
     };
     return (
       <span
-        className={`px-3 py-1 text-xs font-bold uppercase rounded-full ${
-          styles[status] || "bg-gray-100 text-gray-800"
-        }`}
+        className={`badge ${badgeClasses[status] || "badge"} uppercase`}
       >
         {status}
       </span>
@@ -101,16 +100,16 @@ const UsersPage = () => {
     return (
       <button
         onClick={() => setActiveFilter(filter)}
-        className={`px-4 py-2 font-bold text-sm rounded-lg transition-colors duration-200 ${
+        className={`px-4 py-2 font-semibold text-sm rounded-xl transition-all duration-200 ${
           isActive
-            ? "bg-primary-600 text-white shadow-md"
-            : "text-gray-600 hover:bg-gray-200"
+            ? "bg-rausch text-white shadow-md"
+            : "text-airbnb-grey-700 hover:bg-airbnb-grey-100"
         }`}
       >
         {label}{" "}
         <span
           className={`ml-2 px-2 py-0.5 rounded-full text-xs font-bold ${
-            isActive ? "bg-white text-primary-700" : "bg-gray-200 text-gray-700"
+            isActive ? "bg-white text-rausch" : "bg-airbnb-grey-200 text-airbnb-grey-700"
           }`}
         >
           {count}
@@ -120,14 +119,14 @@ const UsersPage = () => {
   };
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 bg-gray-100 min-h-screen">
+    <AdminLayout>
       <div className="max-w-7xl mx-auto">
-        <h1 className="text-4xl font-bold text-gray-900 mb-8">
+        <h1 className="heading-2 text-airbnb-black mb-8">
           Gerenciamento de Usuários
         </h1>
 
         {/* Abas de Filtragem */}
-        <div className="flex flex-wrap items-center gap-2 mb-6 border-b border-gray-200 pb-4">
+        <div className="flex flex-wrap items-center gap-2 mb-6 pb-4 border-b border-airbnb-grey-200">
           <TabButton filter="pending" label="Pendentes" />
           <TabButton filter="approved" label="Aprovados" />
           <TabButton filter="rejected" label="Rejeitados" />
@@ -135,63 +134,68 @@ const UsersPage = () => {
         </div>
 
         {loading && (
-          <div className="text-center py-10">Carregando usuários...</div>
+          <div className="card text-center py-10">
+            <div className="spinner-lg mx-auto mb-4"></div>
+            <p className="body-base text-airbnb-grey-600">Carregando usuários...</p>
+          </div>
         )}
         {error && (
-          <div className="bg-red-100 text-red-700 p-4 rounded-lg mb-6">
+          <div className="alert-error mb-6">
             {error}
           </div>
         )}
 
         {!loading && !error && (
-          <div className="bg-white shadow-xl rounded-2xl overflow-hidden">
+          <div className="card overflow-hidden">
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
+              <table className="min-w-full divide-y divide-airbnb-grey-200">
+                <thead className="bg-airbnb-grey-50">
                   <tr>
-                    <th className="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-airbnb-grey-700 uppercase tracking-wider">
                       Usuário
                     </th>
-                    <th className="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-airbnb-grey-700 uppercase tracking-wider">
                       Status
                     </th>
-                    <th className="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-airbnb-grey-700 uppercase tracking-wider">
                       Papel
                     </th>
-                    <th className="px-6 py-4 text-right text-xs font-bold text-gray-600 uppercase tracking-wider">
+                    <th className="px-6 py-4 text-right text-xs font-semibold text-airbnb-grey-700 uppercase tracking-wider">
                       Ações
                     </th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
+                <tbody className="bg-white divide-y divide-airbnb-grey-200">
                   {filteredUsers.length > 0 ? (
                     filteredUsers.map((user, index) => (
                       <tr
                         key={user.uuid || user.id || `user-${index}`}
-                        className="hover:bg-gray-50 transition-colors"
+                        className="hover:bg-airbnb-grey-50 transition-colors"
                       >
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm font-semibold text-gray-900">
+                          <div className="text-sm font-semibold text-airbnb-black">
                             {user.name}
                           </div>
-                          <div className="text-sm text-gray-500">
+                          <div className="text-sm text-airbnb-grey-600">
                             {user.email}
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <StatusBadge status={user.status} />
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-medium">
-                          {user.role}
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className="badge badge-rausch capitalize font-medium">
+                            {user.role}
+                          </span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                           {user.status === "pending" && (
-                            <div className="flex justify-end space-x-4">
+                            <div className="flex justify-end space-x-3">
                               <button
                                 onClick={() =>
                                   handleUserAction(user.id, "approve")
                                 }
-                                className="text-green-600 hover:text-green-800 font-bold transition-colors"
+                                className="btn-success py-2 px-4 text-sm"
                               >
                                 Aprovar
                               </button>
@@ -199,7 +203,7 @@ const UsersPage = () => {
                                 onClick={() =>
                                   handleUserAction(user.id, "reject")
                                 }
-                                className="text-red-600 hover:text-red-800 font-bold transition-colors"
+                                className="btn-danger py-2 px-4 text-sm"
                               >
                                 Rejeitar
                               </button>
@@ -212,7 +216,7 @@ const UsersPage = () => {
                     <tr>
                       <td
                         colSpan="4"
-                        className="text-center py-10 text-gray-500"
+                        className="text-center py-10 text-airbnb-grey-600"
                       >
                         Nenhum usuário encontrado para este filtro.
                       </td>
@@ -224,7 +228,7 @@ const UsersPage = () => {
           </div>
         )}
       </div>
-    </div>
+    </AdminLayout>
   );
 };
 

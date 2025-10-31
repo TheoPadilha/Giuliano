@@ -11,7 +11,10 @@
       "Bash(netstat:*)",
       "Bash(findstr:*)",
       "Bash(find:*)",
-      "Bash(Get-Date)"
+      "Bash(Get-Date)",
+      "Bash(npm run lint)",
+      "Bash(awk:*)",
+      "Bash(xargs ls:*)"
     ],
     "deny": [],
     "ask": []

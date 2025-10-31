@@ -13,7 +13,7 @@ const PaymentFailure = () => {
 
   useEffect(() => {
     if (!isAuthenticated) {
-      navigate("/login");
+      navigate("/guest-login");
     }
   }, [isAuthenticated, navigate]);
 
@@ -39,7 +39,7 @@ const PaymentFailure = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-red-50 to-pink-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-red-50 flex items-center justify-center p-4">
       <div className="max-w-2xl w-full bg-white rounded-2xl shadow-2xl p-8 text-center">
         {/* Ícone de Erro */}
         <div className="mb-6">
@@ -61,7 +61,7 @@ const PaymentFailure = () => {
         </div>
 
         {/* Título */}
-        <h1 className="text-4xl font-bold text-gray-900 mb-4">
+        <h1 className="heading-2 mb-4">
           Pagamento Recusado ❌
         </h1>
 
@@ -97,19 +97,19 @@ const PaymentFailure = () => {
           </h3>
           <ul className="space-y-2 text-sm text-gray-700">
             <li className="flex items-start gap-2">
-              <span className="text-blue-600 mt-0.5">•</span>
+              <span className="text-rausch mt-0.5">•</span>
               <span>Verifique se os dados do cartão estão corretos</span>
             </li>
             <li className="flex items-start gap-2">
-              <span className="text-blue-600 mt-0.5">•</span>
+              <span className="text-rausch mt-0.5">•</span>
               <span>Confirme se há saldo/limite disponível</span>
             </li>
             <li className="flex items-start gap-2">
-              <span className="text-blue-600 mt-0.5">•</span>
+              <span className="text-rausch mt-0.5">•</span>
               <span>Tente usar outro cartão ou método de pagamento</span>
             </li>
             <li className="flex items-start gap-2">
-              <span className="text-blue-600 mt-0.5">•</span>
+              <span className="text-rausch mt-0.5">•</span>
               <span>Entre em contato com seu banco se o problema persistir</span>
             </li>
           </ul>
@@ -140,14 +140,14 @@ const PaymentFailure = () => {
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <button
             onClick={() => navigate(-1)}
-            className="bg-primary-600 hover:bg-primary-700 text-white font-semibold py-3 px-8 rounded-xl transition-all duration-200 transform hover:scale-105"
+            className="btn-primary"
           >
             Tentar Novamente
           </button>
 
           <button
             onClick={() => navigate("/bookings")}
-            className="bg-white hover:bg-gray-50 text-gray-700 font-semibold py-3 px-8 rounded-xl border-2 border-gray-200 hover:border-gray-300 transition-all duration-200"
+            className="btn-secondary"
           >
             Ver Minhas Reservas
           </button>
@@ -161,7 +161,7 @@ const PaymentFailure = () => {
               href="https://wa.me/5547989105580"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-primary-600 hover:text-primary-700 font-semibold"
+              className="link"
             >
               Entre em contato conosco
             </a>

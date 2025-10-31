@@ -1,14 +1,13 @@
 import { useState, useEffect } from "react";
-import { useParams, useNavigate, useSearchParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import api from "../services/api";
 import Loading from "../components/common/Loading";
 
 const Checkout = () => {
   const { bookingId } = useParams();
-  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { user, isAuthenticated } = useAuth();
+  const { isAuthenticated } = useAuth();
 
   const [booking, setBooking] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -56,7 +55,7 @@ const Checkout = () => {
 
       // Redirecionar para o Mercado Pago
       const paymentUrl =
-        process.env.NODE_ENV === "production" ? init_point : sandbox_init_point;
+        import.meta.env.MODE === "production" ? init_point : sandbox_init_point;
 
       window.location.href = paymentUrl;
     } catch (error) {
@@ -96,7 +95,7 @@ const Checkout = () => {
           <p className="text-gray-600 mb-6">{error}</p>
           <button
             onClick={() => navigate("/properties")}
-            className="bg-primary-600 text-white px-6 py-3 rounded-lg hover:bg-primary-700 transition-colors"
+            className="btn-primary"
           >
             Voltar para Propriedades
           </button>
@@ -106,21 +105,21 @@ const Checkout = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12">
+    <div className="min-h-screen bg-white py-12">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">
           <button
             onClick={() => navigate(-1)}
-            className="text-gray-600 hover:text-gray-900 flex items-center gap-2 mb-4"
+            className="link flex items-center gap-2 mb-4"
           >
             <span>←</span>
             <span>Voltar</span>
           </button>
-          <h1 className="text-3xl font-bold text-gray-900">
+          <h1 className="heading-2">
             Finalizar Pagamento
           </h1>
-          <p className="text-gray-600 mt-2">
+          <p className="text-airbnb-grey-600 mt-2">
             Revise os detalhes da sua reserva antes de prosseguir
           </p>
         </div>
@@ -129,8 +128,8 @@ const Checkout = () => {
           {/* Detalhes da Reserva */}
           <div className="lg:col-span-2 space-y-6">
             {/* Card da Propriedade */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-4">
+            <div className="card p-6">
+              <h2 className="heading-3 mb-4">
                 Detalhes da Propriedade
               </h2>
 
@@ -162,8 +161,8 @@ const Checkout = () => {
             </div>
 
             {/* Card de Datas e Hóspedes */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-4">
+            <div className="card p-6">
+              <h2 className="heading-3 mb-4">
                 Sua Reserva
               </h2>
 
@@ -199,8 +198,8 @@ const Checkout = () => {
             </div>
 
             {/* Card de Informações do Hóspede */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-4">
+            <div className="card p-6">
+              <h2 className="heading-3 mb-4">
                 Informações do Hóspede
               </h2>
 
@@ -223,8 +222,8 @@ const Checkout = () => {
 
           {/* Resumo do Pagamento (Sticky) */}
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6 sticky top-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-4">
+            <div className="card p-6 sticky top-6">
+              <h2 className="heading-3 mb-4">
                 Resumo do Pagamento
               </h2>
 
@@ -257,29 +256,29 @@ const Checkout = () => {
                 )}
               </div>
 
-              <div className="pt-4 border-t border-gray-200 mb-6">
+              <div className="pt-4 divider mb-6">
                 <div className="flex justify-between items-center">
-                  <span className="text-lg font-bold text-gray-900">Total</span>
-                  <span className="text-2xl font-bold text-primary-600">
+                  <span className="text-lg font-bold text-airbnb-black">Total</span>
+                  <span className="text-2xl font-bold text-rausch">
                     {formatCurrency(booking.total_price)}
                   </span>
                 </div>
               </div>
 
               {error && (
-                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-                  <p className="text-sm text-red-800">{error}</p>
+                <div className="alert-error mb-4">
+                  <p className="text-sm">{error}</p>
                 </div>
               )}
 
               <button
                 onClick={handlePayment}
                 disabled={processingPayment}
-                className="w-full bg-primary-600 hover:bg-primary-700 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2"
+                className="btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 {processingPayment ? (
                   <>
-                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                    <div className="spinner-sm"></div>
                     <span>Processando...</span>
                   </>
                 ) : (

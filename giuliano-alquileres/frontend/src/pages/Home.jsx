@@ -34,23 +34,9 @@ const Home = () => {
       try {
         setLoading(true);
 
-        // Tentar buscar propriedades em destaque primeiro
+        // Buscar apenas propriedades em destaque (is_featured = true)
         const featuredResponse = await propertiesAPI.getFeatured();
-        let featured = featuredResponse.data.properties || featuredResponse.data || [];
-
-        // Se tiver menos de 6 propriedades featured, buscar todas disponíveis
-        if (featured.length < 6) {
-          const allResponse = await propertiesAPI.getAll({
-            status: "available",
-            limit: 6
-          });
-          const allProperties = allResponse.data.properties || [];
-
-          // Misturar featured com não-featured até completar 6
-          const featuredIds = featured.map(p => p.id);
-          const nonFeatured = allProperties.filter(p => !featuredIds.includes(p.id));
-          featured = [...featured, ...nonFeatured].slice(0, 6);
-        }
+        const featured = featuredResponse.data.properties || featuredResponse.data || [];
 
         setFeaturedProperties(featured);
       } catch (error) {

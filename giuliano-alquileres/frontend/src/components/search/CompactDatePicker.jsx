@@ -52,7 +52,6 @@ const CompactDatePicker = ({
 
   const isDateOccupied = (date) => {
     if (!date) return false;
-    const dateStr = date.toISOString().split("T")[0];
     return occupiedDates.some((range) => {
       const start = new Date(range.start);
       const end = new Date(range.end);

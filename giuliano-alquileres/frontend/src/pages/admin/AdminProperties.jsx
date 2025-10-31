@@ -113,14 +113,14 @@ const AdminProperties = () => {
     <AdminLayout>
       <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="mb-8 border-b pb-4 border-gray-200 flex justify-between items-center">
+        <div className="mb-8 pb-4 border-b border-airbnb-grey-200 flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">
+            <h1 className="heading-2 text-airbnb-black">
               {user?.role === "admin_master"
                 ? "Gerenciar Todos os Imóveis"
                 : "Meus Imóveis"}
             </h1>
-            <p className="text-gray-600 mt-1">
+            <p className="body-base text-airbnb-grey-600 mt-1">
               {properties.length}{" "}
               {properties.length === 1
                 ? "imóvel encontrado"
@@ -129,14 +129,14 @@ const AdminProperties = () => {
           </div>
           <Link
             to="/admin/properties/new"
-            className="bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 text-white font-bold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02] flex items-center gap-2"
+            className="btn-primary flex items-center gap-2"
           >
             <FaPlus /> Novo Imóvel
           </Link>
         </div>
 
         {/* Search Bar */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
+        <div className="card mb-8">
           <div className="flex flex-col md:flex-row gap-4 items-center">
             {/* Search */}
             <div className="flex-1 w-full">
@@ -145,7 +145,7 @@ const AdminProperties = () => {
                 placeholder="Buscar por título ou endereço..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500 transition-colors"
+                className="input"
               />
             </div>
           </div>
@@ -153,34 +153,23 @@ const AdminProperties = () => {
 
         {/* Properties Grid */}
         {properties.length === 0 ? (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center">
-            <div className="text-gray-400 mb-4">
-              <svg
-                className="w-16 h-16 mx-auto text-gray-300"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={1.5}
-                  d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
-                />
-              </svg>
+          <div className="card text-center p-12 border-2 border-dashed">
+            <div className="text-airbnb-grey-400 mb-4">
+              <FaHome className="w-16 h-16 mx-auto text-airbnb-grey-300" />
             </div>
-            <h3 className="text-xl font-medium text-gray-900 mb-2">
+            <h3 className="heading-4 text-airbnb-black mb-2">
               Nenhum imóvel encontrado
             </h3>
-            <p className="text-gray-600 mb-6">
+            <p className="body-base text-airbnb-grey-600 mb-6">
               {searchTerm
                 ? "Tente ajustar os filtros ou fazer uma nova busca."
                 : "Adicione seu primeiro imóvel para começar."}
             </p>
             <Link
               to="/admin/properties/new"
-              className="inline-block bg-primary-600 hover:bg-primary-700 text-white px-6 py-3 rounded-lg font-medium transition-colors shadow-md hover:shadow-lg"
+              className="btn-primary inline-flex items-center gap-2"
             >
+              <FaPlus />
               Adicionar Imóvel
             </Link>
           </div>
@@ -192,10 +181,10 @@ const AdminProperties = () => {
               return (
                 <div
                   key={property.uuid}
-                  className="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden hover:shadow-lg transition-shadow duration-300"
+                  className="card card-hover overflow-hidden"
                 >
                   {/* Image */}
-                  <div className="relative h-48 bg-gray-100 flex items-center justify-center text-gray-400 text-sm">
+                  <div className="relative h-48 bg-airbnb-grey-100 flex items-center justify-center text-airbnb-grey-400 text-sm">
                     {photoUrl ? (
                       <img
                         src={photoUrl}
@@ -203,7 +192,7 @@ const AdminProperties = () => {
                         className="w-full h-full object-cover"
                         onError={(e) => {
                           console.error(
-                            "❌ Erro ao carregar imagem:",
+                            "Erro ao carregar imagem:",
                             photoUrl
                           );
                           e.target.onerror = null;
@@ -211,14 +200,14 @@ const AdminProperties = () => {
                             "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjI0IiBoZWlnaHQ9IjI0IiBmaWxsPSIjRjNGNEY2Ii8+PHBhdGggZD0iTTEyIDhDMTAuODk1NCA4IDEwIDguODk1NDMgMTAgMTBDMTAgMTEuMTA0NiAxMC44OTU0IDEyIDEyIDEyQzEzLjEwNDYgMTIgMTQgMTEuMTA0NiAxNCAxMEMxNCA4Ljg5NTQzIDEzLjEwNDYgOCAxMiA4WiIgZmlsbD0iIjlDQTNBQiIvPjxwYXRoIGQ9Ik0yMSAzSDNDMi40NDc3MSAzIDIgMy40NDc3MSAyIDRWMjBDMiAyMC41NTIzIDIuNDQ3NzEgMjEgMyAyMUgyMUMyMS41NTIzIDIxIDIyIDIwLjU1MjMgMjIgMjBWNEMyMiAzLjQ0NzcxIDIxLjU1MjMgMyAyMSAzWk0yMCAxOUg0VjVIMjBWMTlaIiBmaWxsPSIjOUNBM0FGIi8+PC9zdmc+";
                         }}
                         onLoad={() =>
-                          console.log("✅ Imagem carregada:", photoUrl)
+                          console.log("Imagem carregada:", photoUrl)
                         }
                       />
                     ) : (
-                      <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+                      <div className="w-full h-full bg-airbnb-grey-100 flex items-center justify-center">
                         <div className="text-center">
-                          <FaHome className="text-4xl mb-2 mx-auto text-gray-400" />
-                          <span className="text-gray-400 text-sm">
+                          <FaHome className="text-4xl mb-2 mx-auto text-airbnb-grey-400" />
+                          <span className="text-airbnb-grey-400 text-sm">
                             Sem imagem
                           </span>
                         </div>
@@ -227,7 +216,7 @@ const AdminProperties = () => {
                     {/* Badge de Destaque */}
                     {property.is_featured && (
                       <div className="absolute top-3 right-3">
-                        <span className="bg-amber-500 text-white px-3 py-1 rounded-full text-xs font-medium shadow-md flex items-center gap-1">
+                        <span className="badge-premium flex items-center gap-1">
                           <FaStar /> Destaque
                         </span>
                       </div>
@@ -236,14 +225,14 @@ const AdminProperties = () => {
 
                   {/* Content */}
                   <div className="p-5">
-                    <h3 className="text-lg font-bold text-gray-900 mb-2 line-clamp-1">
+                    <h3 className="text-lg font-semibold text-airbnb-black mb-2 line-clamp-1">
                       {property.title}
                     </h3>
-                    <p className="text-sm text-gray-600 mb-4 line-clamp-1 flex items-center gap-1">
+                    <p className="body-small text-airbnb-grey-600 mb-4 line-clamp-1 flex items-center gap-1">
                       <FaMapMarkerAlt /> {property.address}
                     </p>
 
-                    <div className="flex items-center justify-between mb-4 text-sm text-gray-600 border-t border-b border-gray-100 py-2">
+                    <div className="flex items-center justify-between mb-4 text-sm text-airbnb-grey-600 border-t border-b border-airbnb-grey-200 py-2">
                       <span className="flex items-center gap-1">
                         <FaBed /> {property.bedrooms}
                       </span>
@@ -256,21 +245,21 @@ const AdminProperties = () => {
                     </div>
 
                     <div className="pt-4">
-                      <p className="text-sm text-gray-500 mb-1">Preço/noite</p>
-                      <p className="text-2xl font-bold text-primary-700 mb-4">
+                      <p className="body-small text-airbnb-grey-600 mb-1">Preço/noite</p>
+                      <p className="text-2xl font-bold text-rausch mb-4">
                         R$ {parseFloat(property.price_per_night).toFixed(2)}
                       </p>
 
                       <div className="flex gap-3">
                         <Link
                           to={`/admin/properties/${property.uuid}/edit`}
-                          className="flex-1 bg-primary-600 hover:bg-primary-700 text-white text-center px-4 py-2 rounded-lg font-medium transition-colors text-sm shadow-md hover:shadow-lg flex items-center justify-center gap-1"
+                          className="btn-primary flex-1 flex items-center justify-center gap-1 py-2 px-4 text-sm"
                         >
                           <FaEdit /> Editar
                         </Link>
                         <button
                           onClick={() => handleDelete(property.uuid)}
-                          className="flex-1 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium transition-colors text-sm shadow-md hover:shadow-lg flex items-center justify-center gap-1"
+                          className="btn-danger flex-1 flex items-center justify-center gap-1 py-2 px-4 text-sm"
                         >
                           <FaTrash /> Excluir
                         </button>
@@ -285,10 +274,10 @@ const AdminProperties = () => {
                               property.is_featured
                             )
                           }
-                          className={`w-full mt-3 px-4 py-2 rounded-lg font-medium transition-colors text-sm shadow-md hover:shadow-lg flex items-center justify-center gap-1 ${
+                          className={`w-full mt-3 px-4 py-2 rounded-xl font-semibold transition-all text-sm flex items-center justify-center gap-1 ${
                             property.is_featured
                               ? "bg-amber-500 hover:bg-amber-600 text-white"
-                              : "bg-gray-200 hover:bg-gray-300 text-gray-700"
+                              : "btn-secondary"
                           }`}
                         >
                           <FaStar />

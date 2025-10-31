@@ -1,54 +1,63 @@
-// src/App.jsx - VERSÃO COMPLETA E CORRIGIDA
+// src/App.jsx - OPTIMIZED VERSION WITH CODE SPLITTING & ACCESSIBILITY
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { useEffect } from "react";
+import { useEffect, lazy, Suspense } from "react";
 import { AuthProvider } from "./contexts/AuthContext";
 import { FavoritesProvider } from "./contexts/FavoritesContext";
+import { DarkModeProvider } from "./contexts/DarkModeContext";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import { initGA, initGTM } from "./utils/googleAnalytics";
-// import CookieConsent from "./components/common/CookieConsent";
+import CookieConsent from "./components/common/CookieConsent";
+import PageLoader from "./components/common/PageLoader";
 
-// --- Páginas Públicas ---
+// --- Páginas Críticas (Loaded Immediately) ---
+// Keep home and essential pages as eager imports for better initial load
 import Home from "./pages/Home";
-import Properties from "./pages/Properties";
-import PropertyDetails from "./pages/PropertyDetails";
-
-// --- Páginas de Autenticação ---
-import Login from "./pages/auth/Login";
-import Register from "./pages/auth/Register";
-import RegisterNew from "./pages/auth/RegisterNew";
-
-// --- Páginas de Perfil ---
-import Profile from "./pages/Profile";
-import ProfileAirbnb from "./pages/ProfileAirbnb";
-
-// --- Páginas Administrativas ---
-import AdminDashboard from "./pages/admin/AdminDashboard";
-import AdminDashboardNew from "./pages/admin/AdminDashboardNew";
-import AdminProperties from "./pages/admin/AdminProperties";
-import AdminNewProperty from "./pages/admin/AdminNewProperty";
-import AdminNewPropertyAirbnb from "./pages/admin/AdminNewPropertyAirbnb";
-import EditProperty from "./pages/admin/EditProperty";
-import UsersPage from "./pages/admin/UsersPage";
-import AdminCityGuides from "./pages/admin/AdminCityGuides";
-
-// --- Páginas de Pagamento ---
-import Checkout from "./pages/Checkout";
-import BookingCheckout from "./pages/BookingCheckout";
-import BookingConfirmation from "./pages/BookingConfirmation";
-import PaymentSuccess from "./pages/PaymentSuccess";
-import PaymentPending from "./pages/PaymentPending";
-import PaymentFailure from "./pages/PaymentFailure";
-
-// --- Páginas do Usuário ---
-import MyBookings from "./pages/MyBookings";
-import MyBookingsNew from "./pages/MyBookingsNew";
-import Favorites from "./pages/Favorites";
-import MyReviews from "./pages/MyReviews";
-
-// --- Páginas de Utilidade ---
 import WhatsAppButton from "./components/common/WhatsAppButton";
-// É uma boa prática componentizar a página 404
-import NotFoundPage from "./pages/NotFoundPage";
+
+// --- Lazy Loaded Pages (Code Splitting) ---
+
+// Public Pages
+const Properties = lazy(() => import("./pages/Properties"));
+const PropertyDetails = lazy(() => import("./pages/PropertyDetails"));
+const NotFoundPage = lazy(() => import("./pages/NotFoundPage"));
+
+// Auth Pages
+const Login = lazy(() => import("./pages/auth/Login"));
+const Register = lazy(() => import("./pages/auth/Register"));
+const RegisterNew = lazy(() => import("./pages/auth/RegisterNew"));
+const GuestLogin = lazy(() => import("./pages/auth/GuestLogin"));
+const GuestRegister = lazy(() => import("./pages/auth/GuestRegister"));
+
+// User Profile Pages
+const Profile = lazy(() => import("./pages/Profile"));
+const ProfileAirbnb = lazy(() => import("./pages/ProfileAirbnb"));
+
+// Admin Pages
+const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"));
+const AdminDashboardNew = lazy(() => import("./pages/admin/AdminDashboardNew"));
+const AdminProperties = lazy(() => import("./pages/admin/AdminProperties"));
+const AdminNewProperty = lazy(() => import("./pages/admin/AdminNewProperty"));
+const AdminNewPropertyAirbnb = lazy(() => import("./pages/admin/AdminNewPropertyAirbnb"));
+const EditProperty = lazy(() => import("./pages/admin/EditProperty"));
+const UsersPage = lazy(() => import("./pages/admin/UsersPage"));
+const AdminCityGuides = lazy(() => import("./pages/admin/AdminCityGuides"));
+
+// Booking & Payment Pages
+const Checkout = lazy(() => import("./pages/Checkout"));
+const BookingCheckout = lazy(() => import("./pages/BookingCheckout"));
+const BookingConfirmation = lazy(() => import("./pages/BookingConfirmation"));
+const PaymentSuccess = lazy(() => import("./pages/PaymentSuccess"));
+const PaymentPending = lazy(() => import("./pages/PaymentPending"));
+const PaymentFailure = lazy(() => import("./pages/PaymentFailure"));
+
+// User Account Pages
+const MyBookings = lazy(() => import("./pages/MyBookings"));
+const MyBookingsNew = lazy(() => import("./pages/MyBookingsNew"));
+const Favorites = lazy(() => import("./pages/Favorites"));
+const MyReviews = lazy(() => import("./pages/MyReviews"));
+
+// Style Guide (Development only)
+const StyleGuide = lazy(() => import("./pages/StyleGuide"));
 
 function App() {
   // Inicializar Google Analytics e GTM quando o app carrega
@@ -58,20 +67,33 @@ function App() {
   }, []);
 
   return (
-    <AuthProvider>
-      <FavoritesProvider>
-        <Router>
-          <div className="min-h-screen bg-gray-50">
-          <Routes>
+    <DarkModeProvider>
+      <AuthProvider>
+        <FavoritesProvider>
+          <Router>
+            <div className="min-h-screen bg-gray-50">
+            {/* Main content wrapper */}
+            <main id="main-content">
+              <Suspense fallback={<PageLoader />}>
+                <Routes>
             {/* =====================================
                 ROTAS PÚBLICAS E DE AUTENTICAÇÃO
             ====================================== */}
             <Route path="/" element={<Home />} />
             <Route path="/properties" element={<Properties />} />
             <Route path="/property/:uuid" element={<PropertyDetails />} />
+
+            {/* Autenticação de Administradores */}
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<RegisterNew />} />
             <Route path="/register-old" element={<Register />} />
+
+            {/* Autenticação de Hóspedes/Clientes */}
+            <Route path="/guest-login" element={<GuestLogin />} />
+            <Route path="/guest-register" element={<GuestRegister />} />
+
+            {/* Design System Style Guide */}
+            <Route path="/style-guide" element={<StyleGuide />} />
 
             {/* =====================================
                 ROTAS PROTEGIDAS PARA ADMINS
@@ -268,13 +290,18 @@ function App() {
                 ROTA PARA PÁGINA NÃO ENCONTRADA (404)
             ====================================== */}
             <Route path="*" element={<NotFoundPage />} />
-          </Routes>
-          <WhatsAppButton />
-          {/* <CookieConsent /> */}
+                </Routes>
+              </Suspense>
+            </main>
+
+            {/* Shared components outside main content */}
+            <WhatsAppButton />
+            <CookieConsent />
           </div>
         </Router>
       </FavoritesProvider>
     </AuthProvider>
+    </DarkModeProvider>
   );
 }
 

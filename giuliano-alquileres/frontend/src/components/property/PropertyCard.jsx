@@ -12,7 +12,6 @@ const PropertyCard = ({ property, layout = "vertical", showPremiumBadge = false 
   // Estado local para favorito (sem dependência de Context)
   const [isFavorite, setIsFavorite] = useState(false);
   const [imageError, setImageError] = useState(false);
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   // Toggle simples de favorito
   const handleFavoriteClick = (e) => {
@@ -43,7 +42,7 @@ const PropertyCard = ({ property, layout = "vertical", showPremiumBadge = false 
     const images = property.photos || property.images || property.property_images || [];
 
     if (images.length > 0) {
-      const image = images[currentImageIndex] || images[0];
+      const image = images[0];
 
       // Se tem filename, construir URL completa
       if (image.filename) {
@@ -117,7 +116,7 @@ const PropertyCard = ({ property, layout = "vertical", showPremiumBadge = false 
                   <div
                     key={idx}
                     className={`w-1.5 h-1.5 rounded-full transition-all ${
-                      idx === currentImageIndex
+                      idx === 0
                         ? "bg-white w-6"
                         : "bg-white/60"
                     }`}

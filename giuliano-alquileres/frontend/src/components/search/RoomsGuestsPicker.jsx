@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { FaMinus, FaPlus, FaTimes } from "react-icons/fa";
 
 const RoomsGuestsPicker = ({ rooms, onChange, onClose }) => {

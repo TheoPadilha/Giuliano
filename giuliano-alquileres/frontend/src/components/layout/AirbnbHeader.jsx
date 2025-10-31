@@ -3,16 +3,15 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 
 import { FaSearch } from "react-icons/fa";
-import { useTranslation } from "react-i18next"; // <-- Adicionado
 import { FiMenu, FiUser, FiLogOut, FiSettings } from "react-icons/fi"; // FiGlobe removido
 import LanguageSwitch from "../common/LanguageSwitch"; // <-- Adicionado from "react-icons/fi";
+import ThemeToggle from "../common/ThemeToggle";
 import { useAuth } from "../../contexts/AuthContext";
 import CompactDatePicker from "../search/CompactDatePicker";
 // import RoomsGuestsPicker from "../search/RoomsGuestsPicker";
 import GuestsPicker from "../search/GuestsPicker";
 
 const AirbnbHeader = ({ onFilterButtonClick }) => {
-  const { t } = useTranslation(); // <-- Adicionado
   const navigate = useNavigate();
   const { isAuthenticated, user, logout } = useAuth();
   const location = useLocation();
@@ -512,6 +511,11 @@ const AirbnbHeader = ({ onFilterButtonClick }) => {
               <LanguageSwitch />
             </div>
 
+            {/* Theme Toggle */}
+            <div className="hidden lg:block">
+              <ThemeToggle />
+            </div>
+
             {/* Menu de Usuário */}
             {isAuthenticated ? (
               <div className="relative" ref={userMenuRef}>
@@ -606,7 +610,7 @@ const AirbnbHeader = ({ onFilterButtonClick }) => {
             ) : (
               <div className="flex items-center gap-2">
                 <Link
-                  to="/login"
+                  to="/guest-login"
                   className={`hidden sm:block px-4 font-semibold text-airbnb-black hover:bg-airbnb-grey-50 rounded-full transition-all duration-300 ease-in-out ${
                     isScrolled ? "py-1.5 text-xs" : "py-2 text-sm"
                   }`}
@@ -614,7 +618,7 @@ const AirbnbHeader = ({ onFilterButtonClick }) => {
                   Entrar
                 </Link>
                 <Link
-                  to="/register"
+                  to="/guest-register"
                   className={`px-4 font-semibold text-white bg-rausch hover:bg-rausch-dark rounded-full transition-all duration-300 ease-in-out ${
                     isScrolled ? "py-1.5 text-xs" : "py-2 text-sm"
                   }`}

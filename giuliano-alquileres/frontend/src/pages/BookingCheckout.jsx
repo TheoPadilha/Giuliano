@@ -35,7 +35,7 @@ const BookingCheckout = () => {
 
   useEffect(() => {
     if (!isAuthenticated) {
-      navigate("/login", { state: { from: location } });
+      navigate("/guest-login", { state: { from: location } });
       return;
     }
 
@@ -117,7 +117,7 @@ const BookingCheckout = () => {
       const { init_point, sandbox_init_point } = paymentResponse.data.payment;
 
       // Redirecionar para Mercado Pago
-      const paymentUrl = process.env.NODE_ENV === "production" ? init_point : sandbox_init_point;
+      const paymentUrl = import.meta.env.MODE === "production" ? init_point : sandbox_init_point;
       window.location.href = paymentUrl;
 
     } catch (error) {
@@ -155,13 +155,13 @@ const BookingCheckout = () => {
   const totalPrice = basePrice + serviceFee + cleaningFee;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-8">
+    <div className="min-h-screen bg-white py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">
           <button
             onClick={() => navigate(-1)}
-            className="text-primary-600 hover:text-primary-700 flex items-center gap-2 mb-4 font-semibold transition-colors"
+            className="text-rausch hover:text-rausch-dark flex items-center gap-2 mb-4 font-semibold transition-colors"
           >
             <FaArrowLeft />
             <span>Voltar aos detalhes</span>
@@ -179,15 +179,15 @@ const BookingCheckout = () => {
 
             {/* Progress Steps */}
             <div className="hidden md:flex items-center gap-4">
-              <div className={`flex items-center gap-2 ${step >= 1 ? 'text-primary-600' : 'text-gray-400'}`}>
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${step >= 1 ? 'bg-primary-600 text-white' : 'bg-gray-300 text-gray-600'}`}>
+              <div className={`flex items-center gap-2 ${step >= 1 ? 'text-rausch' : 'text-gray-400'}`}>
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${step >= 1 ? 'bg-rausch text-white' : 'bg-gray-300 text-gray-600'}`}>
                   {step > 1 ? <FaCheckCircle /> : '1'}
                 </div>
                 <span className="font-semibold">Dados</span>
               </div>
               <div className="w-16 h-1 bg-gray-300" />
-              <div className={`flex items-center gap-2 ${step >= 2 ? 'text-primary-600' : 'text-gray-400'}`}>
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${step >= 2 ? 'bg-primary-600 text-white' : 'bg-gray-300 text-gray-600'}`}>
+              <div className={`flex items-center gap-2 ${step >= 2 ? 'text-rausch' : 'text-gray-400'}`}>
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${step >= 2 ? 'bg-rausch text-white' : 'bg-gray-300 text-gray-600'}`}>
                   2
                 </div>
                 <span className="font-semibold">Pagamento</span>
@@ -202,14 +202,14 @@ const BookingCheckout = () => {
             {step === 1 && (
               <>
                 {/* Dados do Hóspede */}
-                <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-8">
+                <div className="card p-8">
                   <div className="flex items-center gap-3 mb-6">
-                    <div className="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center">
-                      <FaUser className="text-primary-600 text-xl" />
+                    <div className="w-12 h-12 bg-rausch/10 rounded-full flex items-center justify-center">
+                      <FaUser className="text-rausch" size={20} />
                     </div>
                     <div>
-                      <h2 className="text-2xl font-bold text-gray-900">Dados do Hóspede</h2>
-                      <p className="text-sm text-gray-600">Preencha suas informações pessoais</p>
+                      <h2 className="heading-2">Dados do Hóspede</h2>
+                      <p className="text-sm text-airbnb-grey-600">Preencha suas informações pessoais</p>
                     </div>
                   </div>
 
@@ -220,14 +220,14 @@ const BookingCheckout = () => {
                         Nome Completo <span className="text-red-500">*</span>
                       </label>
                       <div className="relative">
-                        <FaUser className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+                        <FaUser className="absolute left-4 top-1/2 -translate-y-1/2 text-airbnb-grey-400" size={20} />
                         <input
                           type="text"
                           name="fullName"
                           value={guestInfo.fullName}
                           onChange={handleInputChange}
                           placeholder="Digite seu nome completo"
-                          className="w-full pl-12 pr-4 py-3.5 border-2 border-gray-300 rounded-xl focus:outline-none focus:border-primary-500 focus:ring-4 focus:ring-primary-100 transition-all"
+                          className="input pl-12"
                           required
                         />
                       </div>
@@ -239,14 +239,14 @@ const BookingCheckout = () => {
                         Email <span className="text-red-500">*</span>
                       </label>
                       <div className="relative">
-                        <FaEnvelope className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+                        <FaEnvelope className="absolute left-4 top-1/2 -translate-y-1/2 text-airbnb-grey-400" size={20} />
                         <input
                           type="email"
                           name="email"
                           value={guestInfo.email}
                           onChange={handleInputChange}
                           placeholder="seu@email.com"
-                          className="w-full pl-12 pr-4 py-3.5 border-2 border-gray-300 rounded-xl focus:outline-none focus:border-primary-500 focus:ring-4 focus:ring-primary-100 transition-all"
+                          className="input pl-12"
                           required
                         />
                       </div>
@@ -258,14 +258,14 @@ const BookingCheckout = () => {
                         Telefone <span className="text-red-500">*</span>
                       </label>
                       <div className="relative">
-                        <FaPhone className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+                        <FaPhone className="absolute left-4 top-1/2 -translate-y-1/2 text-airbnb-grey-400" size={20} />
                         <input
                           type="tel"
                           name="phone"
                           value={guestInfo.phone}
                           onChange={handleInputChange}
                           placeholder="(XX) XXXXX-XXXX"
-                          className="w-full pl-12 pr-4 py-3.5 border-2 border-gray-300 rounded-xl focus:outline-none focus:border-primary-500 focus:ring-4 focus:ring-primary-100 transition-all"
+                          className="input pl-12"
                           required
                         />
                       </div>
@@ -282,7 +282,7 @@ const BookingCheckout = () => {
                         value={guestInfo.document}
                         onChange={handleInputChange}
                         placeholder="000.000.000-00"
-                        className="w-full px-4 py-3.5 border-2 border-gray-300 rounded-xl focus:outline-none focus:border-primary-500 focus:ring-4 focus:ring-primary-100 transition-all"
+                        className="input"
                         required
                       />
                     </div>
@@ -296,7 +296,7 @@ const BookingCheckout = () => {
                         name="country"
                         value={guestInfo.country}
                         onChange={handleInputChange}
-                        className="w-full px-4 py-3.5 border-2 border-gray-300 rounded-xl focus:outline-none focus:border-primary-500 focus:ring-4 focus:ring-primary-100 transition-all"
+                        className="input"
                       >
                         <option value="Brasil">Brasil</option>
                         <option value="Argentina">Argentina</option>
@@ -318,7 +318,7 @@ const BookingCheckout = () => {
                         onChange={handleInputChange}
                         placeholder="Horário de chegada estimado, necessidades especiais, etc."
                         rows={4}
-                        className="w-full px-4 py-3.5 border-2 border-gray-300 rounded-xl focus:outline-none focus:border-primary-500 focus:ring-4 focus:ring-primary-100 transition-all resize-none"
+                        className="input resize-none"
                       />
                     </div>
                   </div>
@@ -329,14 +329,14 @@ const BookingCheckout = () => {
             {step === 2 && (
               <>
                 {/* Método de Pagamento */}
-                <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-8">
+                <div className="card p-8">
                   <div className="flex items-center gap-3 mb-6">
-                    <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-                      <FaCreditCard className="text-green-600 text-xl" />
+                    <div className="w-12 h-12 bg-rausch/10 rounded-full flex items-center justify-center">
+                      <FaCreditCard className="text-rausch" size={20} />
                     </div>
                     <div>
-                      <h2 className="text-2xl font-bold text-gray-900">Método de Pagamento</h2>
-                      <p className="text-sm text-gray-600">Escolha como deseja pagar</p>
+                      <h2 className="heading-2">Método de Pagamento</h2>
+                      <p className="text-sm text-airbnb-grey-600">Escolha como deseja pagar</p>
                     </div>
                   </div>
 
@@ -346,13 +346,13 @@ const BookingCheckout = () => {
                       onClick={() => setPaymentMethod("credit_card")}
                       className={`p-6 border-2 rounded-xl transition-all ${
                         paymentMethod === "credit_card"
-                          ? "border-primary-600 bg-primary-50 shadow-lg"
-                          : "border-gray-300 hover:border-gray-400"
+                          ? "border-rausch bg-rausch/5 shadow-lg"
+                          : "border-airbnb-grey-300 hover:border-airbnb-grey-400"
                       }`}
                     >
-                      <FaCreditCard className={`text-4xl mx-auto mb-3 ${paymentMethod === "credit_card" ? "text-primary-600" : "text-gray-400"}`} />
+                      <FaCreditCard className={`text-4xl mx-auto mb-3 ${paymentMethod === "credit_card" ? "text-rausch" : "text-airbnb-grey-400"}`} />
                       <p className="font-bold text-gray-900 mb-1">Cartão de Crédito</p>
-                      <p className="text-xs text-gray-600">Em até 12x</p>
+                      <p className="text-xs text-airbnb-grey-600">Em até 12x</p>
                     </button>
 
                     {/* PIX */}
@@ -360,13 +360,13 @@ const BookingCheckout = () => {
                       onClick={() => setPaymentMethod("pix")}
                       className={`p-6 border-2 rounded-xl transition-all ${
                         paymentMethod === "pix"
-                          ? "border-primary-600 bg-primary-50 shadow-lg"
-                          : "border-gray-300 hover:border-gray-400"
+                          ? "border-rausch bg-rausch/5 shadow-lg"
+                          : "border-airbnb-grey-300 hover:border-airbnb-grey-400"
                       }`}
                     >
-                      <FaMoneyBillWave className={`text-4xl mx-auto mb-3 ${paymentMethod === "pix" ? "text-primary-600" : "text-gray-400"}`} />
+                      <FaMoneyBillWave className={`text-4xl mx-auto mb-3 ${paymentMethod === "pix" ? "text-rausch" : "text-airbnb-grey-400"}`} />
                       <p className="font-bold text-gray-900 mb-1">PIX</p>
-                      <p className="text-xs text-gray-600">À vista</p>
+                      <p className="text-xs text-airbnb-grey-600">À vista</p>
                     </button>
 
                     {/* Boleto */}
@@ -374,22 +374,22 @@ const BookingCheckout = () => {
                       onClick={() => setPaymentMethod("boleto")}
                       className={`p-6 border-2 rounded-xl transition-all ${
                         paymentMethod === "boleto"
-                          ? "border-primary-600 bg-primary-50 shadow-lg"
-                          : "border-gray-300 hover:border-gray-400"
+                          ? "border-rausch bg-rausch/5 shadow-lg"
+                          : "border-airbnb-grey-300 hover:border-airbnb-grey-400"
                       }`}
                     >
-                      <FaBarcode className={`text-4xl mx-auto mb-3 ${paymentMethod === "boleto" ? "text-primary-600" : "text-gray-400"}`} />
+                      <FaBarcode className={`text-4xl mx-auto mb-3 ${paymentMethod === "boleto" ? "text-rausch" : "text-airbnb-grey-400"}`} />
                       <p className="font-bold text-gray-900 mb-1">Boleto</p>
-                      <p className="text-xs text-gray-600">Vence em 3 dias</p>
+                      <p className="text-xs text-airbnb-grey-600">Vence em 3 dias</p>
                     </button>
                   </div>
 
                   {/* Info de Segurança */}
-                  <div className="mt-6 bg-blue-50 border-2 border-blue-200 rounded-xl p-4 flex items-start gap-3">
-                    <FaShieldAlt className="text-blue-600 text-xl mt-0.5" />
+                  <div className="mt-6 bg-airbnb-grey-50 border border-airbnb-grey-200 rounded-xl p-4 flex items-start gap-3">
+                    <FaShieldAlt className="text-rausch" size={20} />
                     <div>
-                      <p className="font-semibold text-blue-900 mb-1">Pagamento 100% Seguro</p>
-                      <p className="text-sm text-blue-800">
+                      <p className="font-semibold text-airbnb-black mb-1">Pagamento 100% Seguro</p>
+                      <p className="text-sm text-airbnb-grey-700">
                         Todos os pagamentos são processados pelo Mercado Pago com criptografia de ponta a ponta.
                         Seus dados estão protegidos.
                       </p>
@@ -398,22 +398,22 @@ const BookingCheckout = () => {
                 </div>
 
                 {/* Termos e Condições */}
-                <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-8">
+                <div className="card p-8">
                   <div className="flex items-start gap-4">
                     <input
                       type="checkbox"
                       id="terms"
                       checked={agreeToTerms}
                       onChange={(e) => setAgreeToTerms(e.target.checked)}
-                      className="mt-1 w-5 h-5 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
+                      className="mt-1 w-5 h-5 text-rausch border-gray-300 rounded focus:ring-rausch"
                     />
-                    <label htmlFor="terms" className="text-sm text-gray-700">
+                    <label htmlFor="terms" className="text-sm text-airbnb-grey-700">
                       <span className="font-semibold">Li e concordo com </span>
-                      <a href="/terms" target="_blank" className="text-primary-600 hover:underline">
+                      <a href="/terms" target="_blank" className="link">
                         os Termos e Condições
                       </a>
                       {" e a "}
-                      <a href="/privacy" target="_blank" className="text-primary-600 hover:underline">
+                      <a href="/privacy" target="_blank" className="link">
                         Política de Privacidade
                       </a>
                       . Estou ciente da política de cancelamento e aceito as condições da reserva.
@@ -425,9 +425,9 @@ const BookingCheckout = () => {
 
             {/* Error Message */}
             {error && (
-              <div className="bg-red-50 border-2 border-red-200 rounded-xl p-4 flex items-center gap-3">
-                <FaInfoCircle className="text-red-600 text-xl" />
-                <p className="text-red-800 font-medium">{error}</p>
+              <div className="alert-error flex items-center gap-3">
+                <FaInfoCircle size={20} />
+                <p className="font-medium">{error}</p>
               </div>
             )}
 
@@ -436,7 +436,7 @@ const BookingCheckout = () => {
               {step === 2 && (
                 <button
                   onClick={() => setStep(1)}
-                  className="px-8 py-4 border-2 border-gray-300 rounded-xl font-bold text-gray-700 hover:bg-gray-50 transition-all"
+                  className="btn-secondary"
                 >
                   ← Voltar
                 </button>
@@ -445,7 +445,7 @@ const BookingCheckout = () => {
               {step === 1 ? (
                 <button
                   onClick={handleNextStep}
-                  className="ml-auto px-8 py-4 bg-gradient-to-r from-primary-600 to-primary-700 text-white rounded-xl font-bold hover:from-primary-700 hover:to-primary-800 transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
+                  className="ml-auto btn-primary"
                 >
                   Continuar para Pagamento →
                 </button>
@@ -453,11 +453,11 @@ const BookingCheckout = () => {
                 <button
                   onClick={handleCreateBooking}
                   disabled={loading || !agreeToTerms}
-                  className="ml-auto px-8 py-4 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-xl font-bold hover:from-green-700 hover:to-green-800 transition-all shadow-lg hover:shadow-xl transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center gap-2"
+                  className="ml-auto btn-primary disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                 >
                   {loading ? (
                     <>
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                      <div className="spinner-sm"></div>
                       <span>Processando...</span>
                     </>
                   ) : (
@@ -473,10 +473,10 @@ const BookingCheckout = () => {
 
           {/* Sidebar - Resumo da Reserva (Sticky) */}
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-2xl shadow-xl border-2 border-gray-200 p-6 sticky top-6">
+            <div className="card p-6 sticky top-6">
               {/* Propriedade */}
               <div className="mb-6">
-                <h3 className="font-bold text-gray-900 mb-4 text-lg">Resumo da Reserva</h3>
+                <h3 className="heading-3 mb-4">Resumo da Reserva</h3>
                 {property.photos && property.photos[0] && (
                   <img
                     src={property.photos[0].url}
@@ -485,104 +485,104 @@ const BookingCheckout = () => {
                   />
                 )}
                 <h4 className="font-bold text-gray-900 mb-2">{property.title}</h4>
-                <p className="text-sm text-gray-600 flex items-center gap-2">
-                  <FaHome className="text-primary-600" />
+                <p className="text-sm text-airbnb-grey-600 flex items-center gap-2">
+                  <FaHome className="text-rausch" size={16} />
                   {property.type === "house" ? "Casa" : property.type === "apartment" ? "Apartamento" : "Imóvel"}
                 </p>
               </div>
 
               {/* Datas */}
-              <div className="mb-6 pb-6 border-b border-gray-200">
+              <div className="mb-6 pb-6 divider">
                 <div className="grid grid-cols-2 gap-4 mb-4">
                   <div>
-                    <p className="text-xs text-gray-600 mb-1 flex items-center gap-1">
-                      <FaCalendarAlt className="text-primary-600" />
+                    <p className="text-xs text-airbnb-grey-600 mb-1 flex items-center gap-1">
+                      <FaCalendarAlt className="text-rausch" size={14} />
                       <span>Check-in</span>
                     </p>
-                    <p className="font-semibold text-gray-900 text-sm">
+                    <p className="font-semibold text-airbnb-black text-sm">
                       {formatDate(bookingData.checkIn)}
                     </p>
                   </div>
                   <div>
-                    <p className="text-xs text-gray-600 mb-1 flex items-center gap-1">
-                      <FaCalendarAlt className="text-primary-600" />
+                    <p className="text-xs text-airbnb-grey-600 mb-1 flex items-center gap-1">
+                      <FaCalendarAlt className="text-rausch" size={14} />
                       <span>Check-out</span>
                     </p>
-                    <p className="font-semibold text-gray-900 text-sm">
+                    <p className="font-semibold text-airbnb-black text-sm">
                       {formatDate(bookingData.checkOut)}
                     </p>
                   </div>
                 </div>
 
-                <div className="bg-gray-50 rounded-lg p-3">
+                <div className="bg-airbnb-grey-50 rounded-lg p-3">
                   <div className="flex items-center justify-between text-sm mb-2">
-                    <span className="text-gray-600">Noites:</span>
-                    <span className="font-bold text-gray-900">{nights}</span>
+                    <span className="text-airbnb-grey-600">Noites:</span>
+                    <span className="font-bold text-airbnb-black">{nights}</span>
                   </div>
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-600 flex items-center gap-2">
-                      <FaUsers className="text-primary-600" />
+                    <span className="text-airbnb-grey-600 flex items-center gap-2">
+                      <FaUsers className="text-rausch" size={14} />
                       Hóspedes:
                     </span>
-                    <span className="font-bold text-gray-900">{bookingData.totalGuests}</span>
+                    <span className="font-bold text-airbnb-black">{bookingData.totalGuests}</span>
                   </div>
                   <div className="flex items-center justify-between text-sm mt-2">
-                    <span className="text-gray-600">Quartos:</span>
-                    <span className="font-bold text-gray-900">{bookingData.rooms.length}</span>
+                    <span className="text-airbnb-grey-600">Quartos:</span>
+                    <span className="font-bold text-airbnb-black">{bookingData.rooms.length}</span>
                   </div>
                 </div>
               </div>
 
               {/* Breakdown de Preços */}
               <div className="mb-6 space-y-3">
-                <h4 className="font-bold text-gray-900 mb-3">Detalhamento do Preço</h4>
+                <h4 className="heading-3 mb-3">Detalhamento do Preço</h4>
 
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">
+                  <span className="text-airbnb-grey-600">
                     {formatCurrency(property.price_per_night)} x {nights} noites
                   </span>
-                  <span className="font-semibold text-gray-900">
+                  <span className="font-semibold text-airbnb-black">
                     {formatCurrency(basePrice)}
                   </span>
                 </div>
 
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Taxa de serviço (10%)</span>
-                  <span className="font-semibold text-gray-900">
+                  <span className="text-airbnb-grey-600">Taxa de serviço (10%)</span>
+                  <span className="font-semibold text-airbnb-black">
                     {formatCurrency(serviceFee)}
                   </span>
                 </div>
 
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Taxa de limpeza</span>
-                  <span className="font-semibold text-gray-900">
+                  <span className="text-airbnb-grey-600">Taxa de limpeza</span>
+                  <span className="font-semibold text-airbnb-black">
                     {formatCurrency(cleaningFee)}
                   </span>
                 </div>
               </div>
 
               {/* Total */}
-              <div className="pt-6 border-t-2 border-gray-200">
+              <div className="pt-6 border-t-2 border-airbnb-grey-200">
                 <div className="flex justify-between items-center">
-                  <span className="text-lg font-bold text-gray-900">Total</span>
-                  <span className="text-3xl font-bold text-primary-600">
+                  <span className="text-lg font-bold text-airbnb-black">Total</span>
+                  <span className="text-3xl font-bold text-rausch">
                     {formatCurrency(totalPrice)}
                   </span>
                 </div>
-                <p className="text-xs text-gray-500 mt-2 text-right">
+                <p className="text-xs text-airbnb-grey-500 mt-2 text-right">
                   Você não será cobrado ainda
                 </p>
               </div>
 
               {/* Política de Cancelamento */}
-              <div className="mt-6 bg-yellow-50 border border-yellow-200 rounded-xl p-4">
-                <p className="font-semibold text-yellow-900 mb-2 text-sm">
-                  📋 Cancelamento Flexível
+              <div className="mt-6 bg-airbnb-grey-50 border border-airbnb-grey-200 rounded-xl p-4">
+                <p className="font-semibold text-airbnb-black mb-2 text-sm">
+                  Cancelamento Flexível
                 </p>
-                <ul className="text-xs text-yellow-800 space-y-1">
-                  <li>✅ Reembolso total até 7 dias antes</li>
-                  <li>⚠️ Reembolso de 50% entre 3-7 dias</li>
-                  <li>❌ Sem reembolso em menos de 3 dias</li>
+                <ul className="text-xs text-airbnb-grey-700 space-y-1">
+                  <li>Reembolso total até 7 dias antes</li>
+                  <li>Reembolso de 50% entre 3-7 dias</li>
+                  <li>Sem reembolso em menos de 3 dias</li>
                 </ul>
               </div>
             </div>

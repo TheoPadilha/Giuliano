@@ -132,19 +132,19 @@ const Profile = () => {
   const badge = getRoleBadge(user.role);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-white py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
-        <div className="bg-white rounded-2xl shadow-xl overflow-hidden mb-6">
-          <div className="bg-gradient-to-r from-primary-600 to-primary-700 px-8 py-12 text-white">
+        <div className="card overflow-hidden mb-6">
+          <div className="bg-airbnb-grey-50 px-8 py-12 border-b border-airbnb-grey-200">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-6">
-                <div className="w-24 h-24 bg-white bg-opacity-20 backdrop-blur-sm rounded-full flex items-center justify-center border-4 border-white shadow-lg">
-                  <FiUser className="w-12 h-12" />
+                <div className="w-24 h-24 bg-rausch rounded-full flex items-center justify-center border-4 border-white shadow-lg">
+                  <FiUser className="w-12 h-12 text-white" />
                 </div>
                 <div>
-                  <h1 className="text-3xl font-bold mb-2">{user.name}</h1>
-                  <p className="text-white text-opacity-90 flex items-center gap-2">
+                  <h1 className="heading-2 mb-2 text-airbnb-black">{user.name}</h1>
+                  <p className="text-airbnb-grey-700 flex items-center gap-2">
                     <FiMail className="w-4 h-4" />
                     {user.email}
                   </p>
@@ -158,7 +158,7 @@ const Profile = () => {
               {!editMode && (
                 <button
                   onClick={() => setEditMode(true)}
-                  className="bg-white text-primary-600 px-6 py-3 rounded-xl font-semibold hover:bg-gray-100 transition-all duration-200 flex items-center gap-2 shadow-lg"
+                  className="btn-secondary flex items-center gap-2"
                 >
                   <FiEdit2 />
                   Editar Perfil
@@ -170,24 +170,22 @@ const Profile = () => {
 
         {/* Messages */}
         {message.text && (
-          <div className={`mb-6 p-4 rounded-xl ${
-            message.type === 'success'
-              ? 'bg-green-50 border-2 border-green-200 text-green-800'
-              : 'bg-red-50 border-2 border-red-200 text-red-800'
+          <div className={`mb-6 ${
+            message.type === 'success' ? 'alert-success' : 'alert-error'
           }`}>
             <p className="font-medium">{message.text}</p>
           </div>
         )}
 
         {/* Profile Form */}
-        <div className="bg-white rounded-2xl shadow-xl p-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Informações Pessoais</h2>
+        <div className="card p-8">
+          <h2 className="heading-2 mb-6">Informações Pessoais</h2>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Nome */}
             <div>
               <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
-                <FiUser className="text-primary-600" />
+                <FiUser className="text-rausch" />
                 Nome Completo
               </label>
               <input
@@ -196,7 +194,7 @@ const Profile = () => {
                 value={formData.name}
                 onChange={handleChange}
                 disabled={!editMode}
-                className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:border-primary-500 focus:ring-4 focus:ring-primary-100 transition-all disabled:bg-gray-100 disabled:cursor-not-allowed"
+                className="input disabled:bg-airbnb-grey-100 disabled:cursor-not-allowed"
                 required
               />
             </div>
@@ -204,7 +202,7 @@ const Profile = () => {
             {/* Email */}
             <div>
               <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
-                <FiMail className="text-primary-600" />
+                <FiMail className="text-rausch" />
                 Email
               </label>
               <input
@@ -213,7 +211,7 @@ const Profile = () => {
                 value={formData.email}
                 onChange={handleChange}
                 disabled={!editMode}
-                className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:border-primary-500 focus:ring-4 focus:ring-primary-100 transition-all disabled:bg-gray-100 disabled:cursor-not-allowed"
+                className="input disabled:bg-airbnb-grey-100 disabled:cursor-not-allowed"
                 required
               />
             </div>
@@ -221,7 +219,7 @@ const Profile = () => {
             {/* Telefone */}
             <div>
               <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
-                <FiPhone className="text-primary-600" />
+                <FiPhone className="text-rausch" />
                 Telefone
               </label>
               <input
@@ -230,7 +228,7 @@ const Profile = () => {
                 value={formData.phone}
                 onChange={handleChange}
                 disabled={!editMode}
-                className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:border-primary-500 focus:ring-4 focus:ring-primary-100 transition-all disabled:bg-gray-100 disabled:cursor-not-allowed"
+                className="input disabled:bg-airbnb-grey-100 disabled:cursor-not-allowed"
                 placeholder="(00) 00000-0000"
               />
             </div>
@@ -238,7 +236,7 @@ const Profile = () => {
             {/* País */}
             <div>
               <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
-                <FiMapPin className="text-primary-600" />
+                <FiMapPin className="text-rausch" />
                 País
               </label>
               <input
@@ -247,7 +245,7 @@ const Profile = () => {
                 value={formData.country}
                 onChange={handleChange}
                 disabled={!editMode}
-                className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:border-primary-500 focus:ring-4 focus:ring-primary-100 transition-all disabled:bg-gray-100 disabled:cursor-not-allowed"
+                className="input disabled:bg-airbnb-grey-100 disabled:cursor-not-allowed"
               />
             </div>
 
@@ -257,7 +255,7 @@ const Profile = () => {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="flex-1 bg-gradient-to-r from-primary-600 to-primary-700 text-white py-4 px-8 rounded-xl font-bold hover:from-primary-700 hover:to-primary-800 transition-all duration-300 transform hover:scale-[1.02] shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  className="btn-primary flex-1 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                   <FiSave />
                   {loading ? 'Salvando...' : 'Salvar Alterações'}
@@ -266,7 +264,7 @@ const Profile = () => {
                   type="button"
                   onClick={cancelEdit}
                   disabled={loading}
-                  className="px-8 py-4 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl transition-all duration-200 flex items-center gap-2 border-2 border-gray-300"
+                  className="btn-secondary flex items-center gap-2"
                 >
                   <FiX />
                   Cancelar
@@ -277,10 +275,10 @@ const Profile = () => {
 
           {/* Change Password Button */}
           {!editMode && (
-            <div className="mt-8 pt-8 border-t-2 border-gray-200">
+            <div className="mt-8 pt-8 divider">
               <button
                 onClick={() => setShowPasswordModal(true)}
-                className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 py-4 px-8 rounded-xl font-bold transition-all duration-200 flex items-center justify-center gap-2 border-2 border-gray-300"
+                className="btn-secondary w-full flex items-center justify-center gap-2"
               >
                 <FiLock />
                 Alterar Senha
@@ -292,16 +290,16 @@ const Profile = () => {
         {/* Password Modal */}
         {showPasswordModal && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-2xl max-w-md w-full p-8 shadow-2xl">
+            <div className="card max-w-md w-full p-8">
               <div className="flex items-center justify-between mb-6">
-                <h3 className="text-2xl font-bold text-gray-900">Alterar Senha</h3>
+                <h3 className="heading-3">Alterar Senha</h3>
                 <button
                   onClick={() => {
                     setShowPasswordModal(false);
                     setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
                     setMessage({ type: '', text: '' });
                   }}
-                  className="text-gray-400 hover:text-gray-600 transition-colors p-2 hover:bg-gray-100 rounded-full"
+                  className="text-airbnb-grey-400 hover:text-airbnb-grey-600 transition-colors p-2 hover:bg-airbnb-grey-100 rounded-full"
                 >
                   <FiX className="w-6 h-6" />
                 </button>
@@ -317,7 +315,7 @@ const Profile = () => {
                     name="currentPassword"
                     value={passwordData.currentPassword}
                     onChange={handlePasswordChange}
-                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:border-primary-500 focus:ring-4 focus:ring-primary-100 transition-all"
+                    className="input"
                     required
                   />
                 </div>
@@ -331,7 +329,7 @@ const Profile = () => {
                     name="newPassword"
                     value={passwordData.newPassword}
                     onChange={handlePasswordChange}
-                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:border-primary-500 focus:ring-4 focus:ring-primary-100 transition-all"
+                    className="input"
                     required
                     minLength={6}
                   />
@@ -346,7 +344,7 @@ const Profile = () => {
                     name="confirmPassword"
                     value={passwordData.confirmPassword}
                     onChange={handlePasswordChange}
-                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:border-primary-500 focus:ring-4 focus:ring-primary-100 transition-all"
+                    className="input"
                     required
                     minLength={6}
                   />
@@ -356,7 +354,7 @@ const Profile = () => {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="flex-1 bg-gradient-to-r from-primary-600 to-primary-700 text-white py-3 px-6 rounded-xl font-bold hover:from-primary-700 hover:to-primary-800 transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="btn-primary flex-1 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {loading ? 'Alterando...' : 'Alterar Senha'}
                   </button>
@@ -368,7 +366,7 @@ const Profile = () => {
                       setMessage({ type: '', text: '' });
                     }}
                     disabled={loading}
-                    className="px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl transition-all duration-200 border-2 border-gray-300"
+                    className="btn-secondary"
                   >
                     Cancelar
                   </button>

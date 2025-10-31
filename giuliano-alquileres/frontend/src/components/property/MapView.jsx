@@ -7,10 +7,10 @@ import { UPLOADS_URL } from "../../services/api";
 
 const MapView = ({ properties }) => {
   const [selectedProperty, setSelectedProperty] = useState(null);
-  const [mapCenter, setMapCenter] = useState({
+  const mapCenter = {
     lat: -26.9924, // Balneário Camboriú
     lng: -48.6359,
-  });
+  };
 
   // Configuração do mapa
   const mapContainerStyle = {

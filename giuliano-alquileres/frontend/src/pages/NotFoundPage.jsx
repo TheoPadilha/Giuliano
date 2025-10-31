@@ -8,10 +8,10 @@ const NotFoundPage = () => {
         <div className="text-8xl mb-6">🏠</div>
 
         {/* Número 404 */}
-        <h1 className="text-6xl font-bold text-red-600 mb-4">404</h1>
+        <h1 className="text-6xl font-bold text-rausch mb-4">404</h1>
 
         {/* Título */}
-        <h2 className="text-2xl font-bold text-gray-900 mb-4">
+        <h2 className="heading-2 mb-4">
           Página não encontrada
         </h2>
 
@@ -24,15 +24,15 @@ const NotFoundPage = () => {
         <div className="space-y-3">
           <Link
             to="/"
-            className="inline-block w-full bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-bold py-3 px-8 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+            className="btn-primary inline-block w-full"
           >
             🏠 Voltar para Home
           </Link>
           <button
             onClick={() => window.history.back()}
-            className="w-full bg-white text-gray-700 border-2 border-gray-300 hover:border-red-600 hover:text-red-600 font-bold py-3 px-8 rounded-xl shadow-md hover:shadow-lg transition-all duration-300"
+            className="btn-secondary w-full"
           >
-            ← Página Anterior
+            Página Anterior
           </button>
         </div>
       </div>

@@ -15,7 +15,7 @@ const PaymentSuccess = () => {
 
   useEffect(() => {
     if (!isAuthenticated) {
-      navigate("/login");
+      navigate("/guest-login");
       return;
     }
 
@@ -35,7 +35,7 @@ const PaymentSuccess = () => {
   }, [isAuthenticated, navigate]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-green-50 flex items-center justify-center p-4">
       <div className="max-w-2xl w-full bg-white rounded-2xl shadow-2xl p-8 text-center">
         {/* Ícone de Sucesso Animado */}
         <div className="mb-6">
@@ -57,7 +57,7 @@ const PaymentSuccess = () => {
         </div>
 
         {/* Título */}
-        <h1 className="text-4xl font-bold text-gray-900 mb-4">
+        <h1 className="heading-2 mb-4">
           Pagamento Aprovado! 🎉
         </h1>
 
@@ -118,14 +118,14 @@ const PaymentSuccess = () => {
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <button
             onClick={() => navigate("/bookings")}
-            className="bg-primary-600 hover:bg-primary-700 text-white font-semibold py-3 px-8 rounded-xl transition-all duration-200 transform hover:scale-105"
+            className="btn-primary"
           >
             Ver Minhas Reservas
           </button>
 
           <button
             onClick={() => navigate("/properties")}
-            className="bg-white hover:bg-gray-50 text-gray-700 font-semibold py-3 px-8 rounded-xl border-2 border-gray-200 hover:border-gray-300 transition-all duration-200"
+            className="btn-secondary"
           >
             Explorar Mais Imóveis
           </button>

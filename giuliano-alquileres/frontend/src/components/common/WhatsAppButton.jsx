@@ -1,6 +1,5 @@
 import React from "react";
 import { FaWhatsapp } from "react-icons/fa";
-import { motion } from "framer-motion";
 
 // Número de telefone para contato (substituir pelo número real)
 const WHATSAPP_NUMBER = "5547999951103"; // Giuliano Lorensatto Ferreira (Contratante)
@@ -12,18 +11,15 @@ const WhatsAppButton = ({ message = DEFAULT_MESSAGE }) => {
   const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${message}`;
 
   return (
-    <motion.a
+    <a
       href={url}
       target="_blank"
       rel="noopener noreferrer"
-      className="fixed bottom-6 right-6 z-50 p-4 bg-green-500 text-white rounded-full shadow-lg hover:bg-green-600 transition-all duration-300 transform hover:scale-110 flex items-center justify-center"
-      initial={{ scale: 0 }}
-      animate={{ scale: 1 }}
-      transition={{ type: "spring", stiffness: 260, damping: 20 }}
+      className="fixed bottom-6 right-6 z-50 p-4 bg-green-500 text-white rounded-full shadow-lg hover:bg-green-600 transition-all duration-300 transform hover:scale-110 flex items-center justify-center animate-fade-in"
       aria-label="Fale conosco pelo WhatsApp"
     >
       <FaWhatsapp className="w-8 h-8" />
-    </motion.a>
+    </a>
   );
 };
 

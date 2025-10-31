@@ -7,7 +7,6 @@ import { ptBR } from 'date-fns/locale';
 import CreateReviewModal from '../components/property/CreateReviewModal';
 
 const MyBookings = () => {
-  const { user } = useAuth();
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
@@ -210,7 +209,7 @@ const MyBookings = () => {
                         {booking.status === 'completed' && !booking.review && (
                           <button
                             onClick={() => openReviewModal(booking)}
-                            className="flex items-center px-3 py-1 text-sm text-blue-600 hover:text-blue-800 transition-colors"
+                            className="flex items-center px-3 py-1 text-sm text-rausch hover:text-rausch-dark transition-colors"
                           >
                             <FaStar className="h-4 w-4 mr-1" />
                             Avaliar

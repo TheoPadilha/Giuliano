@@ -356,45 +356,45 @@ const EditProperty = () => {
         <div className="mb-6">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">
+              <h1 className="heading-2 text-airbnb-black">
                 Editar Imóvel
               </h1>
-              <p className="text-gray-600">
+              <p className="body-base text-airbnb-grey-600">
                 Atualize: <strong>{propertyData?.title}</strong>
               </p>
-              <p className="text-sm text-gray-500 mt-1">
+              <p className="body-small text-airbnb-grey-500 mt-1">
                 ID: {propertyData?.uuid || propertyData?.id || id}
               </p>
             </div>
             <button onClick={handleCancel} className="btn-secondary">
-              ← Voltar
+              Voltar
             </button>
           </div>
         </div>
 
         {/* Tabs de Navegação */}
         <div className="mb-6">
-          <div className="border-b border-gray-200">
+          <div className="border-b border-airbnb-grey-200">
             <nav className="-mb-px flex space-x-8">
               <button
                 onClick={() => setActiveTab("info")}
-                className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors duration-200 ${
+                className={`py-3 px-1 border-b-2 font-semibold text-sm transition-all duration-200 ${
                   activeTab === "info"
-                    ? "border-blue-500 text-blue-600"
-                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                    ? "border-rausch text-rausch"
+                    : "border-transparent text-airbnb-grey-600 hover:text-airbnb-black hover:border-airbnb-grey-300"
                 }`}
               >
-                📝 Informações Básicas
+                Informações Básicas
               </button>
               <button
                 onClick={() => setActiveTab("photos")}
-                className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors duration-200 ${
+                className={`py-3 px-1 border-b-2 font-semibold text-sm transition-all duration-200 ${
                   activeTab === "photos"
-                    ? "border-blue-500 text-blue-600"
-                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                    ? "border-rausch text-rausch"
+                    : "border-transparent text-airbnb-grey-600 hover:text-airbnb-black hover:border-airbnb-grey-300"
                 }`}
               >
-                📸 Gerenciar Fotos
+                Gerenciar Fotos
               </button>
             </nav>
           </div>
@@ -402,24 +402,22 @@ const EditProperty = () => {
 
         {/* Mensagens */}
         {error && (
-          <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md">
+          <div className="alert-error mb-6">
             <div className="flex">
-              <span className="text-red-500 mr-2">⚠️</span>
               <div>
-                <h3 className="text-sm font-medium text-red-800">
+                <h3 className="text-sm font-semibold mb-1">
                   Erro ao atualizar imóvel
                 </h3>
-                <p className="mt-1 text-sm">{error}</p>
+                <p className="text-sm">{error}</p>
               </div>
             </div>
           </div>
         )}
 
         {success && (
-          <div className="mb-6 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-md">
+          <div className="alert-success mb-6">
             <div className="flex">
-              <span className="text-green-500 mr-2">✅</span>
-              <p className="text-sm font-medium">{success}</p>
+              <p className="text-sm font-semibold">{success}</p>
             </div>
           </div>
         )}
@@ -427,17 +425,17 @@ const EditProperty = () => {
         {/* Conteúdo das Tabs */}
         {activeTab === "info" ? (
           // TAB: Informações Básicas
-          <div className="bg-white shadow rounded-lg">
-            <form onSubmit={handleSubmit} className="space-y-8 p-6">
+          <div className="card">
+            <form onSubmit={handleSubmit} className="space-y-8">
               {/* Informações Básicas */}
               <div>
-                <h3 className="text-lg font-medium text-gray-900 mb-4">
+                <h3 className="heading-4 text-airbnb-black mb-4">
                   Informações Básicas
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* Título */}
                   <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="label">
                       Título do Imóvel *
                     </label>
                     <input
@@ -445,21 +443,21 @@ const EditProperty = () => {
                       name="title"
                       value={formData.title}
                       onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="input"
                       required
                     />
                   </div>
 
                   {/* Tipo */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="label">
                       Tipo de Imóvel *
                     </label>
                     <select
                       name="type"
                       value={formData.type}
                       onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="input"
                       required
                     >
                       <option value="apartment">Apartamento</option>
@@ -471,14 +469,14 @@ const EditProperty = () => {
 
                   {/* Status */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="label">
                       Status
                     </label>
                     <select
                       name="status"
                       value={formData.status}
                       onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="input"
                     >
                       <option value="available">Disponível</option>
                       <option value="occupied">Ocupado</option>
@@ -491,7 +489,7 @@ const EditProperty = () => {
 
               {/* Capacidade */}
               <div>
-                <h3 className="text-lg font-medium text-gray-900 mb-4">
+                <h3 className="heading-4 text-airbnb-black mb-4">
                   Capacidade
                 </h3>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
@@ -565,7 +563,7 @@ const EditProperty = () => {
 
               {/* Localização */}
               <div>
-                <h3 className="text-lg font-medium text-gray-900 mb-4">
+                <h3 className="heading-4 text-airbnb-black mb-4">
                   Localização
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -648,7 +646,7 @@ const EditProperty = () => {
 
               {/* Preços */}
               <div>
-                <h3 className="text-lg font-medium text-gray-900 mb-4">
+                <h3 className="heading-4 text-airbnb-black mb-4">
                   Preços
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -703,7 +701,7 @@ const EditProperty = () => {
               {/* Comodidades */}
               {amenities.length > 0 && (
                 <div>
-                  <h3 className="text-lg font-medium text-gray-900 mb-4">
+                  <h3 className="heading-4 text-airbnb-black mb-4">
                     Comodidades
                   </h3>
                   {Object.keys(amenitiesByCategory).map((category) => (
@@ -739,7 +737,7 @@ const EditProperty = () => {
 
               {/* Descrição */}
               <div>
-                <h3 className="text-lg font-medium text-gray-900 mb-4">
+                <h3 className="heading-4 text-airbnb-black mb-4">
                   Descrição
                 </h3>
                 <textarea
@@ -753,7 +751,7 @@ const EditProperty = () => {
               </div>
 
               {/* Botões */}
-              <div className="flex justify-end space-x-4 pt-6 border-t">
+              <div className="flex justify-end space-x-4 pt-6 border-t border-airbnb-grey-200">
                 <button
                   type="button"
                   onClick={handleCancel}
@@ -768,8 +766,8 @@ const EditProperty = () => {
                   className="btn-primary"
                 >
                   {loading ? (
-                    <span className="flex items-center">
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    <span className="flex items-center gap-2">
+                      <div className="spinner-sm"></div>
                       Salvando...
                     </span>
                   ) : (
@@ -781,7 +779,7 @@ const EditProperty = () => {
           </div>
         ) : (
           // TAB: Gerenciar Fotos
-          <div className="bg-white shadow rounded-lg p-6">
+          <div className="card">
             <PhotoUpload
               propertyUuid={propertyData?.uuid || propertyData?.id}
               onUploadComplete={() => {

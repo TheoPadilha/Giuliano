@@ -1,4 +1,4 @@
-// Properties.jsx - Versão Corrigida e Melhorada
+// Properties.jsx - Versão Corrigida
 import { useState, useEffect } from "react";
 import { useSearchParams, Link } from "react-router-dom";
 import api from "../services/api";
@@ -7,7 +7,6 @@ import PropertyFiltersPro from "../components/property/PropertyFiltersPro";
 import SortDropdown from "../components/property/SortDropdown";
 import MapView from "../components/property/MapView";
 import AirbnbHeader from "../components/layout/AirbnbHeader";
-// import Modal from "../components/common/Modal"; // Assumindo que existe um componente Modal genérico
 import Footer from "../components/layout/Footer";
 import Loading from "../components/common/Loading";
 import {
@@ -80,13 +79,21 @@ const Properties = () => {
 
     switch (sortType) {
       case "price_asc":
-        return sorted.sort((a, b) => (a.price_per_night || 0) - (b.price_per_night || 0));
+        return sorted.sort(
+          (a, b) => (a.price_per_night || 0) - (b.price_per_night || 0)
+        );
       case "price_desc":
-        return sorted.sort((a, b) => (b.price_per_night || 0) - (a.price_per_night || 0));
+        return sorted.sort(
+          (a, b) => (b.price_per_night || 0) - (a.price_per_night || 0)
+        );
       case "rating":
-        return sorted.sort((a, b) => (b.average_rating || 0) - (a.average_rating || 0));
+        return sorted.sort(
+          (a, b) => (b.average_rating || 0) - (a.average_rating || 0)
+        );
       case "newest":
-        return sorted.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+        return sorted.sort(
+          (a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0)
+        );
       default:
         return sorted;
     }
@@ -202,46 +209,29 @@ const Properties = () => {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Header com animação */}
+      {/* Header Original - MANTIDO */}
       <AirbnbHeader onFilterButtonClick={() => setShowFiltersModal(true)} />
 
-      {/* Filtros Sticky - MELHORADO */}
-      <div className="sticky top-[80px] z-40 bg-white shadow-sm transition-all duration-300">
-        <div className="border-b border-airbnb-grey-200">
-          <div className="max-w-[2520px] mx-auto px-5 sm:px-10 lg:px-20 py-4">
-            {/* Renderizar o modal de filtros se estiver aberto */}
-            {showFiltersModal && (
-              <PropertyFiltersPro
-                filters={filters}
-                onFiltersChange={handleFiltersChange}
-                cities={cities}
-                amenities={amenities}
-                onSearch={() => {
-                  handleSearch();
-                  setShowFiltersModal(false);
-                }}
-                loading={loading}
-                isModal={true}
-                onClose={() => setShowFiltersModal(false)}
-              />
-            )}
-              <PropertyFiltersPro
-                filters={filters}
-                onFiltersChange={handleFiltersChange}
-                cities={cities}
-                amenities={amenities}
-                onSearch={handleSearch}
-                loading={loading}
-                // O PropertyFiltersPro só deve ser renderizado aqui se NÃO estiver no modo modal
-                isModal={false}
-              />
-          </div>
-        </div>
-      </div>
+      {/* Modal de Filtros - Só aparece quando clicado */}
+      {showFiltersModal && (
+        <PropertyFiltersPro
+          filters={filters}
+          onFiltersChange={handleFiltersChange}
+          cities={cities}
+          amenities={amenities}
+          onSearch={() => {
+            handleSearch();
+            setShowFiltersModal(false);
+          }}
+          loading={loading}
+          isModal={true}
+          onClose={() => setShowFiltersModal(false)}
+        />
+      )}
 
-      {/* Main Content */}
+      {/* Main Content - SEM A BARRA DE FILTROS STICKY */}
       <div className="max-w-[2520px] mx-auto px-5 sm:px-10 lg:px-20">
-        {/* Barra de Resultados e Controles - CORRIGIDA */}
+        {/* Barra de Resultados e Controles */}
         {!loading && properties.length > 0 && (
           <div className="flex items-center justify-between py-6 border-b border-airbnb-grey-200 flex-wrap gap-4">
             {/* Info de Resultados */}
@@ -267,48 +257,47 @@ const Properties = () => {
 
               {/* Controles de Visualização */}
               <div className="hidden md:flex items-center gap-2 ml-2 pl-2 border-l border-airbnb-grey-200">
-              <button
-                onClick={() => setViewMode("grid")}
-                className={`p-2.5 rounded-lg transition-all ${
-                  viewMode === "grid"
-                    ? "bg-airbnb-black text-white"
-                    : "bg-white text-airbnb-grey-600 hover:bg-airbnb-grey-50 border border-airbnb-grey-200"
-                }`}
-                title="Visualização em grade"
-              >
-                <FaThLarge className="text-sm" />
-              </button>
+                <button
+                  onClick={() => setViewMode("grid")}
+                  className={`p-2.5 rounded-lg transition-all ${
+                    viewMode === "grid"
+                      ? "bg-airbnb-black text-white"
+                      : "bg-white text-airbnb-grey-600 hover:bg-airbnb-grey-50 border border-airbnb-grey-200"
+                  }`}
+                  title="Visualização em grade"
+                >
+                  <FaThLarge className="text-sm" />
+                </button>
 
-              <button
-                onClick={() => setViewMode("list")}
-                className={`p-2.5 rounded-lg transition-all ${
-                  viewMode === "list"
-                    ? "bg-airbnb-black text-white"
-                    : "bg-white text-airbnb-grey-600 hover:bg-airbnb-grey-50 border border-airbnb-grey-200"
-                }`}
-                title="Visualização em lista"
-              >
-                <FaList className="text-sm" />
-              </button>
+                <button
+                  onClick={() => setViewMode("list")}
+                  className={`p-2.5 rounded-lg transition-all ${
+                    viewMode === "list"
+                      ? "bg-airbnb-black text-white"
+                      : "bg-white text-airbnb-grey-600 hover:bg-airbnb-grey-50 border border-airbnb-grey-200"
+                  }`}
+                  title="Visualização em lista"
+                >
+                  <FaList className="text-sm" />
+                </button>
 
-              {/* Botão Mapa - ATIVADO! */}
-              <button
-                onClick={() => setViewMode("map")}
-                className={`p-2.5 rounded-lg transition-all ${
-                  viewMode === "map"
-                    ? "bg-airbnb-black text-white"
-                    : "bg-white text-airbnb-grey-600 hover:bg-airbnb-grey-50 border border-airbnb-grey-200"
-                }`}
-                title="Visualização em mapa"
-              >
-                <FaMapMarkedAlt className="text-sm" />
-              </button>
+                <button
+                  onClick={() => setViewMode("map")}
+                  className={`p-2.5 rounded-lg transition-all ${
+                    viewMode === "map"
+                      ? "bg-airbnb-black text-white"
+                      : "bg-white text-airbnb-grey-600 hover:bg-airbnb-grey-50 border border-airbnb-grey-200"
+                  }`}
+                  title="Visualização em mapa"
+                >
+                  <FaMapMarkedAlt className="text-sm" />
+                </button>
               </div>
             </div>
           </div>
         )}
 
-        {/* Área de Conteúdo - LÓGICA CORRIGIDA */}
+        {/* Área de Conteúdo */}
         <div className="py-8">
           {loading ? (
             // Loading State
@@ -316,7 +305,7 @@ const Properties = () => {
               <Loading text="Buscando imóveis..." />
             </div>
           ) : properties.length === 0 ? (
-            // Empty State - SÓ MOSTRA QUANDO REALMENTE NÃO TEM IMÓVEIS
+            // Empty State
             <div className="flex flex-col items-center justify-center py-24 px-4">
               <div className="max-w-md text-center">
                 {/* Ícone */}
@@ -355,7 +344,7 @@ const Properties = () => {
               </div>
             </div>
           ) : (
-            // TEM IMÓVEIS - MOSTRAR GRID/LISTA
+            // TEM IMÓVEIS - MOSTRAR GRID/LISTA/MAPA
             <>
               {/* Grid de Propriedades */}
               {viewMode === "grid" && (
@@ -399,20 +388,26 @@ const Properties = () => {
                       Anterior
                     </button>
 
-                    {/* Números de Página (simplificado) */}
-                    {Array.from({ length: pagination.totalPages }, (_, i) => i + 1).map((page) => (
-                      <button
-                        key={page}
-                        onClick={() => handlePageChange(page)}
-                        className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
-                          page === filters.page
-                            ? "bg-airbnb-black text-white"
-                            : "text-airbnb-black bg-white hover:bg-airbnb-grey-50"
-                        }`}
-                      >
-                        {page}
-                      </button>
-                    ))}
+                    {/* Números de Página */}
+                    {Array.from(
+                      { length: Math.min(5, pagination.totalPages) },
+                      (_, i) => {
+                        const page = i + 1;
+                        return (
+                          <button
+                            key={page}
+                            onClick={() => handlePageChange(page)}
+                            className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+                              page === filters.page
+                                ? "bg-airbnb-black text-white"
+                                : "text-airbnb-black bg-white hover:bg-airbnb-grey-50"
+                            }`}
+                          >
+                            {page}
+                          </button>
+                        );
+                      }
+                    )}
 
                     {/* Botão Próximo */}
                     <button

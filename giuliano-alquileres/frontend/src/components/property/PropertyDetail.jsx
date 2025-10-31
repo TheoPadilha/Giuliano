@@ -59,13 +59,6 @@ const PropertyDetails = () => {
     return null;
   };
 
-  // E use assim nas imagens:
-  <img
-    src={getPhotoUrl(photos[currentPhotoIndex])}
-    alt={property.title}
-    // ... resto dos props
-  />;
-
   useEffect(() => {
     const fetchProperty = async () => {
       if (!uuid) {

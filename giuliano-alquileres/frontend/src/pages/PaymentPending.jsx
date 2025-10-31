@@ -12,18 +12,18 @@ const PaymentPending = () => {
 
   useEffect(() => {
     if (!isAuthenticated) {
-      navigate("/login");
+      navigate("/guest-login");
     }
   }, [isAuthenticated, navigate]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-yellow-50 to-orange-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-airbnb-grey-50 flex items-center justify-center p-4">
       <div className="max-w-2xl w-full bg-white rounded-2xl shadow-2xl p-8 text-center">
         {/* Ícone de Pending Animado */}
         <div className="mb-6">
-          <div className="mx-auto w-24 h-24 bg-yellow-100 rounded-full flex items-center justify-center animate-pulse">
+          <div className="mx-auto w-24 h-24 bg-airbnb-grey-100 rounded-full flex items-center justify-center animate-pulse">
             <svg
-              className="w-12 h-12 text-yellow-600"
+              className="w-12 h-12 text-airbnb-grey-500"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -39,7 +39,7 @@ const PaymentPending = () => {
         </div>
 
         {/* Título */}
-        <h1 className="text-4xl font-bold text-gray-900 mb-4">
+        <h1 className="heading-2 mb-4">
           Pagamento Pendente ⏳
         </h1>
 
@@ -58,7 +58,7 @@ const PaymentPending = () => {
             </div>
             <div>
               <p className="text-sm text-gray-600 mb-1">Status</p>
-              <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-yellow-100 text-yellow-800">
+              <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-airbnb-grey-100 text-airbnb-grey-700">
                 ⏳ {status === "pending" ? "Pendente" : status}
               </span>
             </div>
@@ -66,7 +66,7 @@ const PaymentPending = () => {
         </div>
 
         {/* Informações sobre o Pagamento Pendente */}
-        <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-6 mb-8 text-left">
+        <div className="bg-airbnb-grey-50 border border-airbnb-grey-200 rounded-xl p-6 mb-8 text-left">
           <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
             <span>ℹ️</span>
             <span>O que isso significa?</span>
@@ -86,26 +86,26 @@ const PaymentPending = () => {
         </div>
 
         {/* Próximos Passos */}
-        <div className="bg-blue-50 rounded-xl p-6 mb-8 text-left">
+        <div className="bg-airbnb-grey-50 rounded-xl p-6 mb-8 text-left">
           <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
             <span>📋</span>
             <span>Próximos Passos</span>
           </h3>
           <ul className="space-y-2 text-sm text-gray-700">
             <li className="flex items-start gap-2">
-              <span className="text-blue-600 mt-0.5">•</span>
+              <span className="text-rausch mt-0.5">•</span>
               <span>
                 Você receberá um email assim que o pagamento for confirmado
               </span>
             </li>
             <li className="flex items-start gap-2">
-              <span className="text-blue-600 mt-0.5">•</span>
+              <span className="text-rausch mt-0.5">•</span>
               <span>
                 Acompanhe o status em "Minhas Reservas"
               </span>
             </li>
             <li className="flex items-start gap-2">
-              <span className="text-blue-600 mt-0.5">•</span>
+              <span className="text-rausch mt-0.5">•</span>
               <span>
                 Se houver algum problema, entraremos em contato
               </span>
@@ -117,14 +117,14 @@ const PaymentPending = () => {
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <button
             onClick={() => navigate("/bookings")}
-            className="bg-primary-600 hover:bg-primary-700 text-white font-semibold py-3 px-8 rounded-xl transition-all duration-200 transform hover:scale-105"
+            className="btn-primary"
           >
             Ver Minhas Reservas
           </button>
 
           <button
             onClick={() => navigate("/properties")}
-            className="bg-white hover:bg-gray-50 text-gray-700 font-semibold py-3 px-8 rounded-xl border-2 border-gray-200 hover:border-gray-300 transition-all duration-200"
+            className="btn-secondary"
           >
             Voltar para Início
           </button>

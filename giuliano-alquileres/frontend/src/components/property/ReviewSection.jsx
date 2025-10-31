@@ -16,20 +16,30 @@ const ReviewSection = ({ propertyId }) => {
   }, [propertyId]);
 
   const fetchReviews = async (pageNum = 1) => {
+    if (!propertyId) {
+      setLoading(false);
+      return;
+    }
+
     try {
       const response = await api.get(`/api/reviews/property/${propertyId}?page=${pageNum}&limit=5`);
-      
+
       if (pageNum === 1) {
-        setReviews(response.data.reviews);
-        setStats(response.data.stats);
+        setReviews(response.data.reviews || []);
+        setStats(response.data.stats || {});
       } else {
-        setReviews(prev => [...prev, ...response.data.reviews]);
+        setReviews(prev => [...prev, ...(response.data.reviews || [])]);
       }
-      
-      setHasMore(response.data.pagination.page < response.data.pagination.pages);
+
+      setHasMore(response.data.pagination?.page < response.data.pagination?.pages);
       setPage(pageNum);
     } catch (error) {
-      console.error('Erro ao buscar avaliações:', error);
+      // Silenciosamente definir arrays/objetos vazios se houver erro
+      if (pageNum === 1) {
+        setReviews([]);
+        setStats({});
+      }
+      setHasMore(false);
     } finally {
       setLoading(false);
     }

@@ -77,7 +77,7 @@ const BookingConfirmation = () => {
           <p className="text-gray-600 mb-6">{error || "Reserva não encontrada"}</p>
           <button
             onClick={() => navigate("/my-bookings")}
-            className="bg-primary-600 text-white px-6 py-3 rounded-xl hover:bg-primary-700 transition-colors font-semibold"
+            className="btn-primary"
           >
             Ver Minhas Reservas
           </button>
@@ -89,21 +89,20 @@ const BookingConfirmation = () => {
   // Status de pagamento
   const isSuccess = paymentStatus === "approved" || booking.payment_status === "paid";
   const isPending = paymentStatus === "pending" || booking.payment_status === "pending";
-  const isFailed = paymentStatus === "rejected" || booking.payment_status === "failed";
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-blue-50 py-12 print:bg-white">
+    <div className="min-h-screen bg-white py-12 print:bg-white">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Success Animation */}
         {isSuccess && (
           <div className="text-center mb-12 print:mb-8">
-            <div className="inline-flex items-center justify-center w-24 h-24 bg-gradient-to-br from-green-400 to-green-600 rounded-full mb-6 animate-bounce print:animate-none shadow-2xl">
+            <div className="inline-flex items-center justify-center w-24 h-24 bg-rausch rounded-full mb-6 animate-bounce print:animate-none shadow-lg">
               <FaCheckCircle className="text-white text-5xl" />
             </div>
             <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-3">
-              Reserva Confirmada! 🎉
+              Reserva Confirmada!
             </h1>
-            <p className="text-xl text-gray-600">
+            <p className="text-xl text-airbnb-grey-600">
               Sua hospedagem está garantida. Enviamos todos os detalhes por email.
             </p>
           </div>
@@ -111,20 +110,20 @@ const BookingConfirmation = () => {
 
         {isPending && (
           <div className="text-center mb-12">
-            <div className="inline-flex items-center justify-center w-24 h-24 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-full mb-6">
+            <div className="inline-flex items-center justify-center w-24 h-24 bg-airbnb-grey-400 rounded-full mb-6">
               <FaClock className="text-white text-5xl" />
             </div>
             <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-3">
               Pagamento Pendente
             </h1>
-            <p className="text-xl text-gray-600">
+            <p className="text-xl text-airbnb-grey-600">
               Aguardando confirmação do pagamento. Você receberá um email assim que for processado.
             </p>
           </div>
         )}
 
         {/* Main Card */}
-        <div className="bg-white rounded-3xl shadow-2xl border border-gray-200 overflow-hidden mb-8 print:shadow-none">
+        <div className="card overflow-hidden mb-8 print:shadow-none">
           {/* Header with Property Image */}
           <div className="relative h-64 md:h-80 print:h-40">
             {booking.property.photos && booking.property.photos[0] && (
@@ -147,118 +146,118 @@ const BookingConfirmation = () => {
           {/* Booking Details */}
           <div className="p-8 md:p-10">
             {/* Reservation Number */}
-            <div className="bg-gray-50 border-2 border-dashed border-gray-300 rounded-xl p-6 mb-8 text-center">
-              <p className="text-sm text-gray-600 mb-1">Número da Reserva</p>
-              <p className="text-3xl font-mono font-bold text-primary-600">
+            <div className="bg-airbnb-grey-50 border-2 border-dashed border-airbnb-grey-300 rounded-xl p-6 mb-8 text-center">
+              <p className="text-sm text-airbnb-grey-600 mb-1">Número da Reserva</p>
+              <p className="text-3xl font-mono font-bold text-rausch">
                 #{booking.uuid.slice(0, 8).toUpperCase()}
               </p>
             </div>
 
             {/* Grid with Details */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
               {/* Check-in */}
-              <div className="bg-blue-50 rounded-2xl p-6 border-2 border-blue-200">
+              <div className="bg-airbnb-grey-50 rounded-xl p-6 border border-airbnb-grey-200">
                 <div className="flex items-center gap-3 mb-3">
-                  <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center">
-                    <FaCalendarAlt className="text-white text-xl" />
+                  <div className="w-12 h-12 bg-rausch/10 rounded-full flex items-center justify-center">
+                    <FaCalendarAlt className="text-rausch" size={20} />
                   </div>
                   <div>
-                    <p className="text-sm text-blue-800 font-semibold">Check-in</p>
-                    <p className="text-xs text-blue-600">Após 14:00</p>
+                    <p className="text-sm text-airbnb-black font-semibold">Check-in</p>
+                    <p className="text-xs text-airbnb-grey-600">Após 14:00</p>
                   </div>
                 </div>
-                <p className="text-xl font-bold text-blue-900">
+                <p className="text-xl font-bold text-airbnb-black">
                   {formatDate(booking.check_in)}
                 </p>
               </div>
 
               {/* Check-out */}
-              <div className="bg-orange-50 rounded-2xl p-6 border-2 border-orange-200">
+              <div className="bg-airbnb-grey-50 rounded-xl p-6 border border-airbnb-grey-200">
                 <div className="flex items-center gap-3 mb-3">
-                  <div className="w-12 h-12 bg-orange-600 rounded-full flex items-center justify-center">
-                    <FaCalendarAlt className="text-white text-xl" />
+                  <div className="w-12 h-12 bg-rausch/10 rounded-full flex items-center justify-center">
+                    <FaCalendarAlt className="text-rausch" size={20} />
                   </div>
                   <div>
-                    <p className="text-sm text-orange-800 font-semibold">Check-out</p>
-                    <p className="text-xs text-orange-600">Até 12:00</p>
+                    <p className="text-sm text-airbnb-black font-semibold">Check-out</p>
+                    <p className="text-xs text-airbnb-grey-600">Até 12:00</p>
                   </div>
                 </div>
-                <p className="text-xl font-bold text-orange-900">
+                <p className="text-xl font-bold text-airbnb-black">
                   {formatDate(booking.check_out)}
                 </p>
               </div>
 
               {/* Guests */}
-              <div className="bg-purple-50 rounded-2xl p-6 border-2 border-purple-200">
+              <div className="bg-airbnb-grey-50 rounded-xl p-6 border border-airbnb-grey-200">
                 <div className="flex items-center gap-3 mb-3">
-                  <div className="w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center">
-                    <FaUsers className="text-white text-xl" />
+                  <div className="w-12 h-12 bg-rausch/10 rounded-full flex items-center justify-center">
+                    <FaUsers className="text-rausch" size={20} />
                   </div>
-                  <p className="text-sm text-purple-800 font-semibold">Hóspedes</p>
+                  <p className="text-sm text-airbnb-black font-semibold">Hóspedes</p>
                 </div>
-                <p className="text-xl font-bold text-purple-900">
+                <p className="text-xl font-bold text-airbnb-black">
                   {booking.guests} {booking.guests === 1 ? "pessoa" : "pessoas"}
                 </p>
               </div>
 
               {/* Nights */}
-              <div className="bg-green-50 rounded-2xl p-6 border-2 border-green-200">
+              <div className="bg-airbnb-grey-50 rounded-xl p-6 border border-airbnb-grey-200">
                 <div className="flex items-center gap-3 mb-3">
-                  <div className="w-12 h-12 bg-green-600 rounded-full flex items-center justify-center">
-                    <FaHome className="text-white text-xl" />
+                  <div className="w-12 h-12 bg-rausch/10 rounded-full flex items-center justify-center">
+                    <FaHome className="text-rausch" size={20} />
                   </div>
-                  <p className="text-sm text-green-800 font-semibold">Estadia</p>
+                  <p className="text-sm text-airbnb-black font-semibold">Estadia</p>
                 </div>
-                <p className="text-xl font-bold text-green-900">
+                <p className="text-xl font-bold text-airbnb-black">
                   {booking.nights} {booking.nights === 1 ? "noite" : "noites"}
                 </p>
               </div>
             </div>
 
             {/* Guest Info */}
-            <div className="bg-gray-50 rounded-2xl p-6 mb-8 border border-gray-200">
-              <h3 className="font-bold text-gray-900 mb-4 text-lg">Informações do Hóspede</h3>
+            <div className="bg-airbnb-grey-50 rounded-xl p-6 mb-8 border border-airbnb-grey-200">
+              <h3 className="heading-3 mb-4">Informações do Hóspede</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="flex items-center gap-3">
-                  <FaEnvelope className="text-primary-600" />
+                  <FaEnvelope className="text-rausch" size={20} />
                   <div>
-                    <p className="text-xs text-gray-600">Email</p>
-                    <p className="font-medium text-gray-900">{booking.guest_email}</p>
+                    <p className="text-xs text-airbnb-grey-600">Email</p>
+                    <p className="font-medium text-airbnb-black">{booking.guest_email}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
-                  <FaPhone className="text-primary-600" />
+                  <FaPhone className="text-rausch" size={20} />
                   <div>
-                    <p className="text-xs text-gray-600">Telefone</p>
-                    <p className="font-medium text-gray-900">{booking.guest_phone}</p>
+                    <p className="text-xs text-airbnb-grey-600">Telefone</p>
+                    <p className="font-medium text-airbnb-black">{booking.guest_phone}</p>
                   </div>
                 </div>
               </div>
             </div>
 
             {/* Price Breakdown */}
-            <div className="bg-gray-50 rounded-2xl p-6 border border-gray-200">
-              <h3 className="font-bold text-gray-900 mb-4 text-lg">Resumo do Pagamento</h3>
+            <div className="bg-airbnb-grey-50 rounded-xl p-6 border border-airbnb-grey-200">
+              <h3 className="heading-3 mb-4">Resumo do Pagamento</h3>
               <div className="space-y-3">
-                <div className="flex justify-between text-gray-700">
+                <div className="flex justify-between text-airbnb-grey-700">
                   <span>{formatCurrency(booking.price_per_night)} x {booking.nights} noites</span>
                   <span className="font-semibold">{formatCurrency(booking.total_price)}</span>
                 </div>
                 {booking.service_fee > 0 && (
-                  <div className="flex justify-between text-gray-700">
+                  <div className="flex justify-between text-airbnb-grey-700">
                     <span>Taxa de serviço</span>
                     <span className="font-semibold">{formatCurrency(booking.service_fee)}</span>
                   </div>
                 )}
                 {booking.cleaning_fee > 0 && (
-                  <div className="flex justify-between text-gray-700">
+                  <div className="flex justify-between text-airbnb-grey-700">
                     <span>Taxa de limpeza</span>
                     <span className="font-semibold">{formatCurrency(booking.cleaning_fee)}</span>
                   </div>
                 )}
-                <div className="pt-4 border-t-2 border-gray-300 flex justify-between items-center">
-                  <span className="text-xl font-bold text-gray-900">Total Pago</span>
-                  <span className="text-3xl font-bold text-green-600">
+                <div className="pt-4 border-t-2 border-airbnb-grey-300 flex justify-between items-center">
+                  <span className="text-xl font-bold text-airbnb-black">Total Pago</span>
+                  <span className="text-3xl font-bold text-rausch">
                     {formatCurrency(booking.final_price)}
                   </span>
                 </div>
@@ -271,7 +270,7 @@ const BookingConfirmation = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8 print:hidden">
           <button
             onClick={handlePrint}
-            className="bg-white border-2 border-gray-300 text-gray-700 py-4 px-6 rounded-xl font-semibold hover:bg-gray-50 transition-all flex items-center justify-center gap-2 shadow-md"
+            className="btn-secondary flex items-center justify-center gap-2"
           >
             <FaPrint />
             <span>Imprimir</span>
@@ -279,7 +278,7 @@ const BookingConfirmation = () => {
 
           <button
             onClick={handleWhatsApp}
-            className="bg-green-600 text-white py-4 px-6 rounded-xl font-semibold hover:bg-green-700 transition-all flex items-center justify-center gap-2 shadow-md"
+            className="btn-secondary flex items-center justify-center gap-2 !bg-green-600 !text-white hover:!bg-green-700"
           >
             <FaWhatsapp />
             <span>Compartilhar</span>
@@ -287,7 +286,7 @@ const BookingConfirmation = () => {
 
           <Link
             to="/my-bookings"
-            className="bg-primary-600 text-white py-4 px-6 rounded-xl font-semibold hover:bg-primary-700 transition-all flex items-center justify-center gap-2 shadow-md"
+            className="btn-primary flex items-center justify-center gap-2"
           >
             <FaHome />
             <span>Minhas Reservas</span>
@@ -295,29 +294,29 @@ const BookingConfirmation = () => {
         </div>
 
         {/* Next Steps */}
-        <div className="bg-blue-50 border-2 border-blue-200 rounded-2xl p-8 print:border print:border-blue-300">
-          <h3 className="font-bold text-blue-900 mb-4 text-xl">📋 Próximos Passos</h3>
-          <ul className="space-y-3 text-blue-800">
+        <div className="bg-airbnb-grey-50 border border-airbnb-grey-200 rounded-2xl p-8 print:border print:border-airbnb-grey-300">
+          <h3 className="heading-3 mb-4">Próximos Passos</h3>
+          <ul className="space-y-3 text-airbnb-grey-700">
             <li className="flex items-start gap-3">
-              <FaCheckCircle className="text-blue-600 mt-1 flex-shrink-0" />
+              <FaCheckCircle className="text-rausch mt-1 flex-shrink-0" size={20} />
               <span>
                 <strong>Confirmação:</strong> Você receberá um email com todos os detalhes da reserva
               </span>
             </li>
             <li className="flex items-start gap-3">
-              <FaCheckCircle className="text-blue-600 mt-1 flex-shrink-0" />
+              <FaCheckCircle className="text-rausch mt-1 flex-shrink-0" size={20} />
               <span>
                 <strong>Check-in:</strong> Apresente-se no imóvel no dia {formatDate(booking.check_in)} após as 14:00h
               </span>
             </li>
             <li className="flex items-start gap-3">
-              <FaCheckCircle className="text-blue-600 mt-1 flex-shrink-0" />
+              <FaCheckCircle className="text-rausch mt-1 flex-shrink-0" size={20} />
               <span>
                 <strong>Dúvidas:</strong> Entre em contato conosco pelo WhatsApp a qualquer momento
               </span>
             </li>
             <li className="flex items-start gap-3">
-              <FaCheckCircle className="text-blue-600 mt-1 flex-shrink-0" />
+              <FaCheckCircle className="text-rausch mt-1 flex-shrink-0" size={20} />
               <span>
                 <strong>Avaliação:</strong> Após sua estadia, não esqueça de deixar uma avaliação!
               </span>

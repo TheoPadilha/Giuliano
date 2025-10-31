@@ -1,3 +1,6 @@
+/* Importar o novo sistema de design Airbnb */
+@import './styles/airbnb-design-system.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -9,58 +12,61 @@
 }
 
 body {
-  font-family: "Inter", system-ui, -apple-system, sans-serif;
+  font-family: "Circular", "Inter", system-ui, -apple-system, sans-serif;
   line-height: 1.6;
-  color: #1f2937;
-  background-color: #f9fafb;
+  color: #222222; /* airbnb-black */
+  background-color: #ffffff;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* ===== TEMA VERMELHO - BOTÕES ===== */
+/* ===== SISTEMA DE DESIGN AIRBNB - BOTÕES ===== */
+/* Agora usando rausch ao invés de vermelho */
 .btn-primary {
-  @apply bg-gradient-to-r from-primary-600 to-primary-700 text-white px-6 py-3 rounded-lg font-semibold;
-  @apply hover:from-primary-700 hover:to-primary-800 focus:outline-none focus:ring-4 focus:ring-primary-200;
-  @apply transition-all duration-200 shadow-md hover:shadow-red-strong disabled:opacity-50;
+  @apply bg-rausch text-white px-6 py-3 rounded-lg font-semibold;
+  @apply hover:bg-rausch-dark focus:outline-none focus:ring-4 focus:ring-rausch/20;
+  @apply transition-all duration-200 shadow-md hover:shadow-lg disabled:opacity-50;
   border: none;
   cursor: pointer;
 }
 
 .btn-secondary {
-  @apply bg-white text-primary-700 px-6 py-3 rounded-lg font-semibold border-2 border-primary-600;
-  @apply hover:bg-primary-50 hover:border-primary-700 focus:outline-none focus:ring-4 focus:ring-primary-200;
+  @apply bg-white text-airbnb-black px-6 py-3 rounded-lg font-semibold border-2 border-airbnb-grey-300;
+  @apply hover:bg-airbnb-grey-50 hover:border-airbnb-black focus:outline-none focus:ring-4 focus:ring-airbnb-grey-200;
   @apply transition-all duration-200 shadow-sm hover:shadow-md;
   cursor: pointer;
 }
 
 .btn-accent {
-  @apply bg-gradient-to-r from-accent-500 to-accent-600 text-white px-6 py-3 rounded-lg font-semibold;
-  @apply hover:from-accent-600 hover:to-accent-700 focus:outline-none focus:ring-4 focus:ring-accent-200;
+  @apply bg-gradient-to-r from-rausch to-rausch-dark text-white px-6 py-3 rounded-lg font-semibold;
+  @apply hover:from-rausch-dark hover:to-rausch focus:outline-none focus:ring-4 focus:ring-rausch/20;
   @apply transition-all duration-200 shadow-md hover:shadow-lg;
   border: none;
   cursor: pointer;
 }
 
-/* ===== CARDS TEMA VERMELHO ===== */
+/* ===== CARDS SISTEMA AIRBNB ===== */
 .card {
-  @apply bg-white rounded-xl shadow-md border border-gray-100 p-6;
-  @apply hover:shadow-red-strong hover:border-primary-100 transition-all duration-200;
+  @apply bg-white rounded-xlarge shadow-md border border-airbnb-grey-200 p-6;
+  @apply hover:shadow-xl hover:border-airbnb-grey-300 transition-all duration-200;
 }
 
 .card-featured {
-  @apply border-2 border-primary-200 bg-gradient-to-br from-white to-primary-50;
+  @apply border-2 border-rausch bg-gradient-to-br from-white to-rausch/5;
 }
 
-/* ===== INPUTS TEMA VERMELHO ===== */
+/* ===== INPUTS SISTEMA AIRBNB ===== */
 .form-input {
-  @apply w-full px-4 py-3 border border-gray-300 rounded-lg;
-  @apply focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500;
-  @apply transition-colors duration-200;
+  @apply w-full px-4 py-3 border-2 border-airbnb-grey-300 rounded-xl;
+  @apply focus:outline-none focus:ring-4 focus:ring-rausch/10 focus:border-rausch;
+  @apply transition-all duration-200;
+  @apply placeholder:text-airbnb-grey-400;
 }
 
 .form-select {
-  @apply w-full px-4 py-3 border border-gray-300 rounded-lg bg-white;
-  @apply focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500;
-  @apply transition-colors duration-200 cursor-pointer;
+  @apply w-full px-4 py-3 border-2 border-airbnb-grey-300 rounded-xl bg-white;
+  @apply focus:outline-none focus:ring-4 focus:ring-rausch/10 focus:border-rausch;
+  @apply transition-all duration-200 cursor-pointer;
 }
 
 /* ===== BADGES E STATUS ===== */
@@ -69,43 +75,51 @@ body {
 }
 
 .status-featured {
-  @apply bg-gradient-to-r from-accent-500 to-primary-600 text-white border-none;
+  @apply bg-gradient-to-r from-amber-400 to-yellow-500 text-gray-900 border-none font-bold;
 }
 
-/* ===== HEADER GRADIENT ===== */
+/* ===== HEADER GRADIENT (AIRBNB) ===== */
 .header-gradient {
-  @apply bg-gradient-to-r from-primary-600 via-primary-700 to-accent-600;
+  @apply bg-gradient-to-r from-rausch via-rausch-dark to-rausch;
 }
 
 /* ===== ANIMAÇÕES ===== */
-@keyframes pulse-red {
+@keyframes pulse-rausch {
   0%,
   100% {
-    box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.7);
+    box-shadow: 0 0 0 0 rgba(255, 56, 92, 0.7);
   }
   50% {
-    box-shadow: 0 0 0 10px rgba(220, 38, 38, 0);
+    box-shadow: 0 0 0 10px rgba(255, 56, 92, 0);
   }
 }
 
-.animate-pulse-red {
-  animation: pulse-red 2s infinite;
+.animate-pulse-rausch {
+  animation: pulse-rausch 2s infinite;
 }
 
-/* ===== SCROLLBAR TEMA VERMELHO ===== */
+/* Manter compatibilidade com nome antigo */
+.animate-pulse-red {
+  animation: pulse-rausch 2s infinite;
+}
+
+/* ===== SCROLLBAR SISTEMA AIRBNB ===== */
 ::-webkit-scrollbar {
   width: 8px;
+  height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f5f9;
+  background: #f7f7f7; /* airbnb-grey-50 */
+  border-radius: 999px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, #dc2626 0%, #b91c1c 100%);
-  border-radius: 4px;
+  background: linear-gradient(180deg, #FF385C 0%, #E61E4D 100%);
+  border-radius: 999px;
+  transition: background 200ms ease-in-out;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(180deg, #b91c1c 0%, #991b1b 100%);
+  background: #E61E4D; /* rausch-dark */
 }

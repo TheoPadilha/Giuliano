@@ -561,10 +561,19 @@ const getFeaturedProperties = async (req, res) => {
         {
           model: PropertyPhoto,
           as: "photos",
-          where: { is_main: true },
           required: false,
-          attributes: ["id", "filename", "alt_text"],
+          attributes: [
+            "id",
+            "filename",
+            "alt_text",
+            "is_main",
+            "display_order",
+          ],
           separate: true,
+          order: [
+            ["is_main", "DESC"],
+            ["display_order", "ASC"],
+          ],
         },
       ],
       order: [["created_at", "DESC"]],

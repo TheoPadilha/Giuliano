@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 
 const DateRangePicker = ({ checkIn, checkOut, onChange, onClose, occupiedDates = [] }) => {
@@ -41,7 +41,6 @@ const DateRangePicker = ({ checkIn, checkOut, onChange, onClose, occupiedDates =
   // Verificar se uma data está ocupada
   const isDateOccupied = (date) => {
     if (!date) return false;
-    const dateStr = date.toISOString().split("T")[0];
     return occupiedDates.some((range) => {
       const start = new Date(range.start);
       const end = new Date(range.end);
