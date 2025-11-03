@@ -1,6 +1,7 @@
 // PropertyFiltersPro.jsx - Popup Único com Todos os Filtros
 import { useState } from "react";
 import { FaSearch, FaSlidersH, FaTimes } from "react-icons/fa";
+import { PROPERTY_TYPES } from "../../config/constants";
 
 const PropertyFiltersPro = ({
   filters,
@@ -369,23 +370,23 @@ const PropertyFiltersPro = ({
                     Tipo de propriedade
                   </h3>
 
-                  <div className="grid grid-cols-3 gap-3">
-                    {["Casa", "Apartamento", "Chalé"].map((tipo) => (
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    {Object.entries(PROPERTY_TYPES).map(([value, label]) => (
                       <button
-                        key={`type-${tipo}`}
+                        key={`type-${value}`}
                         onClick={() =>
                           onFiltersChange({
                             ...filters,
-                            type: filters.type === tipo ? "" : tipo,
+                            type: filters.type === value ? "" : value,
                           })
                         }
                         className={`py-4 px-4 text-sm font-medium rounded-lg transition-all ${
-                          filters.type === tipo
+                          filters.type === value
                             ? "bg-airbnb-black text-white"
                             : "bg-white border border-airbnb-grey-300 text-airbnb-grey-600 hover:border-airbnb-black"
                         }`}
                       >
-                        {tipo}
+                        {label}
                       </button>
                     ))}
                   </div>

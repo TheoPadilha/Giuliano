@@ -1,18 +1,40 @@
-import { useState } from "react";
+// DateRangePicker - Estilo Airbnb exato da imagem
+import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 
-const DateRangePicker = ({ checkIn, checkOut, onChange, onClose, occupiedDates = [] }) => {
+const DateRangePicker = ({ checkIn, checkOut, onChange, onClose, occupiedDates = [], compact = false }) => {
+  const { t } = useTranslation();
+  const [activeTab, setActiveTab] = useState("datas"); // datas, meses, flexivel
   const [currentMonth, setCurrentMonth] = useState(new Date());
-  const [selecting, setSelecting] = useState("checkIn"); // 'checkIn' ou 'checkOut'
-  const [tempCheckIn, setTempCheckIn] = useState(checkIn);
-  const [tempCheckOut, setTempCheckOut] = useState(checkOut);
+  const [selecting, setSelecting] = useState("checkIn");
+
+  // Parse date string to local date without timezone issues
+  const parseDate = (dateString) => {
+    if (!dateString) return null;
+    const [year, month, day] = dateString.split('-').map(Number);
+    return new Date(year, month - 1, day);
+  };
+
+  const [tempCheckIn, setTempCheckIn] = useState(checkIn ? parseDate(checkIn) : null);
+  const [tempCheckOut, setTempCheckOut] = useState(checkOut ? parseDate(checkOut) : null);
+  const [flexDays, setFlexDays] = useState(0); // 0 = exatas, 1, 2, 3, 7, 14
+
+  // Atualizar datas temporárias quando props mudarem
+  useEffect(() => {
+    setTempCheckIn(checkIn ? parseDate(checkIn) : null);
+    setTempCheckOut(checkOut ? parseDate(checkOut) : null);
+  }, [checkIn, checkOut]);
 
   const months = [
-    "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
-    "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro",
+    t('calendar.months.january'), t('calendar.months.february'), t('calendar.months.march'),
+    t('calendar.months.april'), t('calendar.months.may'), t('calendar.months.june'),
+    t('calendar.months.july'), t('calendar.months.august'), t('calendar.months.september'),
+    t('calendar.months.october'), t('calendar.months.november'), t('calendar.months.december'),
   ];
 
-  const weekDays = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
+  // Abreviações de 1 letra para os dias (estilo Airbnb)
+  const weekDays = t('calendar.weekDays.short', { returnObjects: true });
 
   // Obter dias do mês
   const getDaysInMonth = (date) => {
@@ -62,6 +84,15 @@ const DateRangePicker = ({ checkIn, checkOut, onChange, onClose, occupiedDates =
     return date > tempCheckIn && date < tempCheckOut;
   };
 
+  // Format date to YYYY-MM-DD without timezone issues
+  const formatDateForStorage = (date) => {
+    if (!date) return null;
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
   // Selecionar data
   const handleDateClick = (date) => {
     if (!date || isPastDate(date) || isDateOccupied(date)) return;
@@ -73,7 +104,11 @@ const DateRangePicker = ({ checkIn, checkOut, onChange, onClose, occupiedDates =
     } else {
       if (date > tempCheckIn) {
         setTempCheckOut(date);
-        onChange({ checkIn: tempCheckIn.toISOString().split("T")[0], checkOut: date.toISOString().split("T")[0] });
+        onChange({
+          checkIn: formatDateForStorage(tempCheckIn),
+          checkOut: formatDateForStorage(date)
+        });
+        // Não fechar automaticamente - removido
       } else {
         setTempCheckIn(date);
         setTempCheckOut(null);
@@ -90,211 +125,228 @@ const DateRangePicker = ({ checkIn, checkOut, onChange, onClose, occupiedDates =
     setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1));
   };
 
-  const days = getDaysInMonth(currentMonth);
-  const nextMonthDays = getDaysInMonth(
-    new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1)
-  );
+  // Renderizar um calendário
+  const renderCalendar = (monthOffset = 0) => {
+    const targetDate = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + monthOffset, 1);
+    const days = getDaysInMonth(targetDate);
+
+    return (
+      <div className="flex-1">
+        {/* Header do mês */}
+        <div className="mb-6 text-center">
+          <h3 className="text-base font-semibold text-airbnb-black dark:text-airbnb-grey-100">
+            {months[targetDate.getMonth()]} de {targetDate.getFullYear()}
+          </h3>
+        </div>
+
+        {/* Dias da semana */}
+        <div className="grid grid-cols-7 gap-1 mb-2">
+          {weekDays.map((day, idx) => (
+            <div
+              key={idx}
+              className={`text-center text-xs font-medium text-airbnb-grey-600 dark:text-airbnb-grey-400 py-2 mx-auto ${
+                compact ? 'w-8' : 'w-10'
+              }`}
+            >
+              {day}
+            </div>
+          ))}
+        </div>
+
+        {/* Grid de dias */}
+        <div className="grid grid-cols-7 gap-1">
+          {days.map((date, index) => {
+            if (!date) {
+              return <div key={index} className={compact ? "w-8 h-8" : "w-10 h-10"} />;
+            }
+
+            const isOccupied = isDateOccupied(date);
+            const isPast = isPastDate(date);
+            const isDisabled = isPast || isOccupied;
+            const isCheckIn = tempCheckIn && date.toDateString() === tempCheckIn.toDateString();
+            const isCheckOut = tempCheckOut && date.toDateString() === tempCheckOut.toDateString();
+            const isSelected = isCheckIn || isCheckOut;
+            const inRange = isInRange(date);
+
+            return (
+              <button
+                key={index}
+                onClick={() => handleDateClick(date)}
+                disabled={isDisabled}
+                className={`
+                  relative flex items-center justify-center
+                  ${compact ? 'w-8 h-8 text-xs' : 'w-10 h-10 text-sm'}
+                  font-normal transition-all duration-200
+                  ${isDisabled
+                    ? "text-airbnb-grey-300 dark:text-airbnb-grey-600 cursor-not-allowed line-through"
+                    : "text-airbnb-black dark:text-airbnb-grey-100 hover:border hover:border-airbnb-black dark:hover:border-airbnb-grey-300 rounded-full cursor-pointer"
+                  }
+                  ${isSelected
+                    ? "bg-airbnb-black dark:bg-white text-white dark:text-airbnb-black rounded-full font-semibold"
+                    : ""
+                  }
+                  ${inRange
+                    ? "bg-airbnb-grey-100 dark:bg-airbnb-grey-800"
+                    : ""
+                  }
+                  ${isCheckIn
+                    ? "rounded-l-full rounded-r-none"
+                    : ""
+                  }
+                  ${isCheckOut
+                    ? "rounded-r-full rounded-l-none"
+                    : ""
+                  }
+                `}
+              >
+                {date.getDate()}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
 
   return (
-    <div className="p-6 w-[700px]">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h3 className="text-lg font-semibold text-gray-800">Selecione as datas</h3>
-          <p className="text-sm text-gray-500">
-            {selecting === "checkIn" ? "Escolha o check-in" : "Escolha o check-out"}
-          </p>
-        </div>
+    <div className={`bg-white dark:bg-airbnb-grey-900 rounded-3xl shadow-2xl transition-all ${
+      compact
+        ? "p-4 md:p-5 w-full max-w-[700px]"
+        : "p-6 md:p-8 w-[95vw] md:w-auto md:min-w-[850px]"
+    }`}>
+      {/* Navegação de meses (fora dos calendários, centralizada) */}
+      <div className={`flex items-center justify-between ${compact ? 'mb-4' : 'mb-6'}`}>
         <button
-          onClick={onClose}
-          className="text-gray-400 hover:text-gray-600 text-2xl"
+          onClick={goToPreviousMonth}
+          className="p-3 hover:bg-airbnb-grey-100 dark:hover:bg-airbnb-grey-800 rounded-full transition-all"
+          aria-label="Mês anterior"
         >
-          ×
+          <FaChevronLeft className="text-airbnb-black dark:text-airbnb-grey-100" />
+        </button>
+
+        <div className="flex-1" />
+
+        <button
+          onClick={goToNextMonth}
+          className="p-3 hover:bg-airbnb-grey-100 dark:hover:bg-airbnb-grey-800 rounded-full transition-all"
+          aria-label="Próximo mês"
+        >
+          <FaChevronRight className="text-airbnb-black dark:text-airbnb-grey-100" />
         </button>
       </div>
 
-      {/* Datas selecionadas */}
-      <div className="grid grid-cols-2 gap-4 mb-6">
-        <div className="border-2 border-gray-300 rounded-xl p-3 hover:border-primary-300 transition-colors">
-          <p className="text-xs text-gray-500 mb-1">Check-in</p>
-          <p className="font-semibold text-gray-800">
-            {tempCheckIn
-              ? tempCheckIn.toLocaleDateString("pt-BR", {
-                  day: "numeric",
-                  month: "long",
-                  year: "numeric",
-                })
-              : "Selecione"}
-          </p>
-        </div>
-        <div className="border-2 border-gray-300 rounded-xl p-3 hover:border-primary-300 transition-colors">
-          <p className="text-xs text-gray-500 mb-1">Check-out</p>
-          <p className="font-semibold text-gray-800">
-            {tempCheckOut
-              ? tempCheckOut.toLocaleDateString("pt-BR", {
-                  day: "numeric",
-                  month: "long",
-                  year: "numeric",
-                })
-              : "Selecione"}
-          </p>
-        </div>
+      {/* Dois calendários lado a lado */}
+      <div className={`flex flex-col md:flex-row ${
+        compact ? 'gap-4 md:gap-8 mb-4' : 'gap-6 md:gap-12 mb-6'
+      }`}>
+        {renderCalendar(0)}
+        {renderCalendar(1)}
       </div>
 
-      {/* Calendários (2 meses side-by-side) */}
-      <div className="grid grid-cols-2 gap-6">
-        {/* Mês atual */}
-        <div>
-          <div className="flex items-center justify-between mb-4">
-            <button
-              onClick={goToPreviousMonth}
-              className="p-2 hover:bg-primary-100 text-gray-600 hover:text-primary-600 rounded-full transition-all duration-200"
-            >
-              <FaChevronLeft />
-            </button>
-            <span className="font-semibold text-gray-800">
-              {months[currentMonth.getMonth()]} {currentMonth.getFullYear()}
-            </span>
-            <div className="w-8" /> {/* Spacer */}
-          </div>
-
-          {/* Dias da semana */}
-          <div className="grid grid-cols-7 gap-1 mb-2">
-            {weekDays.map((day) => (
-              <div key={day} className="text-center text-xs font-medium text-gray-500 py-2">
-                {day}
-              </div>
-            ))}
-          </div>
-
-          {/* Dias do mês */}
-          <div className="grid grid-cols-7 gap-1">
-            {days.map((date, index) => {
-              if (!date) {
-                return <div key={index} />;
+      {/* Filtros rápidos de flexibilidade */}
+      <div className="border-t border-airbnb-grey-200 dark:border-airbnb-grey-700 pt-6">
+        <div className="flex items-center gap-3 flex-wrap">
+          <button
+            onClick={() => setFlexDays(0)}
+            className={`
+              px-4 py-2 rounded-full border transition-all text-sm font-medium
+              ${flexDays === 0
+                ? "bg-airbnb-black dark:bg-white text-white dark:text-airbnb-black border-airbnb-black dark:border-white"
+                : "border-airbnb-grey-300 dark:border-airbnb-grey-600 text-airbnb-black dark:text-airbnb-grey-100 hover:border-airbnb-black dark:hover:border-white"
               }
+            `}
+          >
+            {t('calendar.exactDates')}
+          </button>
 
-              const isOccupied = isDateOccupied(date);
-              const isPast = isPastDate(date);
-              const isDisabled = isPast || isOccupied;
-              const isSelected =
-                (tempCheckIn && date.toDateString() === tempCheckIn.toDateString()) ||
-                (tempCheckOut && date.toDateString() === tempCheckOut.toDateString());
-              const inRange = isInRange(date);
+          <button
+            onClick={() => setFlexDays(1)}
+            className={`
+              px-4 py-2 rounded-full border transition-all text-sm font-medium
+              ${flexDays === 1
+                ? "bg-airbnb-black dark:bg-white text-white dark:text-airbnb-black border-airbnb-black dark:border-white"
+                : "border-airbnb-grey-300 dark:border-airbnb-grey-600 text-airbnb-black dark:text-airbnb-grey-100 hover:border-airbnb-black dark:hover:border-white"
+              }
+            `}
+          >
+            {t('calendar.plusDays', { count: 1 })}
+          </button>
 
-              return (
-                <button
-                  key={index}
-                  onClick={() => handleDateClick(date)}
-                  disabled={isDisabled}
-                  className={`
-                    aspect-square rounded-lg text-sm font-medium transition-all
-                    ${isDisabled ? "text-gray-300 cursor-not-allowed" : "hover:bg-primary-100"}
-                    ${isSelected ? "bg-gradient-to-br from-primary-600 to-primary-700 text-white hover:from-primary-700 hover:to-primary-800 shadow-md" : ""}
-                    ${inRange ? "bg-primary-50 text-primary-600" : ""}
-                    ${!isDisabled && !isSelected && !inRange ? "text-gray-700" : ""}
-                  `}
-                >
-                  {date.getDate()}
-                </button>
-              );
-            })}
-          </div>
+          <button
+            onClick={() => setFlexDays(2)}
+            className={`
+              px-4 py-2 rounded-full border transition-all text-sm font-medium
+              ${flexDays === 2
+                ? "bg-airbnb-black dark:bg-white text-white dark:text-airbnb-black border-airbnb-black dark:border-white"
+                : "border-airbnb-grey-300 dark:border-airbnb-grey-600 text-airbnb-black dark:text-airbnb-grey-100 hover:border-airbnb-black dark:hover:border-white"
+              }
+            `}
+          >
+            {t('calendar.plusDays', { count: 2 })}
+          </button>
+
+          <button
+            onClick={() => setFlexDays(3)}
+            className={`
+              px-4 py-2 rounded-full border transition-all text-sm font-medium
+              ${flexDays === 3
+                ? "bg-airbnb-black dark:bg-white text-white dark:text-airbnb-black border-airbnb-black dark:border-white"
+                : "border-airbnb-grey-300 dark:border-airbnb-grey-600 text-airbnb-black dark:text-airbnb-grey-100 hover:border-airbnb-black dark:hover:border-white"
+              }
+            `}
+          >
+            {t('calendar.plusDays', { count: 3 })}
+          </button>
+
+          <button
+            onClick={() => setFlexDays(7)}
+            className={`
+              px-4 py-2 rounded-full border transition-all text-sm font-medium
+              ${flexDays === 7
+                ? "bg-airbnb-black dark:bg-white text-white dark:text-airbnb-black border-airbnb-black dark:border-white"
+                : "border-airbnb-grey-300 dark:border-airbnb-grey-600 text-airbnb-black dark:text-airbnb-grey-100 hover:border-airbnb-black dark:hover:border-white"
+              }
+            `}
+          >
+            {t('calendar.plusDays', { count: 7 })}
+          </button>
+
+          <button
+            onClick={() => setFlexDays(14)}
+            className={`
+              px-4 py-2 rounded-full border transition-all text-sm font-medium
+              ${flexDays === 14
+                ? "bg-airbnb-black dark:bg-white text-white dark:text-airbnb-black border-airbnb-black dark:border-white"
+                : "border-airbnb-grey-300 dark:border-airbnb-grey-600 text-airbnb-black dark:text-airbnb-grey-100 hover:border-airbnb-black dark:hover:border-white"
+              }
+            `}
+          >
+            {t('calendar.plusDays', { count: 14 })}
+          </button>
         </div>
 
-        {/* Próximo mês */}
-        <div>
-          <div className="flex items-center justify-between mb-4">
-            <div className="w-8" /> {/* Spacer */}
-            <span className="font-semibold text-gray-800">
-              {months[(currentMonth.getMonth() + 1) % 12]}{" "}
-              {currentMonth.getMonth() === 11
-                ? currentMonth.getFullYear() + 1
-                : currentMonth.getFullYear()}
-            </span>
+        {flexDays > 0 && (
+          <p className="text-sm text-airbnb-grey-600 dark:text-airbnb-grey-400 mt-4">
+            Buscando datas {flexDays} {flexDays === 1 ? 'dia' : 'dias'} antes ou depois das selecionadas
+          </p>
+        )}
+
+        {/* Botão Limpar */}
+        {(tempCheckIn || tempCheckOut) && (
+          <div className="mt-4 flex justify-end">
             <button
-              onClick={goToNextMonth}
-              className="p-2 hover:bg-primary-100 text-gray-600 hover:text-primary-600 rounded-full transition-all duration-200"
+              onClick={() => {
+                setTempCheckIn(null);
+                setTempCheckOut(null);
+                setSelecting("checkIn");
+                onChange({ checkIn: null, checkOut: null });
+              }}
+              className="px-4 py-2 text-sm font-medium text-airbnb-black dark:text-white hover:bg-airbnb-grey-100 dark:hover:bg-airbnb-grey-800 rounded-lg transition-all underline"
             >
-              <FaChevronRight />
+              {t('common.clear')}
             </button>
           </div>
-
-          {/* Dias da semana */}
-          <div className="grid grid-cols-7 gap-1 mb-2">
-            {weekDays.map((day) => (
-              <div key={day} className="text-center text-xs font-medium text-gray-500 py-2">
-                {day}
-              </div>
-            ))}
-          </div>
-
-          {/* Dias do próximo mês */}
-          <div className="grid grid-cols-7 gap-1">
-            {nextMonthDays.map((date, index) => {
-              if (!date) {
-                return <div key={index} />;
-              }
-
-              const isOccupied = isDateOccupied(date);
-              const isPast = isPastDate(date);
-              const isDisabled = isPast || isOccupied;
-              const isSelected =
-                (tempCheckIn && date.toDateString() === tempCheckIn.toDateString()) ||
-                (tempCheckOut && date.toDateString() === tempCheckOut.toDateString());
-              const inRange = isInRange(date);
-
-              return (
-                <button
-                  key={index}
-                  onClick={() => handleDateClick(date)}
-                  disabled={isDisabled}
-                  className={`
-                    aspect-square rounded-lg text-sm font-medium transition-all
-                    ${isDisabled ? "text-gray-300 cursor-not-allowed" : "hover:bg-primary-100"}
-                    ${isSelected ? "bg-gradient-to-br from-primary-600 to-primary-700 text-white hover:from-primary-700 hover:to-primary-800 shadow-md" : ""}
-                    ${inRange ? "bg-primary-50 text-primary-600" : ""}
-                    ${!isDisabled && !isSelected && !inRange ? "text-gray-700" : ""}
-                  `}
-                >
-                  {date.getDate()}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      </div>
-
-      {/* Legenda */}
-      <div className="flex items-center gap-6 mt-6 text-sm">
-        <div className="flex items-center gap-2">
-          <div className="w-4 h-4 bg-gradient-to-br from-primary-600 to-primary-700 rounded shadow-sm" />
-          <span className="text-gray-600">Selecionado</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="w-4 h-4 bg-gray-200 rounded" />
-          <span className="text-gray-600">Indisponível</span>
-        </div>
-      </div>
-
-      {/* Botões */}
-      <div className="flex items-center justify-end gap-3 mt-6">
-        <button
-          onClick={() => {
-            setTempCheckIn(null);
-            setTempCheckOut(null);
-            setSelecting("checkIn");
-          }}
-          className="px-5 py-2.5 text-gray-600 hover:bg-gray-100 rounded-xl transition-all duration-200 font-medium"
-        >
-          Limpar
-        </button>
-        <button
-          onClick={onClose}
-          className="px-6 py-2.5 bg-gradient-to-r from-primary-600 to-primary-700 text-white rounded-xl hover:from-primary-700 hover:to-primary-800 transition-all duration-200 font-semibold shadow-md hover:shadow-lg"
-        >
-          Confirmar
-        </button>
+        )}
       </div>
     </div>
   );

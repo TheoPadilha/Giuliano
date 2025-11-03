@@ -1,9 +1,39 @@
+import { useEffect } from "react";
 import { FiMinus, FiPlus } from "react-icons/fi";
 
-const GuestsPicker = ({ guests, onChange }) => {
-  const { adults = 0, children = 0, infants = 0, pets = 0 } = guests;
+const GuestsPicker = ({ guests, onChange, maxGuests = 16, allowsPets = false, onClose }) => {
+  const { adults = 1, children = 0, infants = 0, pets = 0 } = guests;
+
+  // Handler para tecla ESC
+  useEffect(() => {
+    if (!onClose) return;
+
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        onClose();
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [onClose]);
 
   const updateGuests = (type, value) => {
+    // Verificar limites antes de atualizar
+    if (type === "adults" || type === "children") {
+      const newAdults = type === "adults" ? value : adults;
+      const newChildren = type === "children" ? value : children;
+      const newTotal = newAdults + newChildren;
+
+      // Não permitir ultrapassar o limite máximo
+      if (newTotal > maxGuests) return;
+
+      // Adultos: mínimo 1
+      if (type === "adults" && value < 1) return;
+    }
+
     onChange({ ...guests, [type]: value });
   };
 
@@ -11,9 +41,24 @@ const GuestsPicker = ({ guests, onChange }) => {
     return adults + children;
   };
 
+  // Verificar se atingiu o limite máximo
+  const isAtMaxCapacity = () => {
+    return getTotalGuests() >= maxGuests;
+  };
+
   return (
-    <div className="absolute top-full right-0 mt-2 w-[380px] bg-white border border-airbnb-grey-200 rounded-xlarge shadow-elevation-high z-50">
-      <div className="p-6">
+    <>
+      {/* Overlay para fechar ao clicar fora */}
+      {onClose && (
+        <div
+          className="fixed inset-0 z-40"
+          onClick={onClose}
+        />
+      )}
+
+      {/* Popup do Picker - Estilo Airbnb */}
+      <div className="absolute top-full right-0 mt-2 w-[380px] bg-white border border-airbnb-grey-200 rounded-xlarge shadow-elevation-high z-50">
+        <div className="p-6">
         {/* Adultos */}
         <GuestRow
           label="Adultos"
@@ -21,19 +66,21 @@ const GuestsPicker = ({ guests, onChange }) => {
           value={adults}
           onIncrement={() => updateGuests("adults", adults + 1)}
           onDecrement={() => updateGuests("adults", adults - 1)}
-          min={0}
-          max={16}
+          min={1}
+          max={maxGuests}
+          disabled={isAtMaxCapacity()}
         />
 
         {/* Crianças */}
         <GuestRow
           label="Crianças"
-          description="De 2 a 12 anos"
+          description="2 a 12 anos"
           value={children}
           onIncrement={() => updateGuests("children", children + 1)}
           onDecrement={() => updateGuests("children", children - 1)}
           min={0}
-          max={15}
+          max={maxGuests}
+          disabled={isAtMaxCapacity()}
         />
 
         {/* Bebês */}
@@ -47,23 +94,43 @@ const GuestsPicker = ({ guests, onChange }) => {
           max={5}
         />
 
-        {/* Animais de Estimação */}
-        <GuestRow
-          label="Animais de estimação"
-          description={
-            <button className="text-sm text-airbnb-black underline hover:text-airbnb-grey-600 transition-colors">
-              Vai levar um animal de serviço?
-            </button>
-          }
-          value={pets}
-          onIncrement={() => updateGuests("pets", pets + 1)}
-          onDecrement={() => updateGuests("pets", pets - 1)}
-          min={0}
-          max={5}
-          isLast
-        />
+        {/* Animais de Estimação - Apenas se permitido */}
+        {allowsPets && (
+          <GuestRow
+            label="Animais de estimação"
+            description={
+              <button className="text-sm text-airbnb-black underline hover:text-airbnb-grey-600 transition-colors">
+                Vai levar um animal de serviço?
+              </button>
+            }
+            value={pets}
+            onIncrement={() => updateGuests("pets", pets + 1)}
+            onDecrement={() => updateGuests("pets", pets - 1)}
+            min={0}
+            max={5}
+            isLast
+          />
+        )}
+
+        {/* Mensagem de rodapé com limite */}
+        {!allowsPets && (
+          <div className="pt-4 border-t border-airbnb-grey-200">
+            <p className="text-sm text-airbnb-grey-500">
+              Este espaço acomoda no máximo <span className="font-semibold text-airbnb-black">{maxGuests} hóspedes</span>, não incluindo bebês.
+            </p>
+          </div>
+        )}
+
+        {allowsPets && (
+          <div className="pt-4 border-t border-airbnb-grey-200 mt-4">
+            <p className="text-sm text-airbnb-grey-500">
+              Este espaço acomoda no máximo <span className="font-semibold text-airbnb-black">{maxGuests} hóspedes</span>, não incluindo bebês.
+            </p>
+          </div>
+        )}
       </div>
     </div>
+    </>
   );
 };
 
@@ -77,6 +144,7 @@ const GuestRow = ({
   min = 0,
   max = 16,
   isLast = false,
+  disabled = false,
 }) => {
   return (
     <div
@@ -111,9 +179,9 @@ const GuestRow = ({
 
         <button
           onClick={onIncrement}
-          disabled={value >= max}
+          disabled={value >= max || disabled}
           className={`w-8 h-8 rounded-full border flex items-center justify-center transition-all ${
-            value >= max
+            value >= max || disabled
               ? "border-airbnb-grey-200 text-airbnb-grey-300 cursor-not-allowed"
               : "border-airbnb-grey-400 text-airbnb-grey-600 hover:border-airbnb-black hover:text-airbnb-black"
           }`}

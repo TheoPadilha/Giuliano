@@ -11,6 +11,12 @@ export default {
           light: "#FF5A5F",
           dark: "#E61E4D",
         },
+        // Airbnb Babu (Verde) - Cor de Sucesso/Confirmação
+        babu: {
+          DEFAULT: "#00A699",
+          light: "#26A69A",
+          dark: "#008489",
+        },
         // Paleta de Cinzas do Airbnb
         airbnb: {
           black: "#222222",
@@ -19,9 +25,13 @@ export default {
             50: "#F7F7F7",
             100: "#EBEBEB",
             200: "#DDDDDD",
-            300: "#B0B0B0",
-            400: "#717171",
-            500: "#484848",
+            300: "#C4C4C4",
+            400: "#B0B0B0",
+            500: "#8A8A8A",
+            600: "#717171",
+            700: "#717171",
+            800: "#5E5E5E",
+            900: "#484848",
             1000: "#222222",
           },
           blue: "#428BFF",

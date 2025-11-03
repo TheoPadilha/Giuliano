@@ -1,37 +1,33 @@
-import i18n from "i18next";
-import { initReactI18next } from "react-i18next";
-import LanguageDetector from "i18next-browser-languagedetector";
+import i18n from 'i18next';
+import { initReactI18next } from 'react-i18next';
+import LanguageDetector from 'i18next-browser-languagedetector';
 
-import translationEN from "./locales/en/translation.json";
-import translationES from "./locales/es/translation.json";
-import translationPT from "./locales/pt/translation.json";
+import translationPT from './locales/pt-BR/translation.json';
+import translationEN from './locales/en/translation.json';
 
 const resources = {
+  'pt-BR': {
+    translation: translationPT
+  },
   en: {
-    translation: translationEN,
-  },
-  es: {
-    translation: translationES,
-  },
-  pt: {
-    translation: translationPT,
-  },
+    translation: translationEN
+  }
 };
 
 i18n
-  .use(LanguageDetector) // Detecta o idioma do navegador
-  .use(initReactI18next) // Passa o i18n para o react-i18next
+  .use(LanguageDetector)
+  .use(initReactI18next)
   .init({
     resources,
-    fallbackLng: "pt", // Idioma padrão caso o detectado não exista
+    fallbackLng: 'pt-BR',
     debug: false,
     interpolation: {
-      escapeValue: false, // React já protege contra XSS
+      escapeValue: false
     },
     detection: {
-      order: ["localStorage", "navigator"], // Ordem de detecção
-      caches: ["localStorage"], // Armazenar o idioma no localStorage
-    },
+      order: ['localStorage', 'navigator'],
+      caches: ['localStorage']
+    }
   });
 
 export default i18n;

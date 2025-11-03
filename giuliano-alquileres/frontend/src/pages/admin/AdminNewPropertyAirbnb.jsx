@@ -5,36 +5,36 @@ import { motion, AnimatePresence } from "framer-motion";
 import AdminLayout from "../../components/admin/AdminLayout";
 import api from "../../services/api";
 import { useAuth } from "../../contexts/AuthContext";
+import CITIES_SC from "../../data/cities";
 import {
-  FaHome,
-  FaMapMarkerAlt,
-  FaDollarSign,
-  FaImages,
-  FaCheckCircle,
-  FaArrowLeft,
-  FaArrowRight,
-  FaBed,
-  FaBath,
-  FaUsers,
-  FaMapPin,
-  FaStar,
-  FaWifi,
-  FaParking,
-  FaSwimmingPool,
-  FaTv,
-  FaSnowflake,
-  FaShieldAlt,
-  FaDumbbell,
-  FaCocktail,
-  FaBuilding,
-  FaCrown,
-  FaGem,
-  FaHouseUser,
-  FaSearch,
-  FaPlus,
-  FaTrash,
-  FaEye
-} from "react-icons/fa";
+  Home,
+  MapPin,
+  DollarSign,
+  Images,
+  CheckCircle2,
+  ArrowLeft,
+  ArrowRight,
+  Bed,
+  Bath,
+  Users,
+  Star,
+  Wifi,
+  Car,
+  Waves,
+  Tv,
+  Snowflake,
+  ShieldCheck,
+  Dumbbell,
+  Martini,
+  Building2,
+  Crown,
+  Gem,
+  House,
+  Search,
+  Plus,
+  Trash2,
+  Eye
+} from "lucide-react";
 
 // Import Steps Components
 import {
@@ -48,33 +48,33 @@ import {
 
 // Wizard Steps
 const STEPS = [
-  { id: 1, title: "Tipo e Básico", icon: FaHome, description: "Informações principais" },
-  { id: 2, title: "Localização", icon: FaMapMarkerAlt, description: "Endereço e mapa" },
-  { id: 3, title: "Detalhes", icon: FaBed, description: "Quartos, banheiros e capacidade" },
-  { id: 4, title: "Comodidades", icon: FaStar, description: "Amenidades do imóvel" },
-  { id: 5, title: "Preços", icon: FaDollarSign, description: "Valores e temporadas" },
-  { id: 6, title: "Fotos", icon: FaImages, description: "Imagens do imóvel" },
-  { id: 7, title: "Revisão", icon: FaCheckCircle, description: "Confirmar e publicar" }
+  { id: 1, title: "Tipo e Básico", icon: Home, description: "Informações principais" },
+  { id: 2, title: "Localização", icon: MapPin, description: "Endereço e mapa" },
+  { id: 3, title: "Detalhes", icon: Bed, description: "Quartos, banheiros e capacidade" },
+  { id: 4, title: "Comodidades", icon: Star, description: "Amenidades do imóvel" },
+  { id: 5, title: "Preços", icon: DollarSign, description: "Valores e temporadas" },
+  { id: 6, title: "Fotos", icon: Images, description: "Imagens do imóvel" },
+  { id: 7, title: "Revisão", icon: CheckCircle2, description: "Confirmar e publicar" }
 ];
 
 // Ícones para tipos de propriedade
 const PROPERTY_TYPE_ICONS = {
-  apartment: { icon: FaBuilding, label: "Apartamento", color: "blue" },
-  house: { icon: FaHouseUser, label: "Casa", color: "green" },
-  penthouse: { icon: FaCrown, label: "Cobertura", color: "purple" },
-  studio: { icon: FaGem, label: "Studio", color: "pink" }
+  apartment: { icon: Building2, label: "Apartamento" },
+  house: { icon: House, label: "Casa" },
+  penthouse: { icon: Crown, label: "Cobertura" },
+  studio: { icon: Gem, label: "Studio" }
 };
 
 // Ícones para amenidades
 const AMENITY_ICONS = {
-  wifi: FaWifi,
-  parking: FaParking,
-  pool: FaSwimmingPool,
-  tv: FaTv,
-  ac: FaSnowflake,
-  security: FaShieldAlt,
-  gym: FaDumbbell,
-  bar: FaCocktail
+  wifi: Wifi,
+  parking: Car,
+  pool: Waves,
+  tv: Tv,
+  ac: Snowflake,
+  security: ShieldCheck,
+  gym: Dumbbell,
+  bar: Martini
 };
 
 const AdminNewPropertyAirbnb = () => {
@@ -113,10 +113,29 @@ const AdminNewPropertyAirbnb = () => {
     const fetchData = async () => {
       try {
         const [citiesRes, amenitiesRes] = await Promise.all([
-          api.get("/api/utilities/cities"),
+          api.get("/api/utilities/cities").catch(() => ({ data: { cities: [] } })),
           api.get("/api/utilities/amenities"),
         ]);
-        setCities(citiesRes.data.cities || []);
+
+        // Se o backend não retornar cidades, usar arquivo local
+        const backendCities = citiesRes.data.cities || [];
+        const localCities = CITIES_SC.map((city, index) => ({
+          id: index + 1000, // IDs temporários para cidades locais
+          name: city.name,
+          state: city.state,
+          region: city.region
+        }));
+
+        // Combinar cidades do backend com locais, removendo duplicatas
+        const allCities = [...backendCities];
+        localCities.forEach(localCity => {
+          if (!allCities.find(c => c.name === localCity.name)) {
+            allCities.push(localCity);
+          }
+        });
+
+        // Ordenar alfabeticamente
+        setCities(allCities.sort((a, b) => a.name.localeCompare(b.name)));
         setAmenities(amenitiesRes.data.amenities || []);
       } catch (err) {
         console.error("Erro ao carregar dados:", err);
@@ -147,31 +166,64 @@ const AdminNewPropertyAirbnb = () => {
   const handleGeocodeAddress = async () => {
     if (!formData.address || !formData.city_id) {
       setError("Preencha o endereço e selecione a cidade primeiro");
+      setTimeout(() => setError(""), 5000);
       return;
     }
 
     const selectedCity = cities.find(c => c.id === parseInt(formData.city_id));
-    if (!selectedCity) return;
+    if (!selectedCity) {
+      setError("Cidade não encontrada");
+      setTimeout(() => setError(""), 5000);
+      return;
+    }
 
-    const fullAddress = `${formData.address}, ${selectedCity.name}, ${selectedCity.state}, Brasil`;
+    const fullAddress = `${formData.address}, ${formData.neighborhood || ''}, ${selectedCity.name}, ${selectedCity.state}, Brasil`;
 
     try {
-      // Simulação - você precisará adicionar a Google Maps API key
-      // const response = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(fullAddress)}&key=YOUR_API_KEY`);
-      // const data = await response.json();
+      setLoading(true);
+      setError("");
 
-      // Por enquanto, coordenadas simuladas
-      setFormData(prev => ({
-        ...prev,
-        latitude: "-26.9944",
-        longitude: "-48.6386"
-      }));
+      const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+      if (!apiKey) {
+        setError("Chave da API do Google Maps não configurada. Entre em contato com o suporte.");
+        setTimeout(() => setError(""), 7000);
+        setLoading(false);
+        return;
+      }
 
-      setSuccess("Localização encontrada no mapa!");
-      setTimeout(() => setSuccess(""), 3000);
+      const response = await fetch(
+        `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(fullAddress)}&key=${apiKey}`
+      );
+
+      const data = await response.json();
+
+      if (data.status === "OK" && data.results && data.results.length > 0) {
+        const location = data.results[0].geometry.location;
+
+        setFormData(prev => ({
+          ...prev,
+          latitude: location.lat.toFixed(8),
+          longitude: location.lng.toFixed(8)
+        }));
+
+        setSuccess(`Coordenadas encontradas! Latitude: ${location.lat.toFixed(6)}, Longitude: ${location.lng.toFixed(6)}`);
+        setTimeout(() => setSuccess(""), 5000);
+      } else if (data.status === "ZERO_RESULTS") {
+        setError("Não foi possível obter a localização exata. Verifique o endereço ou insira manualmente as coordenadas de latitude e longitude.");
+        setTimeout(() => setError(""), 8000);
+      } else if (data.status === "REQUEST_DENIED") {
+        setError("Acesso negado à API do Google Maps. Verifique a chave da API ou entre em contato com o suporte.");
+        setTimeout(() => setError(""), 8000);
+      } else {
+        setError(`Erro ao buscar localização (${data.status}). Tente novamente ou insira as coordenadas manualmente.`);
+        setTimeout(() => setError(""), 8000);
+      }
     } catch (err) {
       console.error("Erro ao buscar coordenadas:", err);
-      setError("Erro ao buscar localização. Insira manualmente.");
+      setError("Erro de conexão ao buscar localização. Verifique sua internet ou insira as coordenadas manualmente.");
+      setTimeout(() => setError(""), 8000);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -179,26 +231,51 @@ const AdminNewPropertyAirbnb = () => {
     const files = Array.from(e.target.files);
     if (files.length === 0) return;
 
-    const formDataPhotos = new FormData();
-    files.forEach(file => formDataPhotos.append("photos", file));
+    // Validações de arquivo
+    const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB
+    const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'];
+
+    // Validar cada arquivo
+    for (const file of files) {
+      if (!ALLOWED_TYPES.includes(file.type)) {
+        setError(`Arquivo "${file.name}" tem formato inválido. Use apenas JPG, PNG ou WEBP.`);
+        setTimeout(() => setError(""), 5000);
+        return;
+      }
+      if (file.size > MAX_FILE_SIZE) {
+        const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
+        setError(`Arquivo "${file.name}" é muito grande (${sizeMB}MB). Tamanho máximo: 20MB.`);
+        setTimeout(() => setError(""), 5000);
+        return;
+      }
+    }
+
+    if (uploadedPhotos.length + files.length > 20) {
+      setError(`Você já tem ${uploadedPhotos.length} foto(s). Máximo de 20 fotos permitidas no total.`);
+      setTimeout(() => setError(""), 5000);
+      return;
+    }
 
     try {
       setLoading(true);
-      // Aqui você faria o upload real
-      // const response = await api.post("/api/uploads/property-photos", formDataPhotos);
 
-      // Simulação
+      // Criar preview local das fotos com URL temporária
       const mockPhotos = files.map((file, index) => ({
         id: Date.now() + index,
         url: URL.createObjectURL(file),
-        is_main: uploadedPhotos.length === 0 && index === 0
+        file: file, // Guardar arquivo para upload posterior
+        is_main: uploadedPhotos.length === 0 && index === 0,
+        original_name: file.name,
+        size: (file.size / (1024 * 1024)).toFixed(2) // tamanho em MB
       }));
 
       setUploadedPhotos(prev => [...prev, ...mockPhotos]);
-      setSuccess(`${files.length} foto(s) adicionada(s)!`);
-      setTimeout(() => setSuccess(""), 3000);
+      setSuccess(`${files.length} foto(s) adicionada(s) com sucesso! Total: ${uploadedPhotos.length + files.length} foto(s).`);
+      setTimeout(() => setSuccess(""), 4000);
     } catch (err) {
-      setError("Erro ao fazer upload das fotos");
+      console.error("Erro ao processar fotos:", err);
+      setError("Erro ao processar as fotos. Tente novamente.");
+      setTimeout(() => setError(""), 5000);
     } finally {
       setLoading(false);
     }
@@ -216,17 +293,144 @@ const AdminNewPropertyAirbnb = () => {
   };
 
   const validateStep = (step) => {
+    // Limpar erros anteriores
+    setError("");
+
     switch (step) {
-      case 1:
-        return formData.title.length >= 5 && formData.type;
-      case 2:
-        return formData.city_id && formData.address.length >= 5;
-      case 3:
-        return formData.max_guests >= 1 && formData.bedrooms >= 0 && formData.bathrooms >= 1;
-      case 5:
-        return formData.price_per_night > 0;
-      case 6:
-        return uploadedPhotos.length >= 1;
+      case 1: // Informações Básicas
+        if (!formData.title || formData.title.trim().length < 5) {
+          setError("❌ O título deve ter no mínimo 5 caracteres");
+          setTimeout(() => setError(""), 5000);
+          return false;
+        }
+        if (formData.title.trim().length > 200) {
+          setError("❌ O título não pode ter mais de 200 caracteres");
+          setTimeout(() => setError(""), 5000);
+          return false;
+        }
+        if (!formData.type) {
+          setError("❌ Selecione o tipo de imóvel");
+          setTimeout(() => setError(""), 5000);
+          return false;
+        }
+        if (formData.description && formData.description.trim().length > 0 && formData.description.trim().length < 20) {
+          setError("❌ A descrição deve ter no mínimo 20 caracteres ou ficar vazia");
+          setTimeout(() => setError(""), 5000);
+          return false;
+        }
+        return true;
+
+      case 2: // Localização
+        if (!formData.city_id) {
+          setError("❌ Selecione uma cidade da lista");
+          setTimeout(() => setError(""), 5000);
+          return false;
+        }
+        if (!formData.address || formData.address.trim().length < 5) {
+          setError("❌ O endereço deve ter no mínimo 5 caracteres");
+          setTimeout(() => setError(""), 5000);
+          return false;
+        }
+        if (!formData.neighborhood || formData.neighborhood.trim().length < 2) {
+          setError("❌ Informe o bairro (mínimo 2 caracteres)");
+          setTimeout(() => setError(""), 5000);
+          return false;
+        }
+        // Validação opcional de coordenadas
+        if (formData.latitude || formData.longitude) {
+          const lat = parseFloat(formData.latitude);
+          const lng = parseFloat(formData.longitude);
+          if (isNaN(lat) || lat < -90 || lat > 90) {
+            setError("❌ Latitude inválida (deve estar entre -90 e 90)");
+            setTimeout(() => setError(""), 5000);
+            return false;
+          }
+          if (isNaN(lng) || lng < -180 || lng > 180) {
+            setError("❌ Longitude inválida (deve estar entre -180 e 180)");
+            setTimeout(() => setError(""), 5000);
+            return false;
+          }
+        }
+        return true;
+
+      case 3: // Capacidade
+        if (!formData.max_guests || formData.max_guests < 1) {
+          setError("❌ O número de hóspedes deve ser no mínimo 1");
+          setTimeout(() => setError(""), 5000);
+          return false;
+        }
+        if (formData.max_guests > 20) {
+          setError("❌ O número máximo de hóspedes é 20");
+          setTimeout(() => setError(""), 5000);
+          return false;
+        }
+        if (formData.bedrooms === "" || formData.bedrooms < 0) {
+          setError("❌ Informe a quantidade de quartos (mínimo 0 para studio)");
+          setTimeout(() => setError(""), 5000);
+          return false;
+        }
+        if (formData.bedrooms > 10) {
+          setError("❌ O número máximo de quartos é 10");
+          setTimeout(() => setError(""), 5000);
+          return false;
+        }
+        if (!formData.bathrooms || formData.bathrooms < 1) {
+          setError("❌ O número de banheiros deve ser no mínimo 1");
+          setTimeout(() => setError(""), 5000);
+          return false;
+        }
+        if (formData.bathrooms > 10) {
+          setError("❌ O número máximo de banheiros é 10");
+          setTimeout(() => setError(""), 5000);
+          return false;
+        }
+        return true;
+
+      case 5: // Preço
+        if (!formData.price_per_night || formData.price_per_night <= 0) {
+          setError("❌ Informe o preço base por noite (valor maior que R$ 0)");
+          setTimeout(() => setError(""), 5000);
+          return false;
+        }
+        if (formData.price_per_night > 999999) {
+          setError("❌ O preço por noite parece muito alto. Verifique o valor.");
+          setTimeout(() => setError(""), 5000);
+          return false;
+        }
+        if (formData.weekend_price && formData.weekend_price < 0) {
+          setError("❌ O preço de final de semana não pode ser negativo");
+          setTimeout(() => setError(""), 5000);
+          return false;
+        }
+        if (formData.high_season_price && formData.high_season_price < 0) {
+          setError("❌ O preço de alta temporada não pode ser negativo");
+          setTimeout(() => setError(""), 5000);
+          return false;
+        }
+        return true;
+
+      case 6: // Fotos
+        if (uploadedPhotos.length < 1) {
+          setError("❌ Adicione pelo menos 1 foto do imóvel");
+          setTimeout(() => setError(""), 5000);
+          return false;
+        }
+        if (uploadedPhotos.length > 20) {
+          setError("❌ Máximo de 20 fotos permitidas");
+          setTimeout(() => setError(""), 5000);
+          return false;
+        }
+        // Verificar se há foto principal
+        const hasMainPhoto = uploadedPhotos.some(p => p.is_main);
+        if (!hasMainPhoto) {
+          setError("⚠️ Defina uma foto principal antes de continuar");
+          setTimeout(() => setError(""), 5000);
+          return false;
+        }
+        return true;
+
+      case 4: // Comodidades (opcional - sempre válido)
+      case 7: // Revisão (sempre válido)
       default:
         return true;
     }
@@ -236,9 +440,8 @@ const AdminNewPropertyAirbnb = () => {
     if (validateStep(currentStep)) {
       setCurrentStep(prev => Math.min(prev + 1, STEPS.length));
       setError("");
-    } else {
-      setError("Por favor, preencha todos os campos obrigatórios desta etapa");
     }
+    // A mensagem de erro já é definida dentro do validateStep
   };
 
   const prevStep = () => {
@@ -246,10 +449,52 @@ const AdminNewPropertyAirbnb = () => {
     setError("");
   };
 
+  // Validação completa antes de submeter
+  const validateForm = () => {
+    // Validar todos os steps críticos
+    const validations = [
+      { step: 1, name: "Informações Básicas" },
+      { step: 2, name: "Localização" },
+      { step: 3, name: "Detalhes do Imóvel" },
+      { step: 5, name: "Preços" },
+      { step: 6, name: "Fotos" },
+    ];
+
+    for (const validation of validations) {
+      if (!validateStep(validation.step)) {
+        setError(`❌ Erro na etapa "${validation.name}". Verifique os campos obrigatórios.`);
+        setTimeout(() => setError(""), 8000);
+        // Voltar para o step com erro
+        setCurrentStep(validation.step);
+        // Scroll para o topo para ver o erro
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return false;
+      }
+    }
+
+    // Validação extra de segurança
+    if (!uploadedPhotos.some(p => p.is_main)) {
+      setError("❌ É necessário definir uma foto principal");
+      setTimeout(() => setError(""), 5000);
+      setCurrentStep(6);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return false;
+    }
+
+    return true;
+  };
+
   const handleSubmit = async () => {
     try {
       setLoading(true);
       setError("");
+      setSuccess("");
+
+      // Validar formulário completo antes de submeter
+      if (!validateForm()) {
+        setLoading(false);
+        return;
+      }
 
       // Criar propriedade
       const propertyData = {
@@ -261,16 +506,60 @@ const AdminNewPropertyAirbnb = () => {
         high_season_price: formData.high_season_price ? parseFloat(formData.high_season_price) : null,
       };
 
+      setSuccess("Criando imóvel...");
       const response = await api.post("/api/properties", propertyData);
       const createdProperty = response.data.property;
 
-      setSuccess("Imóvel criado com sucesso!");
+      // Upload das fotos se houver
+      if (uploadedPhotos.length > 0) {
+        setSuccess(`Imóvel criado! Enviando ${uploadedPhotos.length} foto(s)...`);
+
+        const photosFormData = new FormData();
+        photosFormData.append("property_uuid", createdProperty.uuid);
+
+        // Adicionar arquivos ao FormData
+        uploadedPhotos.forEach((photo) => {
+          if (photo.file) {
+            photosFormData.append("photos", photo.file);
+          }
+        });
+
+        // Enviar índice da foto principal
+        const mainPhotoIndex = uploadedPhotos.findIndex(p => p.is_main);
+        if (mainPhotoIndex >= 0) {
+          photosFormData.append("main_photo_index", mainPhotoIndex.toString());
+        }
+
+        try {
+          await api.post("/api/uploads/properties", photosFormData, {
+            headers: {
+              'Content-Type': 'multipart/form-data'
+            }
+          });
+        } catch (uploadErr) {
+          console.error("Erro ao fazer upload das fotos:", uploadErr);
+          setError("⚠️ Imóvel criado, mas houve erro no upload das fotos. Você pode adicioná-las depois na edição do imóvel.");
+          setTimeout(() => {
+            navigate("/admin/properties");
+          }, 4000);
+          return;
+        }
+      }
+
+      setSuccess("✅ Imóvel publicado com sucesso! Redirecionando...");
       setTimeout(() => {
         navigate("/admin/properties");
       }, 2000);
     } catch (err) {
       console.error("Erro ao criar imóvel:", err);
-      setError(err.response?.data?.message || "Erro ao criar imóvel");
+      const errorMessage = err.response?.data?.message || "Erro desconhecido ao criar imóvel";
+      setError(`❌ ${errorMessage}. Verifique os dados e tente novamente.`);
+      setTimeout(() => setError(""), 8000);
+
+      // Se houver erro específico de validação do backend, voltar para step relevante
+      if (err.response?.status === 400) {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
     } finally {
       setLoading(false);
     }
@@ -280,9 +569,9 @@ const AdminNewPropertyAirbnb = () => {
   const renderStepContent = () => {
     switch (currentStep) {
       case 1:
-        return <Step1BasicInfo formData={formData} handleInputChange={handleInputChange} />;
+        return <Step1BasicInfo formData={formData} handleInputChange={handleInputChange} user={user} />;
       case 2:
-        return <Step2Location formData={formData} handleInputChange={handleInputChange} cities={cities} handleGeocodeAddress={handleGeocodeAddress} />;
+        return <Step2Location formData={formData} handleInputChange={handleInputChange} cities={cities} handleGeocodeAddress={handleGeocodeAddress} loading={loading} />;
       case 3:
         return <Step3Details formData={formData} handleInputChange={handleInputChange} />;
       case 4:
@@ -300,49 +589,50 @@ const AdminNewPropertyAirbnb = () => {
 
   return (
     <AdminLayout>
+      {/* Container principal com espaçamento adequado */}
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 pb-20">
-        {/* Header */}
-        <div className="bg-white border-b border-gray-200 sticky top-0 z-40 shadow-sm">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        {/* Header fixo com sombra */}
+        <div className="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-30">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-3xl font-black text-gray-900">Cadastrar Novo Imóvel</h1>
-                <p className="text-gray-600 mt-1">Siga os passos para criar seu anúncio profissional</p>
+                <h1 className="text-2xl md:text-3xl font-black text-gray-900">Cadastrar Novo Imóvel</h1>
+                <p className="text-sm md:text-base text-gray-600 mt-1">Siga os passos para criar seu anúncio profissional</p>
               </div>
               <button
                 onClick={() => navigate("/admin/properties")}
-                className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+                className="flex items-center gap-2 px-3 md:px-4 py-2 text-airbnb-grey-600 hover:text-airbnb-black hover:bg-airbnb-grey-100 rounded-lg transition-colors"
               >
-                <FaArrowLeft />
-                <span>Voltar</span>
+                <ArrowLeft className="w-4 h-4 md:w-5 md:h-5" />
+                <span className="hidden sm:inline">Voltar</span>
               </button>
             </div>
           </div>
         </div>
 
-        {/* Progress Steps */}
-        <div className="bg-white border-b border-gray-200 sticky top-[88px] z-30">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        {/* Progress Steps - também sticky */}
+        <div className="bg-white border-b border-gray-200 shadow-sm sticky top-[72px] md:top-[80px] z-20">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 md:py-4">
             <div className="flex items-center justify-between">
               {STEPS.map((step, index) => (
                 <div key={step.id} className="flex items-center flex-1">
                   <div className={`flex items-center gap-3 ${currentStep >= step.id ? 'opacity-100' : 'opacity-40'}`}>
                     <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all duration-300 ${
                       currentStep >= step.id
-                        ? 'bg-gradient-to-r from-red-600 to-red-700 text-white shadow-lg scale-110'
-                        : 'bg-gray-200 text-gray-600'
+                        ? 'bg-rausch text-white shadow-lg scale-110'
+                        : 'bg-airbnb-grey-200 text-airbnb-grey-600'
                     }`}>
-                      {currentStep > step.id ? <FaCheckCircle /> : step.id}
+                      {currentStep > step.id ? <CheckCircle2 className="w-5 h-5" /> : step.id}
                     </div>
                     <div className="hidden md:block">
-                      <div className={`text-sm font-bold ${currentStep >= step.id ? 'text-gray-900' : 'text-gray-400'}`}>
+                      <div className={`text-sm font-bold ${currentStep >= step.id ? 'text-airbnb-black' : 'text-airbnb-grey-400'}`}>
                         {step.title}
                       </div>
                     </div>
                   </div>
                   {index < STEPS.length - 1 && (
                     <div className={`flex-1 h-0.5 mx-2 transition-all duration-300 ${
-                      currentStep > step.id ? 'bg-red-600' : 'bg-gray-200'
+                      currentStep > step.id ? 'bg-rausch' : 'bg-airbnb-grey-200'
                     }`} />
                   )}
                 </div>
@@ -351,8 +641,8 @@ const AdminNewPropertyAirbnb = () => {
           </div>
         </div>
 
-        {/* Content */}
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Content - espaçamento para não sobrepor header sticky */}
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8 mt-4">
           {/* Alerts */}
           <AnimatePresence>
             {error && (
@@ -395,48 +685,49 @@ const AdminNewPropertyAirbnb = () => {
             {renderStepContent()}
           </motion.div>
 
-          {/* Navigation Buttons */}
-          <div className="flex items-center justify-between bg-white rounded-2xl shadow-xl p-6 sticky bottom-4">
+          {/* Navigation Buttons - sticky footer */}
+          <div className="flex items-center justify-between bg-white rounded-2xl shadow-2xl border border-gray-200 p-4 md:p-6 sticky bottom-4 z-10">
             <button
               onClick={prevStep}
               disabled={currentStep === 1}
-              className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold transition-all duration-300 ${
+              className={`flex items-center gap-2 px-4 md:px-6 py-2 md:py-3 rounded-xl font-bold transition-all duration-300 ${
                 currentStep === 1
                   ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300 hover:scale-105'
+                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300 hover:scale-105 shadow-md hover:shadow-lg'
               }`}
             >
-              <FaArrowLeft />
-              <span>Voltar</span>
+              <ArrowLeft className="w-4 h-4 md:w-5 md:h-5" />
+              <span className="hidden sm:inline">Voltar</span>
             </button>
 
-            <div className="text-sm text-gray-600 font-medium">
+            <div className="text-xs md:text-sm text-gray-600 font-semibold bg-gray-100 px-3 md:px-4 py-2 rounded-lg">
               Passo {currentStep} de {STEPS.length}
             </div>
 
             {currentStep < STEPS.length ? (
               <button
                 onClick={nextStep}
-                className="flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-xl font-bold hover:from-red-700 hover:to-red-800 transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl"
+                className="flex items-center gap-2 px-4 md:px-8 py-2 md:py-3 bg-rausch text-white rounded-xl font-bold hover:bg-rausch-dark transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl"
               >
-                <span>Próximo</span>
-                <FaArrowRight />
+                <span className="hidden sm:inline">Próximo</span>
+                <span className="sm:hidden">Avançar</span>
+                <ArrowRight className="w-4 h-4 md:w-5 md:h-5" />
               </button>
             ) : (
               <button
                 onClick={handleSubmit}
                 disabled={loading}
-                className="flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-xl font-bold hover:from-green-700 hover:to-green-800 transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex items-center gap-2 px-4 md:px-8 py-2 md:py-3 bg-babu text-white rounded-xl font-bold hover:bg-babu-dark transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
               >
                 {loading ? (
                   <>
-                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    <span>Publicando...</span>
+                    <div className="w-4 h-4 md:w-5 md:h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    <span className="text-sm md:text-base">Publicando...</span>
                   </>
                 ) : (
                   <>
-                    <FaCheckCircle />
-                    <span>Publicar Imóvel</span>
+                    <CheckCircle2 className="w-4 h-4 md:w-5 md:h-5" />
+                    <span className="text-sm md:text-base">Publicar</span>
                   </>
                 )}
               </button>
@@ -453,7 +744,7 @@ const AdminNewPropertyAirbnb = () => {
 // ============================================
 
 // Step 1: Basic Info
-const Step1BasicInfo = ({ formData, handleInputChange }) => (
+const Step1BasicInfo = ({ formData, handleInputChange, user }) => (
   <div className="space-y-6">
     <div>
       <h2 className="text-2xl font-black text-gray-900 mb-2">Informações Básicas</h2>
@@ -466,19 +757,19 @@ const Step1BasicInfo = ({ formData, handleInputChange }) => (
         Tipo de Imóvel *
       </label>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {Object.entries(PROPERTY_TYPE_ICONS).map(([type, { icon: Icon, label, color }]) => (
+        {Object.entries(PROPERTY_TYPE_ICONS).map(([type, { icon: Icon, label }]) => (
           <button
             key={type}
             type="button"
             onClick={() => handleInputChange({ target: { name: 'type', value: type } })}
             className={`p-6 rounded-xl border-2 transition-all duration-300 ${
               formData.type === type
-                ? 'border-red-600 bg-red-50 shadow-lg scale-105'
-                : 'border-gray-200 hover:border-gray-300 hover:shadow-md'
+                ? 'border-rausch bg-rausch/5 shadow-lg scale-105'
+                : 'border-airbnb-grey-200 hover:border-airbnb-grey-300 hover:shadow-md'
             }`}
           >
-            <Icon className={`text-4xl mx-auto mb-3 ${formData.type === type ? 'text-red-600' : 'text-gray-400'}`} />
-            <p className={`text-sm font-bold ${formData.type === type ? 'text-red-600' : 'text-gray-600'}`}>
+            <Icon className={`w-10 h-10 mx-auto mb-3 ${formData.type === type ? 'text-rausch' : 'text-airbnb-grey-400'}`} />
+            <p className={`text-sm font-bold ${formData.type === type ? 'text-rausch' : 'text-airbnb-grey-600'}`}>
               {label}
             </p>
           </button>
@@ -497,7 +788,7 @@ const Step1BasicInfo = ({ formData, handleInputChange }) => (
         value={formData.title}
         onChange={handleInputChange}
         placeholder="Ex: Apartamento Luxuoso com Vista para o Mar"
-        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all"
+        className="w-full px-4 py-3 border border-airbnb-grey-300 rounded-xl focus:ring-2 focus:ring-rausch focus:border-transparent transition-all"
         maxLength={200}
       />
       <p className="text-sm text-gray-500 mt-1">{formData.title.length}/200 caracteres</p>
@@ -514,7 +805,7 @@ const Step1BasicInfo = ({ formData, handleInputChange }) => (
         onChange={handleInputChange}
         placeholder="Descreva seu imóvel de forma atrativa. Destaque os diferenciais, localização, vista, acabamentos, etc."
         rows={6}
-        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all resize-none"
+        className="w-full px-4 py-3 border border-airbnb-grey-300 rounded-xl focus:ring-2 focus:ring-rausch focus:border-transparent transition-all resize-none"
       />
       <p className="text-sm text-gray-500 mt-1">Uma boa descrição aumenta em 40% as chances de reserva</p>
     </div>
@@ -527,7 +818,7 @@ const Step1BasicInfo = ({ formData, handleInputChange }) => (
           name="status"
           value={formData.status}
           onChange={handleInputChange}
-          className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent"
+          className="w-full px-4 py-3 border border-airbnb-grey-300 rounded-xl focus:ring-2 focus:ring-rausch focus:border-transparent"
         >
           <option value="available">Disponível</option>
           <option value="occupied">Ocupado</option>
@@ -536,24 +827,27 @@ const Step1BasicInfo = ({ formData, handleInputChange }) => (
         </select>
       </div>
 
-      <div className="flex items-center justify-center">
-        <label className="flex items-center gap-3 cursor-pointer p-4 rounded-xl border-2 border-dashed border-yellow-400 bg-yellow-50 hover:bg-yellow-100 transition-all">
-          <input
-            type="checkbox"
-            name="is_featured"
-            checked={formData.is_featured}
-            onChange={handleInputChange}
-            className="w-5 h-5 text-red-600 rounded focus:ring-red-500"
-          />
-          <div>
-            <p className="font-bold text-gray-900 flex items-center gap-2">
-              <FaStar className="text-yellow-500" />
-              Imóvel em Destaque
-            </p>
-            <p className="text-xs text-gray-600">Aparece na home do site</p>
-          </div>
-        </label>
-      </div>
+      {/* Destaque - Apenas Admin Master */}
+      {user?.role === 'admin_master' && (
+        <div className="flex items-center justify-center">
+          <label className="flex items-center gap-3 cursor-pointer p-4 rounded-xl border-2 border-dashed border-yellow-400 bg-yellow-50 hover:bg-yellow-100 transition-all">
+            <input
+              type="checkbox"
+              name="is_featured"
+              checked={formData.is_featured}
+              onChange={handleInputChange}
+              className="w-5 h-5 text-rausch rounded focus:ring-rausch"
+            />
+            <div>
+              <p className="font-bold text-gray-900 flex items-center gap-2">
+                <Star className="w-5 h-5 text-yellow-500 fill-yellow-500" />
+                Imóvel em Destaque
+              </p>
+              <p className="text-xs text-gray-600">Apenas admin master - Aparece na home do site</p>
+            </div>
+          </label>
+        </div>
+      )}
     </div>
   </div>
 );

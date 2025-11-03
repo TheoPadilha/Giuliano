@@ -43,36 +43,26 @@ const LanguageSwitch = () => {
 
       {/* Dropdown Menu */}
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-32 bg-white rounded-xlarge shadow-elevation-high border border-airbnb-grey-200 py-1 overflow-hidden z-50">
+        <div className="absolute right-0 mt-2 w-40 bg-white dark:bg-airbnb-grey-900 rounded-xlarge shadow-elevation-high border border-airbnb-grey-200 dark:border-airbnb-grey-700 py-1 overflow-hidden z-50">
           <button
-          onClick={() => changeLanguage("pt")}
-          className={`block w-full text-left px-4 py-2 text-sm hover:bg-airbnb-grey-50 ${
-            currentLanguage === "pt"
+          onClick={() => changeLanguage("pt-BR")}
+          className={`block w-full text-left px-4 py-2 text-sm hover:bg-airbnb-grey-50 dark:hover:bg-airbnb-grey-800 transition-colors ${
+            currentLanguage === "pt-BR"
               ? "font-bold text-rausch"
-              : "text-airbnb-black"
+              : "text-airbnb-black dark:text-white"
           }`}
         >
-            Português (PT)
-          </button>
-          <button
-          onClick={() => changeLanguage("es")}
-          className={`block w-full text-left px-4 py-2 text-sm hover:bg-airbnb-grey-50 ${
-            currentLanguage === "es"
-              ? "font-bold text-rausch"
-              : "text-airbnb-black"
-          }`}
-        >
-            Español (ES)
+            🇧🇷 Português
           </button>
           <button
           onClick={() => changeLanguage("en")}
-          className={`block w-full text-left px-4 py-2 text-sm hover:bg-airbnb-grey-50 ${
+          className={`block w-full text-left px-4 py-2 text-sm hover:bg-airbnb-grey-50 dark:hover:bg-airbnb-grey-800 transition-colors ${
             currentLanguage === "en"
               ? "font-bold text-rausch"
-              : "text-airbnb-black"
+              : "text-airbnb-black dark:text-white"
           }`}
         >
-            English (EN)
+            🇺🇸 English
           </button>
         </div>
       )}

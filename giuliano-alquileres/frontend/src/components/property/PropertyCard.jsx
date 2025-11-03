@@ -101,11 +101,11 @@ const PropertyCard = ({ property, layout = "vertical", showPremiumBadge = false 
               )}
             </button>
 
-            {/* Badge de Destaque Premium */}
+            {/* Badge Preferido dos hóspedes */}
             {(property.is_featured || showPremiumBadge) && (
-              <div className="absolute top-3 left-3 px-3 py-1.5 bg-gradient-to-r from-yellow-500 to-orange-500 text-white text-xs font-bold rounded-full shadow-lg flex items-center gap-1.5 animate-pulse">
-                <FaCrown className="text-xs" />
-                PREMIUM
+              <div className="absolute top-3 left-3 px-2.5 py-1.5 bg-white text-airbnb-black text-[11px] font-semibold rounded-md shadow-md flex items-center gap-1 border border-airbnb-grey-200">
+                <FaCrown className="text-[10px] text-yellow-600" />
+                <span>Preferido dos hóspedes</span>
               </div>
             )}
 
@@ -194,10 +194,10 @@ const PropertyCard = ({ property, layout = "vertical", showPremiumBadge = false 
         className="group block"
         onClick={handleCardClick}
       >
-        <div className="flex gap-4 p-4 bg-white border border-airbnb-grey-200 rounded-xlarge hover:shadow-lg transition-all duration-200">
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 p-3 sm:p-4 bg-white border border-airbnb-grey-200 rounded-xlarge hover:shadow-lg transition-all duration-200">
           {/* Imagem */}
-          <div className="relative w-64 flex-shrink-0">
-            <div className="aspect-square rounded-lg overflow-hidden bg-airbnb-grey-100">
+          <div className="relative w-full sm:w-48 md:w-64 flex-shrink-0">
+            <div className="aspect-[4/3] sm:aspect-square rounded-lg overflow-hidden bg-airbnb-grey-100">
               <img
                 src={getImageUrl()}
                 alt={property.title || property.name}
@@ -219,11 +219,11 @@ const PropertyCard = ({ property, layout = "vertical", showPremiumBadge = false 
               )}
             </button>
 
-            {/* Badge Premium - Horizontal */}
+            {/* Badge Premium ou Preferido dos hóspedes */}
             {(property.is_featured || showPremiumBadge) && (
-              <div className="absolute top-2 left-2 px-3 py-1.5 bg-gradient-to-r from-yellow-500 to-orange-500 text-white text-xs font-bold rounded-full shadow-lg flex items-center gap-1.5">
-                <FaCrown className="text-xs" />
-                PREMIUM
+              <div className="absolute top-2 left-2 px-2.5 py-1.5 bg-white text-airbnb-black text-[11px] font-semibold rounded-md shadow-md flex items-center gap-1 border border-airbnb-grey-200">
+                <FaCrown className="text-[10px] text-yellow-600" />
+                <span>Preferido dos hóspedes</span>
               </div>
             )}
           </div>

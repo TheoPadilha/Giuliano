@@ -3,6 +3,7 @@
 import { useState, useCallback, useEffect } from "react";
 import { useDropzone } from "react-dropzone";
 import api from "../../services/api";
+import { compressImages, formatFileSize } from "../../utils/imageCompression";
 
 const PhotoUpload = ({ propertyUuid, onUploadComplete }) => {
   const [photos, setPhotos] = useState([]);
@@ -11,6 +12,7 @@ const PhotoUpload = ({ propertyUuid, onUploadComplete }) => {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [draggedIndex, setDraggedIndex] = useState(null);
+  const [compressionProgress, setCompressionProgress] = useState(null);
 
   // Carregar fotos existentes
   useEffect(() => {
@@ -45,20 +47,54 @@ const PhotoUpload = ({ propertyUuid, onUploadComplete }) => {
       setUploading(true);
       setError("");
       setSuccess("");
+      setCompressionProgress(null);
 
       try {
+        // Validações antes de enviar
+        if (!acceptedFiles || acceptedFiles.length === 0) {
+          setError("Nenhum arquivo selecionado");
+          setUploading(false);
+          return;
+        }
+
+        console.log("📤 Iniciando upload:", {
+          property_uuid: propertyUuid,
+          total_files: acceptedFiles.length,
+          file_names: acceptedFiles.map(f => f.name),
+          file_sizes: acceptedFiles.map(f => (f.size / 1024 / 1024).toFixed(2) + 'MB')
+        });
+
+        // Comprimir imagens antes do upload
+        setSuccess("Comprimindo imagens...");
+        const compressedFiles = await compressImages(
+          acceptedFiles,
+          {
+            maxSizeMB: 20,
+            maxWidthOrHeight: 2048,
+            quality: 0.85,
+          },
+          (progress) => {
+            setCompressionProgress(progress);
+            console.log(`📦 Progresso: ${progress.percentage}% (${progress.current}/${progress.total})`);
+          }
+        );
+
+        setCompressionProgress(null);
+        setSuccess("Upload em andamento...");
+
         const formData = new FormData();
 
         // Adicionar UUID da propriedade
         formData.append("property_uuid", propertyUuid);
 
-        // Adicionar arquivos
-        acceptedFiles.forEach((file) => {
+        // Adicionar arquivos comprimidos
+        compressedFiles.forEach((file, index) => {
           formData.append("photos", file);
+          console.log(`  ✓ Arquivo ${index + 1}: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)}MB)`);
         });
 
         // Adicionar textos alternativos padrão
-        const altTexts = acceptedFiles.map(
+        const altTexts = compressedFiles.map(
           (file, index) => `Foto ${photos.length + index + 1}`
         );
         formData.append("alt_texts", JSON.stringify(altTexts));
@@ -68,10 +104,17 @@ const PhotoUpload = ({ propertyUuid, onUploadComplete }) => {
           formData.append("main_photo_index", "0");
         }
 
-        console.log("Enviando formData:", {
+        console.log("📋 Dados do FormData:", {
           property_uuid: propertyUuid,
           files: acceptedFiles.length,
           alt_texts: altTexts,
+          main_photo_index: photos.length === 0 ? "0" : "não definido"
+        });
+
+        // Log dos headers que serão enviados
+        console.log("🔒 Headers:", {
+          "Content-Type": "multipart/form-data",
+          Authorization: localStorage.getItem('token') ? 'Token presente' : 'Token ausente'
         });
 
         const response = await api.post("/api/uploads/properties", formData, {
@@ -80,7 +123,7 @@ const PhotoUpload = ({ propertyUuid, onUploadComplete }) => {
           },
         });
 
-        console.log("Upload bem-sucedido:", response.data);
+        console.log("✅ Upload bem-sucedido:", response.data);
 
         setSuccess(
           `${response.data.photos.length} foto(s) enviada(s) com sucesso!`
@@ -97,12 +140,42 @@ const PhotoUpload = ({ propertyUuid, onUploadComplete }) => {
         // Limpar mensagem após 3 segundos
         setTimeout(() => setSuccess(""), 3000);
       } catch (err) {
-        console.error("Erro no upload:", err);
-        setError(
-          err.response?.data?.error ||
-            err.response?.data?.details ||
-            "Erro ao fazer upload das fotos"
-        );
+        console.error("❌ Erro no upload:", err);
+        console.error("📊 Detalhes do erro:", {
+          status: err.response?.status,
+          statusText: err.response?.statusText,
+          data: err.response?.data,
+          headers: err.response?.headers
+        });
+
+        let errorMessage = "Erro ao fazer upload das fotos";
+
+        if (err.response?.data) {
+          const { error, details, message } = err.response.data;
+
+          if (details) {
+            errorMessage = `${error || 'Erro de validação'}: ${details}`;
+          } else if (error) {
+            errorMessage = error;
+          } else if (message) {
+            errorMessage = message;
+          }
+        } else if (err.message) {
+          errorMessage = `Erro de conexão: ${err.message}`;
+        }
+
+        setError(errorMessage);
+
+        // Adicionar sugestões baseadas no erro
+        if (err.response?.status === 400) {
+          console.log("💡 Sugestão: Verifique se o UUID do imóvel está correto e se os arquivos são válidos");
+        } else if (err.response?.status === 401 || err.response?.status === 403) {
+          console.log("💡 Sugestão: Verifique se você está autenticado como admin");
+        } else if (err.response?.status === 404) {
+          console.log("💡 Sugestão: O imóvel não foi encontrado. Salve o imóvel primeiro");
+        } else if (err.response?.status === 413) {
+          console.log("💡 Sugestão: Um ou mais arquivos são muito grandes (máximo 5MB cada)");
+        }
       } finally {
         setUploading(false);
       }
@@ -115,8 +188,8 @@ const PhotoUpload = ({ propertyUuid, onUploadComplete }) => {
     accept: {
       "image/*": [".jpeg", ".jpg", ".png", ".webp"],
     },
-    maxFiles: 10,
-    maxSize: 5 * 1024 * 1024, // 5MB
+    maxFiles: 20,
+    maxSize: 20 * 1024 * 1024, // 20MB
     disabled: uploading,
   });
 
@@ -237,10 +310,25 @@ const PhotoUpload = ({ propertyUuid, onUploadComplete }) => {
 
       {success && (
         <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg">
-          <div className="flex items-center">
-            <span className="text-green-500 mr-2">✅</span>
-            <span className="text-sm">{success}</span>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <span className="text-green-500 mr-2">✅</span>
+              <span className="text-sm">{success}</span>
+            </div>
+            {compressionProgress && (
+              <span className="text-xs font-semibold">
+                {compressionProgress.percentage}%
+              </span>
+            )}
           </div>
+          {compressionProgress && (
+            <div className="mt-2 w-full bg-green-200 rounded-full h-2">
+              <div
+                className="bg-green-600 h-2 rounded-full transition-all duration-300"
+                style={{ width: `${compressionProgress.percentage}%` }}
+              ></div>
+            </div>
+          )}
         </div>
       )}
 
@@ -281,7 +369,10 @@ const PhotoUpload = ({ propertyUuid, onUploadComplete }) => {
                 Arraste fotos aqui ou clique para selecionar
               </p>
               <p className="text-sm text-gray-500">
-                Formatos: JPEG, PNG, WebP • Máximo: 5MB por foto • Até 10 fotos
+                Formatos: JPEG, PNG, WebP • Máximo: 20MB por foto • Até 20 fotos
+              </p>
+              <p className="text-xs text-gray-400 mt-1">
+                ✨ Compressão automática aplicada para otimizar o tamanho
               </p>
             </div>
           )}

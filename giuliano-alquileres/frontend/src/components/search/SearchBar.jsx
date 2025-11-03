@@ -109,18 +109,23 @@ const SearchBar = () => {
 
           {/* DatePicker Dropdown */}
           {showDatePicker && (
-            <div className="absolute top-full left-0 mt-2 z-50 bg-white shadow-2xl rounded-lg">
-              <DateRangePicker
-                checkIn={dates.checkIn}
-                checkOut={dates.checkOut}
-                onChange={(newDates) => {
-                  setDates(newDates);
-                  if (newDates.checkIn && newDates.checkOut) {
-                    setShowDatePicker(false);
-                  }
-                }}
-                onClose={() => setShowDatePicker(false)}
-              />
+            <div
+              className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 overflow-y-auto"
+              onClick={() => setShowDatePicker(false)}
+            >
+              <div className="relative my-auto" onClick={(e) => e.stopPropagation()}>
+                <DateRangePicker
+                  checkIn={dates.checkIn}
+                  checkOut={dates.checkOut}
+                  onChange={(newDates) => {
+                    setDates(newDates);
+                    if (newDates.checkIn && newDates.checkOut) {
+                      setShowDatePicker(false);
+                    }
+                  }}
+                  onClose={() => setShowDatePicker(false)}
+                />
+              </div>
             </div>
           )}
         </div>

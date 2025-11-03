@@ -1,0 +1,160 @@
+{
+  "header": {
+    "where": "Onde",
+    "wherePlaceholder": "Buscar destinos",
+    "checkIn": "Check-in",
+    "checkout": "Checkout",
+    "addDates": "Insira as datas",
+    "who": "Quem",
+    "guests": "Hóspedes?",
+    "search": "Buscar",
+    "advertise": "Anunciar seu espaço",
+    "login": "Entrar",
+    "register": "Cadastrar",
+    "logout": "Sair",
+    "myBookings": "Minhas Reservas",
+    "favorites": "Favoritos",
+    "profile": "Perfil",
+    "adminPanel": "Painel Admin"
+  },
+  "home": {
+    "hero": {
+      "title": "Encontre seu",
+      "titleHighlight": "Imóvel Ideal",
+      "subtitle": "Milhares de propriedades incríveis esperando por você",
+      "properties": "propriedades",
+      "cities": "cidades"
+    },
+    "categories": "Categorias",
+    "popularProperties": "Propriedades Populares",
+    "viewAll": "Ver Todas"
+  },
+  "calendar": {
+    "tabs": {
+      "dates": "Datas",
+      "months": "Meses",
+      "flexible": "Flexível"
+    },
+    "exactDates": "Datas exatas",
+    "plusDays": "± {{count}} dia",
+    "plusDays_plural": "± {{count}} dias",
+    "months": {
+      "january": "janeiro",
+      "february": "fevereiro",
+      "march": "março",
+      "april": "abril",
+      "may": "maio",
+      "june": "junho",
+      "july": "julho",
+      "august": "agosto",
+      "september": "setembro",
+      "october": "outubro",
+      "november": "novembro",
+      "december": "dezembro"
+    },
+    "weekDays": {
+      "short": ["D", "S", "T", "Q", "Q", "S", "S"]
+    }
+  },
+  "auth": {
+    "guestLogin": "Login de Hóspede",
+    "adminLogin": "Login de Administrador",
+    "email": "E-mail",
+    "password": "Senha",
+    "rememberMe": "Lembrar-me",
+    "forgotPassword": "Esqueceu a senha?",
+    "noAccount": "Não tem uma conta?",
+    "alreadyHaveAccount": "Já tem uma conta?",
+    "registerNow": "Cadastre-se agora",
+    "loginNow": "Faça login agora",
+    "name": "Nome completo",
+    "confirmPassword": "Confirmar senha",
+    "register": "Cadastrar",
+    "passwordStrength": {
+      "weak": "Fraca",
+      "medium": "Média",
+      "strong": "Forte"
+    }
+  },
+  "properties": {
+    "filters": "Filtros",
+    "priceRange": "Faixa de Preço",
+    "propertyType": "Tipo de Imóvel",
+    "amenities": "Comodidades",
+    "bedrooms": "Quartos",
+    "bathrooms": "Banheiros",
+    "apply": "Aplicar",
+    "clear": "Limpar",
+    "perNight": "/ noite",
+    "rating": "{{rating}} ({{count}} avaliação)",
+    "rating_plural": "{{rating}} ({{count}} avaliações)"
+  },
+  "guests": {
+    "adults": "Adultos",
+    "adultsDesc": "13 anos ou mais",
+    "children": "Crianças",
+    "childrenDesc": "De 2 a 12 anos",
+    "infants": "Bebês",
+    "infantsDesc": "Menor de 2",
+    "pets": "Animais de estimação",
+    "petsDesc": "Vai levar um animal de serviço?",
+    "summary": "{{count}} hóspede",
+    "summary_plural": "{{count}} hóspedes",
+    "adults_count": "{{count}} adulto",
+    "adults_count_plural": "{{count}} adultos",
+    "children_count": "{{count}} criança",
+    "children_count_plural": "{{count}} crianças",
+    "infants_count": "{{count}} bebê",
+    "infants_count_plural": "{{count}} bebês",
+    "pets_count": "{{count}} animal",
+    "pets_count_plural": "{{count}} animais"
+  },
+  "booking": {
+    "title": "Finalizar Reserva",
+    "checkIn": "Check-in",
+    "checkOut": "Check-out",
+    "guests": "Hóspedes",
+    "nights": "{{count}} noite",
+    "nights_plural": "{{count}} noites",
+    "pricePerNight": "Preço por noite",
+    "total": "Total",
+    "confirm": "Confirmar Reserva",
+    "cancel": "Cancelar"
+  },
+  "search": {
+    "where": "Onde",
+    "searchDestinations": "Buscar destinos",
+    "checkIn": "Check-in",
+    "checkOut": "Checkout",
+    "addDates": "Insira as datas",
+    "who": "Quem",
+    "guests": "Hóspedes?",
+    "accommodationsNearby": "Acomodações por perto"
+  },
+  "common": {
+    "loading": "Carregando...",
+    "error": "Erro",
+    "success": "Sucesso",
+    "close": "Fechar",
+    "save": "Salvar",
+    "delete": "Excluir",
+    "edit": "Editar",
+    "view": "Visualizar",
+    "back": "Voltar",
+    "next": "Próximo",
+    "previous": "Anterior",
+    "more": "Mais",
+    "less": "Menos",
+    "search": "Buscar",
+    "filters": "Filtros",
+    "clear": "Limpar"
+  },
+  "location_not_defined": "Localização não definida",
+  "property_map_not_set": "Este imóvel ainda não possui localização no mapa",
+  "map_load_error": "Erro ao carregar o Google Maps. Verifique sua conexão e a chave da API.",
+  "loading_map": "Carregando Mapa...",
+  "exact_location_after_booking": "Localização exata fornecida após a reserva",
+  "privacy_policy_map": "Por questões de privacidade, mostramos a área aproximada no mapa. Você receberá o endereço exato após confirmar sua reserva.",
+  "open_in_google_maps": "Abrir no Google Maps",
+  "property_location": "Localização da Propriedade"
+}

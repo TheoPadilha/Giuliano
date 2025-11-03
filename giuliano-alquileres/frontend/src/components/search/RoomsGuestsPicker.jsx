@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { FaMinus, FaPlus, FaTimes } from "react-icons/fa";
 
-const RoomsGuestsPicker = ({ rooms, onChange, onClose }) => {
+const RoomsGuestsPicker = ({ rooms, onChange, onClose, maxGuests = 20 }) => {
   const [roomsData, setRoomsData] = useState(
     rooms || [{ adults: 2, children: [] }]
   );
@@ -31,7 +31,11 @@ const RoomsGuestsPicker = ({ rooms, onChange, onClose }) => {
     const currentAdults = newRooms[roomIndex].adults;
     const newAdults = currentAdults + delta;
 
-    if (newAdults >= 1 && newAdults <= 10) {
+    // Calcular total de hóspedes após a mudança
+    const currentTotal = getTotalGuestsFromRooms(newRooms);
+    const newTotal = currentTotal - currentAdults + newAdults;
+
+    if (newAdults >= 1 && newAdults <= 10 && newTotal <= maxGuests) {
       newRooms[roomIndex].adults = newAdults;
       setRoomsData(newRooms);
     }
@@ -45,7 +49,12 @@ const RoomsGuestsPicker = ({ rooms, onChange, onClose }) => {
 
     if (newCount < 0 || newCount > 6) return;
 
+    // Verificar limite máximo de hóspedes
+    const currentTotal = getTotalGuestsFromRooms(newRooms);
+
     if (delta > 0) {
+      // Verificar se pode adicionar mais um hóspede
+      if (currentTotal >= maxGuests) return;
       // Adicionar criança com idade padrão 5
       newRooms[roomIndex].children.push(5);
     } else {
@@ -63,11 +72,21 @@ const RoomsGuestsPicker = ({ rooms, onChange, onClose }) => {
     setRoomsData(newRooms);
   };
 
-  // Calcular total de hóspedes
-  const getTotalGuests = () => {
-    return roomsData.reduce((total, room) => {
+  // Helper: Calcular total de hóspedes de um array de quartos
+  const getTotalGuestsFromRooms = (rooms) => {
+    return rooms.reduce((total, room) => {
       return total + room.adults + room.children.length;
     }, 0);
+  };
+
+  // Calcular total de hóspedes
+  const getTotalGuests = () => {
+    return getTotalGuestsFromRooms(roomsData);
+  };
+
+  // Verificar se atingiu o limite máximo
+  const isAtMaxCapacity = () => {
+    return getTotalGuests() >= maxGuests;
   };
 
   // Confirmar seleção
@@ -95,6 +114,7 @@ const RoomsGuestsPicker = ({ rooms, onChange, onClose }) => {
             </h3>
             <p className="text-sm text-gray-500 mt-1">
               Total: {getTotalGuests()} {getTotalGuests() === 1 ? "hóspede" : "hóspedes"}
+              {maxGuests && <span className="text-gray-400"> (Máx: {maxGuests})</span>}
             </p>
           </div>
           <button
@@ -104,6 +124,21 @@ const RoomsGuestsPicker = ({ rooms, onChange, onClose }) => {
             <FaTimes />
           </button>
         </div>
+
+        {/* Mensagem de aviso quando atingir o limite */}
+        {isAtMaxCapacity() && (
+          <div className="mb-4 bg-yellow-50 border-2 border-yellow-400 rounded-xl p-4 flex items-start gap-3">
+            <span className="text-2xl">⚠️</span>
+            <div className="flex-1">
+              <p className="font-semibold text-yellow-900 text-sm">
+                Limite máximo atingido
+              </p>
+              <p className="text-xs text-yellow-800 mt-1">
+                Você atingiu o número máximo de hóspedes ({maxGuests}) permitidos para esta acomodação.
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* Seletor de Quartos */}
         <div className="mb-6 pb-6 border-b-2 border-gray-100">
@@ -170,7 +205,7 @@ const RoomsGuestsPicker = ({ rooms, onChange, onClose }) => {
                     </span>
                     <button
                       onClick={() => updateAdults(roomIndex, 1)}
-                      disabled={room.adults >= 10}
+                      disabled={room.adults >= 10 || isAtMaxCapacity()}
                       className="w-9 h-9 rounded-full border-2 border-gray-300 flex items-center justify-center text-gray-600 hover:border-primary-600 hover:text-primary-600 hover:bg-white transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:border-gray-300 disabled:hover:text-gray-600 disabled:hover:bg-gray-100"
                     >
                       <FaPlus className="text-xs" />
@@ -201,7 +236,7 @@ const RoomsGuestsPicker = ({ rooms, onChange, onClose }) => {
                     </span>
                     <button
                       onClick={() => updateChildrenCount(roomIndex, 1)}
-                      disabled={room.children.length >= 6}
+                      disabled={room.children.length >= 6 || isAtMaxCapacity()}
                       className="w-9 h-9 rounded-full border-2 border-gray-300 flex items-center justify-center text-gray-600 hover:border-primary-600 hover:text-primary-600 hover:bg-white transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:border-gray-300 disabled:hover:text-gray-600 disabled:hover:bg-gray-100"
                     >
                       <FaPlus className="text-xs" />

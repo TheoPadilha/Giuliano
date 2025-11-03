@@ -47,7 +47,7 @@ const AdminLayout = ({ children }) => {
     <div className="min-h-screen bg-airbnb-grey-50">
       {/* Sidebar Mobile */}
       {sidebarOpen && (
-        <div className="fixed inset-0 flex z-40 md:hidden">
+        <div className="fixed inset-0 flex z-[60] md:hidden">
           <div
             className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm"
             onClick={() => setSidebarOpen(false)}
@@ -74,7 +74,7 @@ const AdminLayout = ({ children }) => {
       {/* Main content */}
       <div className="md:pl-64 flex flex-col flex-1">
         {/* Top bar - Clean white design */}
-        <div className="sticky top-0 z-10 bg-white border-b border-airbnb-grey-200 shadow-sm">
+        <div className="sticky top-0 z-50 bg-white border-b border-airbnb-grey-200 shadow-sm">
           <div className="px-4 sm:px-6 lg:px-8">
             <div className="flex justify-between h-16">
               {/* Mobile menu button */}

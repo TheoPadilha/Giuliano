@@ -1,17 +1,18 @@
 // AirbnbHeader - Header com busca completa estilo Airbnb + Animação de Scroll
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, Link, useLocation } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 import { FaSearch } from "react-icons/fa";
-import { FiMenu, FiUser, FiLogOut, FiSettings } from "react-icons/fi"; // FiGlobe removido
-import LanguageSwitch from "../common/LanguageSwitch"; // <-- Adicionado from "react-icons/fi";
+import { FiMenu, FiUser, FiLogOut, FiSettings } from "react-icons/fi";
+import LanguageSwitch from "../common/LanguageSwitch";
 import ThemeToggle from "../common/ThemeToggle";
 import { useAuth } from "../../contexts/AuthContext";
-import CompactDatePicker from "../search/CompactDatePicker";
-// import RoomsGuestsPicker from "../search/RoomsGuestsPicker";
+import DateRangePicker from "../search/DateRangePicker";
 import GuestsPicker from "../search/GuestsPicker";
 
 const AirbnbHeader = ({ onFilterButtonClick }) => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { isAuthenticated, user, logout } = useAuth();
   const location = useLocation();
@@ -34,16 +35,11 @@ const AirbnbHeader = ({ onFilterButtonClick }) => {
   });
 
   // Estados dos dropdowns
-  const [showCheckInPicker, setShowCheckInPicker] = useState(false);
-  const [showCheckOutPicker, setShowCheckOutPicker] = useState(false);
-  // const [showRoomsPicker, setShowRoomsPicker] = useState(false);
+  const [showDatePicker, setShowDatePicker] = useState(false);
   const [showGuestsPicker, setShowGuestsPicker] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
 
   // Refs para fechar dropdowns ao clicar fora
-  const checkInRef = useRef(null);
-  const checkOutRef = useRef(null);
-  // const roomsRef = useRef(null);
   const guestsRef = useRef(null);
   const userMenuRef = useRef(null);
 
@@ -69,15 +65,6 @@ const AirbnbHeader = ({ onFilterButtonClick }) => {
 
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (checkInRef.current && !checkInRef.current.contains(event.target)) {
-        setShowCheckInPicker(false);
-      }
-      if (checkOutRef.current && !checkOutRef.current.contains(event.target)) {
-        setShowCheckOutPicker(false);
-      }
-      // if (roomsRef.current && !roomsRef.current.contains(event.target)) {
-      //   setShowRoomsPicker(false);
-      // }
       if (guestsRef.current && !guestsRef.current.contains(event.target)) {
         setShowGuestsPicker(false);
       }
@@ -164,9 +151,21 @@ const AirbnbHeader = ({ onFilterButtonClick }) => {
     return parts.length > 0 ? parts.join(", ") : "Adicionar hóspedes";
   };
 
+  // Parse date string to local date without timezone issues
+  const parseDate = (dateString) => {
+    if (!dateString) return null;
+    if (typeof dateString === 'object' && dateString instanceof Date) {
+      return dateString;
+    }
+    const [year, month, day] = dateString.split('-').map(Number);
+    return new Date(year, month - 1, day);
+  };
+
   const formatDate = (date) => {
     if (!date) return "";
-    return new Date(date).toLocaleDateString("pt-BR", {
+    const d = parseDate(date);
+    if (!d) return "";
+    return d.toLocaleDateString("pt-BR", {
       day: "2-digit",
       month: "short",
     });
@@ -177,6 +176,11 @@ const AirbnbHeader = ({ onFilterButtonClick }) => {
       className={`sticky top-0 z-50 bg-white border-b border-airbnb-grey-200 shadow-sm transition-all duration-300 ease-in-out ${
         isScrolled ? "py-2" : "py-3"
       }`}
+      style={{
+        position: 'sticky',
+        zIndex: 50,
+        background: '#fff'
+      }}
     >
       <div className="max-w-[2520px] mx-auto px-5 sm:px-10 lg:px-20">
         <div
@@ -228,11 +232,11 @@ const AirbnbHeader = ({ onFilterButtonClick }) => {
                     isScrolled ? "text-[10px]" : "text-xs"
                   }`}
                 >
-                  Localização
+                  {t('header.where')}
                 </label>
                 <input
                   type="text"
-                  placeholder="Para onde?"
+                  placeholder={t('header.wherePlaceholder')}
                   value={destination}
                   onChange={(e) => setDestination(e.target.value)}
                   className={`w-full bg-transparent text-airbnb-black placeholder-airbnb-grey-400 focus:outline-none transition-all duration-300 ease-in-out ${
@@ -243,16 +247,14 @@ const AirbnbHeader = ({ onFilterButtonClick }) => {
 
               {/* Check-in */}
               <div
-                className={`flex-1 min-w-0 px-4 border-r border-airbnb-grey-200 relative transition-all duration-300 ease-in-out ${
+                className={`flex-1 min-w-0 px-4 border-r border-airbnb-grey-200 transition-all duration-300 ease-in-out ${
                   isScrolled ? "py-2" : "py-2.5"
                 }`}
-                ref={checkInRef}
               >
                 <div
                   className="cursor-pointer"
                   onClick={() => {
-                    setShowCheckInPicker(!showCheckInPicker);
-                    setShowCheckOutPicker(false);
+                    setShowDatePicker(true);
                     setShowGuestsPicker(false);
                   }}
                 >
@@ -261,7 +263,7 @@ const AirbnbHeader = ({ onFilterButtonClick }) => {
                       isScrolled ? "text-[10px]" : "text-xs"
                     }`}
                   >
-                    Check-in
+                    {t('header.checkIn')}
                   </label>
                   <div
                     className={`text-airbnb-black transition-all duration-300 ease-in-out ${
@@ -272,40 +274,23 @@ const AirbnbHeader = ({ onFilterButtonClick }) => {
                       formatDate(checkIn)
                     ) : (
                       <span className="text-airbnb-grey-400">
-                        Insira as datas
+                        {t('header.addDates')}
                       </span>
                     )}
                   </div>
                 </div>
-
-                {showCheckInPicker && (
-                  <CompactDatePicker
-                    selectedDate={checkIn}
-                    onDateChange={(date) => {
-                      setCheckIn(date);
-                      if (date && !checkOut) {
-                        setShowCheckInPicker(false);
-                        setShowCheckOutPicker(true);
-                      }
-                    }}
-                    minDate={new Date()}
-                    onClose={() => setShowCheckInPicker(false)}
-                  />
-                )}
               </div>
 
-              {/* Check-out */}
+              {/* Checkout */}
               <div
-                className={`flex-1 min-w-0 px-4 border-r border-airbnb-grey-200 relative transition-all duration-300 ease-in-out ${
+                className={`flex-1 min-w-0 px-4 border-r border-airbnb-grey-200 transition-all duration-300 ease-in-out ${
                   isScrolled ? "py-2" : "py-2.5"
                 }`}
-                ref={checkOutRef}
               >
                 <div
                   className="cursor-pointer"
                   onClick={() => {
-                    setShowCheckOutPicker(!showCheckOutPicker);
-                    setShowCheckInPicker(false);
+                    setShowDatePicker(true);
                     setShowGuestsPicker(false);
                   }}
                 >
@@ -314,7 +299,7 @@ const AirbnbHeader = ({ onFilterButtonClick }) => {
                       isScrolled ? "text-[10px]" : "text-xs"
                     }`}
                   >
-                    Check-out
+                    {t('header.checkout')}
                   </label>
                   <div
                     className={`text-airbnb-black transition-all duration-300 ease-in-out ${
@@ -325,23 +310,11 @@ const AirbnbHeader = ({ onFilterButtonClick }) => {
                       formatDate(checkOut)
                     ) : (
                       <span className="text-airbnb-grey-400">
-                        Insira as datas
+                        {t('header.addDates')}
                       </span>
                     )}
                   </div>
                 </div>
-
-                {showCheckOutPicker && (
-                  <CompactDatePicker
-                    selectedDate={checkOut}
-                    onDateChange={(date) => {
-                      setCheckOut(date);
-                      setShowCheckOutPicker(false);
-                    }}
-                    minDate={checkIn ? new Date(checkIn) : new Date()}
-                    onClose={() => setShowCheckOutPicker(false)}
-                  />
-                )}
               </div>
 
               {/* Quartos e Hóspedes */}
@@ -386,8 +359,7 @@ const AirbnbHeader = ({ onFilterButtonClick }) => {
                   className="cursor-pointer"
                   onClick={() => {
                     setShowGuestsPicker(!showGuestsPicker);
-                    setShowCheckInPicker(false);
-                    setShowCheckOutPicker(false);
+                    setShowDatePicker(false);
                   }}
                 >
                   <label
@@ -395,14 +367,14 @@ const AirbnbHeader = ({ onFilterButtonClick }) => {
                       isScrolled ? "text-[10px]" : "text-xs"
                     }`}
                   >
-                    Hóspedes
+                    {t('header.who')}
                   </label>
                   <div
                     className={`text-airbnb-black truncate transition-all duration-300 ease-in-out ${
                       isScrolled ? "text-xs" : "text-sm"
                     }`}
                   >
-                    {formatGuestsDisplay()}
+                    <span className="text-airbnb-grey-400">{t('header.guests')}</span>
                   </div>
                 </div>
 
@@ -502,7 +474,7 @@ const AirbnbHeader = ({ onFilterButtonClick }) => {
                   isScrolled ? "py-2 text-xs" : "py-3 text-sm"
                 }`}
               >
-                Anunciar seu espaço
+                {t('header.advertise')}
               </Link>
             )}
 
@@ -557,7 +529,7 @@ const AirbnbHeader = ({ onFilterButtonClick }) => {
                       className="flex items-center gap-3 px-4 py-3 text-airbnb-black hover:bg-airbnb-grey-50 transition-colors text-sm"
                     >
                       <FiUser className="text-lg" />
-                      <span>Minhas Reservas</span>
+                      <span>{t('header.myBookings')}</span>
                     </Link>
 
                     <Link
@@ -566,7 +538,7 @@ const AirbnbHeader = ({ onFilterButtonClick }) => {
                       className="flex items-center gap-3 px-4 py-3 text-airbnb-black hover:bg-airbnb-grey-50 transition-colors text-sm"
                     >
                       <span className="text-lg">♥</span>
-                      <span>Favoritos</span>
+                      <span>{t('header.favorites')}</span>
                     </Link>
 
                     <div className="border-t border-airbnb-grey-200 my-2"></div>
@@ -577,7 +549,7 @@ const AirbnbHeader = ({ onFilterButtonClick }) => {
                       className="flex items-center gap-3 px-4 py-3 text-airbnb-black hover:bg-airbnb-grey-50 transition-colors text-sm"
                     >
                       <FiUser className="text-lg" />
-                      <span>Perfil</span>
+                      <span>{t('header.profile')}</span>
                     </Link>
 
                     {(user?.role === "admin" ||
@@ -590,7 +562,7 @@ const AirbnbHeader = ({ onFilterButtonClick }) => {
                           className="flex items-center gap-3 px-4 py-3 text-airbnb-black hover:bg-airbnb-grey-50 transition-colors text-sm"
                         >
                           <FiSettings className="text-lg" />
-                          <span>Painel Admin</span>
+                          <span>{t('header.adminPanel')}</span>
                         </Link>
                       </>
                     )}
@@ -602,7 +574,7 @@ const AirbnbHeader = ({ onFilterButtonClick }) => {
                       className="flex items-center gap-3 px-4 py-3 text-airbnb-black hover:bg-airbnb-grey-50 transition-colors w-full text-left text-sm"
                     >
                       <FiLogOut className="text-lg" />
-                      <span>Sair</span>
+                      <span>{t('header.logout')}</span>
                     </button>
                   </div>
                 )}
@@ -615,7 +587,7 @@ const AirbnbHeader = ({ onFilterButtonClick }) => {
                     isScrolled ? "py-1.5 text-xs" : "py-2 text-sm"
                   }`}
                 >
-                  Entrar
+                  {t('header.login')}
                 </Link>
                 <Link
                   to="/guest-register"
@@ -623,13 +595,36 @@ const AirbnbHeader = ({ onFilterButtonClick }) => {
                     isScrolled ? "py-1.5 text-xs" : "py-2 text-sm"
                   }`}
                 >
-                  Cadastrar
+                  {t('header.register')}
                 </Link>
               </div>
             )}
           </div>
         </div>
       </div>
+
+      {/* DatePicker Modal */}
+      {showDatePicker && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 overflow-y-auto"
+          onClick={() => setShowDatePicker(false)}
+        >
+          <div className="relative my-auto" onClick={(e) => e.stopPropagation()}>
+            <DateRangePicker
+              checkIn={checkIn}
+              checkOut={checkOut}
+              onChange={(newDates) => {
+                setCheckIn(newDates.checkIn);
+                setCheckOut(newDates.checkOut);
+                if (newDates.checkIn && newDates.checkOut) {
+                  setShowDatePicker(false);
+                }
+              }}
+              onClose={() => setShowDatePicker(false)}
+            />
+          </div>
+        </div>
+      )}
     </header>
   );
 };

@@ -14,7 +14,10 @@
       "Bash(Get-Date)",
       "Bash(npm run lint)",
       "Bash(awk:*)",
-      "Bash(xargs ls:*)"
+      "Bash(xargs ls:*)",
+      "Bash(npm install:*)",
+      "Bash(timeout:*)",
+      "Bash(curl:*)"
     ],
     "deny": [],
     "ask": []

@@ -12,6 +12,7 @@ const WhatsAppButton = ({ message = DEFAULT_MESSAGE }) => {
 
   return (
     <a
+      id="whatsapp-button"
       href={url}
       target="_blank"
       rel="noopener noreferrer"

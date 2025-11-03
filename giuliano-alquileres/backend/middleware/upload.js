@@ -55,13 +55,13 @@ const upload = multer({
   storage: storage,
   fileFilter: fileFilter,
   limits: {
-    fileSize: 5 * 1024 * 1024, // 5MB por arquivo
-    files: 10, // máximo 10 arquivos por upload
+    fileSize: 20 * 1024 * 1024, // 20MB por arquivo
+    files: 20, // máximo 20 arquivos por upload
   },
 });
 
 // Middleware para upload múltiplo
-const uploadMultiple = upload.array("photos", 10);
+const uploadMultiple = upload.array("photos", 20);
 
 // Middleware para upload único
 const uploadSingle = upload.single("photo");
@@ -79,14 +79,14 @@ const handleUpload = (req, res, next) => {
       if (err.code === "LIMIT_FILE_SIZE") {
         return res.status(400).json({
           error: "Arquivo muito grande",
-          details: "Tamanho máximo permitido: 5MB por arquivo",
+          details: "Tamanho máximo permitido: 20MB por arquivo",
         });
       }
 
       if (err.code === "LIMIT_FILE_COUNT") {
         return res.status(400).json({
           error: "Muitos arquivos",
-          details: "Máximo de 10 arquivos por upload",
+          details: "Máximo de 20 arquivos por upload",
         });
       }
 
@@ -126,7 +126,7 @@ const handleSingleUpload = (req, res, next) => {
       if (err.code === "LIMIT_FILE_SIZE") {
         return res.status(400).json({
           error: "Arquivo muito grande",
-          details: "Tamanho máximo permitido: 5MB",
+          details: "Tamanho máximo permitido: 20MB",
         });
       }
 

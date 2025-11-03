@@ -105,6 +105,7 @@ const Home = () => {
 
   return (
     <div className="min-h-screen bg-white">
+      {/* Header Original com Barra de Pesquisa */}
       <AirbnbHeader />
 
       {/* Hero Section - Com Imagem de Fundo (estilo ZAP) */}

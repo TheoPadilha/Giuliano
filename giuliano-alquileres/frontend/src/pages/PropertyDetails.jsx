@@ -10,11 +10,12 @@ import {
 import api from "../services/api";
 import Loading from "../components/common/Loading";
 import DateRangePicker from "../components/search/DateRangePicker";
-import RoomsGuestsPicker from "../components/search/RoomsGuestsPicker";
+import GuestsPicker from "../components/search/GuestsPicker";
 import ReviewSection from "../components/property/ReviewSection";
 import FavoriteButton from "../components/property/FavoriteButton";
 import AirbnbHeader from "../components/layout/AirbnbHeader";
-import PropertyMap from "../components/property/PropertyMap";
+import PropertyMapLeaflet from "../components/property/PropertyMapLeaflet";
+import PropertyAmenities from "../components/property/PropertyAmenities";
 
 const PropertyDetails = () => {
   const { uuid } = useParams();
@@ -26,10 +27,10 @@ const PropertyDetails = () => {
   const [error, setError] = useState("");
   const [showAllPhotos, setShowAllPhotos] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [showRoomsPicker, setShowRoomsPicker] = useState(false);
+  const [showGuestsPicker, setShowGuestsPicker] = useState(false);
   const [occupiedDates, setOccupiedDates] = useState([]);
   const [bookingDates, setBookingDates] = useState({ checkIn: null, checkOut: null });
-  const [rooms, setRooms] = useState([{ adults: 2, children: [] }]);
+  const [guests, setGuests] = useState({ adults: 1, children: 0, infants: 0, pets: 0 });
   const [totalNights, setTotalNights] = useState(0);
   const [totalPrice, setTotalPrice] = useState(0);
 
@@ -45,18 +46,48 @@ const PropertyDetails = () => {
     }
   }, [property?.id]);
 
+  // Parse date string to local date without timezone issues
+  const parseDate = (dateString) => {
+    if (!dateString) return null;
+    if (typeof dateString === 'object' && dateString instanceof Date) {
+      return dateString;
+    }
+    const [year, month, day] = dateString.split('-').map(Number);
+    return new Date(year, month - 1, day);
+  };
+
   // Calcular preço total
   useEffect(() => {
     if (bookingDates.checkIn && bookingDates.checkOut && property) {
-      const checkIn = new Date(bookingDates.checkIn);
-      const checkOut = new Date(bookingDates.checkOut);
+      const checkIn = parseDate(bookingDates.checkIn);
+      const checkOut = parseDate(bookingDates.checkOut);
       const nights = Math.ceil((checkOut - checkIn) / (1000 * 60 * 60 * 24));
-      const price = Number(property.price_per_night) * nights;
+
+      // Calcular número total de hóspedes (adultos + crianças, bebês não contam)
+      const totalGuests = guests.adults + guests.children;
+
+      // Preço base (para 2 hóspedes)
+      const basePrice = Number(property.price_per_night);
+
+      // Definir número mínimo de hóspedes incluídos no preço base (geralmente 2)
+      const minGuestsIncluded = 2;
+
+      // Calcular hóspedes adicionais
+      const additionalGuests = Math.max(0, totalGuests - minGuestsIncluded);
+
+      // Valor por hóspede adicional (10% do preço base por hóspede extra)
+      const pricePerAdditionalGuest = basePrice * 0.10;
+
+      // Preço total por noite = preço base + (hóspedes adicionais * valor por hóspede adicional)
+      const pricePerNight = basePrice + (additionalGuests * pricePerAdditionalGuest);
+
+      // Preço total = preço por noite * número de noites
+      const price = pricePerNight * nights;
 
       setTotalNights(nights);
       setTotalPrice(price);
     }
-  }, [bookingDates, property]);
+  }, [bookingDates, property, guests]);
 
   const fetchProperty = async () => {
     try {
@@ -260,33 +291,15 @@ const PropertyDetails = () => {
             )}
 
             {/* Comodidades */}
-            {amenities.length > 0 && (
-              <div className="border-b border-gray-200 pb-8">
-                <h2 className="text-2xl font-bold text-gray-900 mb-6">O que este lugar oferece</h2>
-                <div className="grid grid-cols-2 gap-4">
-                  {amenities.slice(0, 10).map((amenity) => (
-                    <div key={amenity.id} className="flex items-center gap-3 py-3">
-                      <span className="text-2xl">{getAmenityIcon(amenity.icon)}</span>
-                      <span className="text-gray-700 font-medium">{amenity.name}</span>
-                    </div>
-                  ))}
-                </div>
-                {amenities.length > 10 && (
-                  <button className="mt-6 px-6 py-3 border-2 border-gray-900 rounded-xl font-medium hover:bg-gray-50 transition-colors">
-                    Mostrar todas as {amenities.length} comodidades
-                  </button>
-                )}
-              </div>
-            )}
+            <PropertyAmenities amenities={amenities} />
 
             {/* Localização no Mapa */}
             <div className="border-b border-gray-200 pb-8">
-              <PropertyMap
-                latitude={property.latitude}
-                longitude={property.longitude}
+              <h2 className="text-2xl font-bold text-gray-900 mb-6">Onde você vai ficar</h2>
+              <PropertyMapLeaflet
+                lat={property.latitude}
+                lng={property.longitude}
                 address={property.address}
-                propertyTitle={property.title}
-                apiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY}
               />
             </div>
 
@@ -300,6 +313,7 @@ const PropertyDetails = () => {
                   onChange={setBookingDates}
                   onClose={() => {}}
                   occupiedDates={occupiedDates}
+                  compact={true}
                 />
               </div>
             </div>
@@ -337,54 +351,68 @@ const PropertyDetails = () => {
                     <div className="p-3 border-r border-gray-300">
                       <div className="text-xs font-bold text-gray-900 mb-1">CHECK-IN</div>
                       <div className="text-sm text-gray-600">
-                        {bookingDates.checkIn ? new Date(bookingDates.checkIn).toLocaleDateString("pt-BR") : "Adicionar"}
+                        {bookingDates.checkIn ? parseDate(bookingDates.checkIn).toLocaleDateString("pt-BR") : "Adicionar"}
                       </div>
                     </div>
                     <div className="p-3">
                       <div className="text-xs font-bold text-gray-900 mb-1">CHECK-OUT</div>
                       <div className="text-sm text-gray-600">
-                        {bookingDates.checkOut ? new Date(bookingDates.checkOut).toLocaleDateString("pt-BR") : "Adicionar"}
+                        {bookingDates.checkOut ? parseDate(bookingDates.checkOut).toLocaleDateString("pt-BR") : "Adicionar"}
                       </div>
                     </div>
                   </div>
                 </div>
 
-                {/* Seleção de Quartos e Hóspedes */}
+                {/* Seleção de Hóspedes */}
                 <div className="mb-6 relative">
                   <div
                     className="border border-gray-300 rounded-xl p-3 cursor-pointer hover:border-gray-400 transition-colors"
-                    onClick={() => setShowRoomsPicker(!showRoomsPicker)}
+                    onClick={() => setShowGuestsPicker(!showGuestsPicker)}
                   >
-                    <div className="text-xs font-bold text-gray-900 mb-1">QUARTOS E HÓSPEDES</div>
+                    <div className="text-xs font-bold text-gray-900 mb-1">HÓSPEDES</div>
                     <div className="text-sm text-gray-600">
-                      {rooms.length} {rooms.length === 1 ? 'quarto' : 'quartos'}, {' '}
-                      {rooms.reduce((total, room) => total + room.adults + room.children.length, 0)} {' '}
-                      {rooms.reduce((total, room) => total + room.adults + room.children.length, 0) === 1 ? 'hóspede' : 'hóspedes'}
+                      {guests.adults + guests.children} {guests.adults + guests.children === 1 ? 'hóspede' : 'hóspedes'}
+                      {guests.infants > 0 && `, ${guests.infants} ${guests.infants === 1 ? 'bebê' : 'bebês'}`}
+                      {guests.pets > 0 && `, ${guests.pets} ${guests.pets === 1 ? 'animal' : 'animais'}`}
                     </div>
                   </div>
 
-                  {/* Picker de Quartos e Hóspedes */}
-                  {showRoomsPicker && (
-                    <div className="relative z-50">
-                      <RoomsGuestsPicker
-                        rooms={rooms}
-                        onChange={(newRooms) => {
-                          setRooms(newRooms);
-                        }}
-                        onClose={() => setShowRoomsPicker(false)}
-                      />
-                    </div>
+                  {/* Picker de Hóspedes */}
+                  {showGuestsPicker && (
+                    <GuestsPicker
+                      guests={guests}
+                      onChange={(newGuests) => {
+                        setGuests(newGuests);
+                      }}
+                      maxGuests={property.max_guests || 16}
+                      allowsPets={property.allows_pets || false}
+                      onClose={() => setShowGuestsPicker(false)}
+                    />
                   )}
                 </div>
 
                 {/* Cálculo do Preço */}
                 {totalNights > 0 && (
                   <div className="mb-6 space-y-3 pb-6 border-b border-gray-200">
-                    <div className="flex justify-between text-gray-700">
-                      <span>R$ {Number(property.price_per_night).toLocaleString("pt-BR", { minimumFractionDigits: 2 })} x {totalNights} noites</span>
-                      <span>R$ {totalPrice.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</span>
+                    <div className="flex justify-between text-gray-700 text-sm">
+                      <span>R$ {Number(property.price_per_night).toLocaleString("pt-BR", { minimumFractionDigits: 2 })} x {totalNights} {totalNights === 1 ? 'noite' : 'noites'}</span>
+                      <span>R$ {(Number(property.price_per_night) * totalNights).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</span>
                     </div>
-                    <div className="flex justify-between text-gray-700">
+                    {(() => {
+                      const totalGuests = guests.adults + guests.children;
+                      const additionalGuests = Math.max(0, totalGuests - 2);
+                      if (additionalGuests > 0) {
+                        const extraGuestFee = Number(property.price_per_night) * 0.10 * additionalGuests * totalNights;
+                        return (
+                          <div className="flex justify-between text-gray-700 text-sm">
+                            <span>{additionalGuests} {additionalGuests === 1 ? 'hóspede extra' : 'hóspedes extras'}</span>
+                            <span>R$ {extraGuestFee.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</span>
+                          </div>
+                        );
+                      }
+                      return null;
+                    })()}
+                    <div className="flex justify-between text-gray-700 text-sm">
                       <span>Taxa de serviço</span>
                       <span>R$ {(totalPrice * 0.05).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</span>
                     </div>
@@ -403,7 +431,7 @@ const PropertyDetails = () => {
                       return;
                     }
 
-                    const totalGuests = rooms.reduce((total, room) => total + room.adults + room.children.length, 0);
+                    const totalGuests = guests.adults + guests.children;
 
                     if (totalGuests > property.max_guests) {
                       alert(`Esta propriedade suporta no máximo ${property.max_guests} hóspedes`);
@@ -417,7 +445,7 @@ const PropertyDetails = () => {
                           checkIn: bookingDates.checkIn,
                           checkOut: bookingDates.checkOut,
                           nights: totalNights,
-                          rooms,
+                          guests,
                           totalGuests
                         }
                       }
@@ -509,23 +537,6 @@ const PropertyDetails = () => {
       )}
     </div>
   );
-};
-
-// Helper function para ícones de comodidades
-const getAmenityIcon = (iconName) => {
-  const icons = {
-    wifi: "📶",
-    snowflake: "❄️",
-    waves: "🏊",
-    "chef-hat": "👨‍🍳",
-    tv: "📺",
-    "washing-machine": "🧺",
-    home: "🏠",
-    flame: "🔥",
-    car: "🚗",
-    shield: "🛡️",
-  };
-  return icons[iconName] || "⭐";
 };
 
 export default PropertyDetails;

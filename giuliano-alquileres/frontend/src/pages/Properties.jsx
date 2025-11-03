@@ -1,12 +1,12 @@
 // Properties.jsx - Versão Corrigida
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useSearchParams, Link } from "react-router-dom";
 import api from "../services/api";
 import PropertyCard from "../components/property/PropertyCard";
 import PropertyFiltersPro from "../components/property/PropertyFiltersPro";
 import SortDropdown from "../components/property/SortDropdown";
-import MapView from "../components/property/MapView";
-import AirbnbHeader from "../components/layout/AirbnbHeader";
+import MapViewLeaflet from "../components/property/MapViewLeaflet";
+import ExpandableSearchBar from "../components/search/ExpandableSearchBar";
 import Footer from "../components/layout/Footer";
 import Loading from "../components/common/Loading";
 import {
@@ -26,7 +26,12 @@ const Properties = () => {
   const [amenities, setAmenities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [pagination, setPagination] = useState({});
-  const [viewMode, setViewMode] = useState("grid"); // grid, list, map
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
+  const [viewMode, setViewMode] = useState(
+    window.innerWidth < 1024 ? "map" : "grid"
+  ); // Mobile padrão: map, Desktop: grid
+  const [hoveredPropertyId, setHoveredPropertyId] = useState(null); // Para sincronizar hover entre card e mapa
+  const propertyRefs = useRef({}); // Refs para scroll até card
 
   // Estado dos filtros
   const [filters, setFilters] = useState({
@@ -43,6 +48,12 @@ const Properties = () => {
     amenities: searchParams.get("amenities")?.split(",").filter(Boolean) || [],
     checkIn: searchParams.get("checkIn") || "",
     checkOut: searchParams.get("checkOut") || "",
+    guests: {
+      adults: parseInt(searchParams.get("adults")) || 0,
+      children: parseInt(searchParams.get("children")) || 0,
+      infants: parseInt(searchParams.get("infants")) || 0,
+      pets: parseInt(searchParams.get("pets")) || 0,
+    },
     rooms: [],
     page: parseInt(searchParams.get("page")) || 1,
     limit: parseInt(searchParams.get("limit")) || 20,
@@ -50,6 +61,22 @@ const Properties = () => {
 
   // Estado de ordenação
   const [sortBy, setSortBy] = useState(searchParams.get("sort") || "");
+
+  // Detectar mudanças de tamanho de tela
+  useEffect(() => {
+    const handleResize = () => {
+      const mobile = window.innerWidth < 1024;
+      setIsMobile(mobile);
+
+      // Se estava em modo grid/list no desktop e mudou para mobile, muda para map
+      if (mobile && (viewMode === "grid" || viewMode === "list")) {
+        setViewMode("map");
+      }
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [viewMode]);
 
   // Carregar dados auxiliares (cidades e amenidades)
   useEffect(() => {
@@ -72,6 +99,26 @@ const Properties = () => {
 
     fetchAuxData();
   }, []);
+
+  // Função para scroll até card quando clicar no mapa
+  const scrollToProperty = (propertyId) => {
+    const cardElement = propertyRefs.current[propertyId];
+    if (cardElement) {
+      // Destaca o card temporariamente
+      setHoveredPropertyId(propertyId);
+
+      // Scroll suave até o card
+      cardElement.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+
+      // Remove o destaque após 2 segundos
+      setTimeout(() => {
+        setHoveredPropertyId(null);
+      }, 2000);
+    }
+  };
 
   // Função para ordenar propriedades no frontend
   const sortProperties = (props, sortType) => {
@@ -112,10 +159,16 @@ const Properties = () => {
       const params = new URLSearchParams();
 
       Object.entries(filters).forEach(([key, value]) => {
-        if (value && value !== "") {
+        if (key === 'guests' && typeof value === 'object') {
+          // Calculate total guests from adults and children
+          const totalGuests = (value.adults || 0) + (value.children || 0);
+          if (totalGuests > 0) {
+            params.append('max_guests', totalGuests.toString());
+          }
+        } else if (value && value !== "") {
           if (Array.isArray(value) && value.length > 0) {
             params.append(key, value.join(","));
-          } else if (!Array.isArray(value)) {
+          } else if (!Array.isArray(value) && typeof value !== 'object') {
             params.append(key, value);
           }
         }
@@ -156,7 +209,14 @@ const Properties = () => {
     // Atualizar URL
     const params = new URLSearchParams();
     Object.entries(newFilters).forEach(([key, value]) => {
-      if (
+      if (key === 'guests' && typeof value === 'object') {
+        // Handle guests object separately
+        Object.entries(value).forEach(([guestType, count]) => {
+          if (count > 0) {
+            params.set(guestType, count.toString());
+          }
+        });
+      } else if (
         value &&
         value !== "" &&
         !(Array.isArray(value) && value.length === 0)
@@ -200,6 +260,12 @@ const Properties = () => {
       amenities: [],
       checkIn: "",
       checkOut: "",
+      guests: {
+        adults: 0,
+        children: 0,
+        infants: 0,
+        pets: 0,
+      },
       rooms: [],
       page: 1,
       limit: 20,
@@ -208,9 +274,16 @@ const Properties = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white">
-      {/* Header Original - MANTIDO */}
-      <AirbnbHeader onFilterButtonClick={() => setShowFiltersModal(true)} />
+    <div className="min-h-screen bg-white dark:bg-airbnb-grey-900">
+      {/* Barra de Busca Expansível */}
+      <ExpandableSearchBar
+        filters={filters}
+        onSearch={(newFilters) => {
+          setFilters(newFilters);
+          handleSearch();
+        }}
+        onFiltersClick={() => setShowFiltersModal(true)}
+      />
 
       {/* Modal de Filtros - Só aparece quando clicado */}
       {showFiltersModal && (
@@ -361,22 +434,145 @@ const Properties = () => {
 
               {/* Lista de Propriedades */}
               {viewMode === "list" && (
-                <div className="space-y-8">
+                <div className="space-y-6">
                   {properties.map((property, index) => (
                     <PropertyCard
                       key={property.uuid || property.id || `property-${index}`}
                       property={property}
-                      viewMode={viewMode}
+                      layout="horizontal"
                     />
                   ))}
                 </div>
               )}
 
-              {/* Visualização em Mapa */}
-              {viewMode === "map" && <MapView properties={properties} />}
+              {/* Visualização em Mapa - Layout Estilo Airbnb */}
+              {viewMode === "map" && (
+                <div className="relative flex flex-col lg:flex-row h-auto lg:h-[calc(100vh-240px)] min-h-[600px] transition-all ease-in-out duration-300">
+                  {/* MOBILE: Mapa no topo */}
+                  <div className="lg:hidden w-full h-[50vh] sticky top-[72px] z-10 transition-all ease-in-out duration-300">
+                    <MapViewLeaflet
+                      properties={properties}
+                      hoveredPropertyId={hoveredPropertyId}
+                      onPropertyHover={setHoveredPropertyId}
+                      onPropertyClick={scrollToProperty}
+                    />
 
-              {/* Paginação */}
-              {pagination.totalPages > 1 && (
+                    {/* Badge de Contagem no Mapa Mobile */}
+                    <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-[1000] pointer-events-none">
+                      <div className="bg-white px-4 py-2 rounded-full shadow-lg border border-airbnb-grey-200 flex items-center gap-2">
+                        <div className="w-2 h-2 bg-rausch rounded-full animate-pulse"></div>
+                        <p className="text-sm font-semibold text-airbnb-black">
+                          {properties.filter(p => p.latitude && p.longitude).length} no mapa
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* DESKTOP/MOBILE: Coluna Esquerda - Cards Scrollable */}
+                  <div className="w-full lg:w-[45%] overflow-y-auto px-4 py-6 lg:px-6 bg-white custom-scrollbar relative">
+                    {/* Barrinha cinza no topo (Mobile apenas) - Estilo Airbnb */}
+                    <div className="lg:hidden sticky top-0 left-0 right-0 flex justify-center pt-2 pb-4 bg-white z-10">
+                      <div className="w-10 h-1 bg-airbnb-grey-300 rounded-full"></div>
+                    </div>
+
+                    <div className="max-w-2xl mx-auto space-y-4">
+                      {/* Total de Resultados */}
+                      <div className="mb-4">
+                        <h2 className="text-xl font-semibold text-airbnb-black">
+                          {properties.length} {properties.length === 1 ? 'propriedade' : 'propriedades'}
+                        </h2>
+                        <p className="hidden lg:block text-sm text-airbnb-grey-600 mt-1">
+                          Passe o mouse sobre os cards para destacar no mapa
+                        </p>
+                        <p className="lg:hidden text-sm text-airbnb-grey-600 mt-1">
+                          Toque nos preços do mapa para ver detalhes
+                        </p>
+                      </div>
+
+                      {/* Cards com Animações */}
+                      {properties.map((property, index) => {
+                        const propertyId = property.uuid || property.id;
+                        const isHovered = hoveredPropertyId === propertyId;
+
+                        return (
+                          <div
+                            key={propertyId || `property-${index}`}
+                            ref={(el) => (propertyRefs.current[propertyId] = el)}
+                            onMouseEnter={() => setHoveredPropertyId(propertyId)}
+                            onMouseLeave={() => setHoveredPropertyId(null)}
+                            className={`
+                              transition-all duration-300 ease-in-out
+                              ${isHovered ? 'transform scale-[1.02]' : 'transform scale-100'}
+                            `}
+                          >
+                            <div className={`
+                              rounded-xl overflow-hidden bg-white
+                              ${isHovered ? 'shadow-xl ring-2 ring-rausch/50' : 'shadow-sm hover:shadow-md'}
+                              transition-all duration-300 ease-in-out
+                            `}>
+                              <PropertyCard
+                                property={property}
+                                layout="horizontal"
+                              />
+                            </div>
+                          </div>
+                        );
+                      })}
+
+                      {/* Espaço final para não ficar colado no fim */}
+                      <div className="h-20"></div>
+                    </div>
+                  </div>
+
+                  {/* DESKTOP: Coluna Direita - Mapa Fixo (60%) */}
+                  <div className="hidden lg:block w-[55%] h-full sticky top-0">
+                    <MapViewLeaflet
+                      properties={properties}
+                      hoveredPropertyId={hoveredPropertyId}
+                      onPropertyHover={setHoveredPropertyId}
+                      onPropertyClick={scrollToProperty}
+                    />
+
+                    {/* Badge de Contagem no Mapa Desktop */}
+                    <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-[1000] pointer-events-none">
+                      <div className="bg-white px-3 py-1.5 rounded-full shadow-md border border-airbnb-grey-200">
+                        <p className="text-xs font-semibold text-airbnb-black">
+                          {properties.filter(p => p.latitude && p.longitude).length} no mapa
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* CSS Custom Scrollbar */}
+                  <style>{`
+                    /* Custom Scrollbar */}
+                    .custom-scrollbar::-webkit-scrollbar {
+                      width: 6px;
+                    }
+
+                    .custom-scrollbar::-webkit-scrollbar-track {
+                      background: transparent;
+                    }
+
+                    .custom-scrollbar::-webkit-scrollbar-thumb {
+                      background: #ddd;
+                      border-radius: 10px;
+                    }
+
+                    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+                      background: #bbb;
+                    }
+
+                    /* Ocultar WhatsApp button no modo mapa */
+                    #whatsapp-button {
+                      display: none !important;
+                    }
+                  `}</style>
+                </div>
+              )}
+
+              {/* Paginação - Ocultar no modo mapa */}
+              {pagination.totalPages > 1 && viewMode !== "map" && (
                 <div className="mt-12 flex justify-center">
                   <nav className="flex items-center space-x-1">
                     {/* Botão Anterior */}
