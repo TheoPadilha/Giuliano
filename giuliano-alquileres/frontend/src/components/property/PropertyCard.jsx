@@ -194,7 +194,7 @@ const PropertyCard = ({ property, layout = "vertical", showPremiumBadge = false 
         className="group block"
         onClick={handleCardClick}
       >
-        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 p-3 sm:p-4 bg-white border border-airbnb-grey-200 rounded-xlarge hover:shadow-lg transition-all duration-200">
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 p-3 sm:p-4 bg-white border border-airbnb-grey-200 rounded-xl hover:shadow-lg transition-all duration-200">
           {/* Imagem */}
           <div className="relative w-full sm:w-48 md:w-64 flex-shrink-0">
             <div className="aspect-[4/3] sm:aspect-square rounded-lg overflow-hidden bg-airbnb-grey-100">

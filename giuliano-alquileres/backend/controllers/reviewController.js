@@ -73,16 +73,42 @@ const getPropertyReviews = async (req, res) => {
     const limit = parseInt(req.query.limit) || 10;
     const offset = (page - 1) * limit;
 
+    console.log(`[Reviews] Buscando reviews para propriedade UUID: ${propertyId}`);
+
+    // Buscar propriedade pelo UUID para obter o ID numérico
+    const property = await Property.findOne({
+      where: { uuid: propertyId }
+    });
+
+    if (!property) {
+      console.log(`[Reviews] Propriedade não encontrada com UUID: ${propertyId}`);
+      return res.status(404).json({
+        error: "Propriedade não encontrada",
+        reviews: [],
+        pagination: { page, limit, total: 0, pages: 0 },
+        stats: {
+          avg_rating: "0.0",
+          total_reviews: 0,
+          avg_cleanliness: "0.0",
+          avg_location: "0.0",
+          avg_value: "0.0",
+          avg_communication: "0.0",
+        }
+      });
+    }
+
+    console.log(`[Reviews] Propriedade encontrada - ID: ${property.id}, Nome: ${property.title}`);
+
     const { count, rows: reviews } = await Review.findAndCountAll({
-      where: { 
-        property_id: propertyId,
-        is_visible: true 
+      where: {
+        property_id: property.id,
+        is_visible: true
       },
       include: [
-        { 
-          model: User, 
-          as: 'user', 
-          attributes: ['name', 'avatar', 'created_at'] 
+        {
+          model: User,
+          as: 'user',
+          attributes: ['name', 'avatar', 'created_at']
         }
       ],
       order: [['created_at', 'DESC']],
@@ -90,19 +116,26 @@ const getPropertyReviews = async (req, res) => {
       offset,
     });
 
+    console.log(`[Reviews] Encontradas ${count} reviews para a propriedade`);
+
     // Calcular estatísticas
-    const stats = await Review.findOne({
-      where: { property_id: propertyId, is_visible: true },
-      attributes: [
-        [sequelize.fn('AVG', sequelize.col('rating')), 'avg_rating'],
-        [sequelize.fn('COUNT', sequelize.col('id')), 'total_reviews'],
-        [sequelize.fn('AVG', sequelize.col('cleanliness_rating')), 'avg_cleanliness'],
-        [sequelize.fn('AVG', sequelize.col('location_rating')), 'avg_location'],
-        [sequelize.fn('AVG', sequelize.col('value_rating')), 'avg_value'],
-        [sequelize.fn('AVG', sequelize.col('communication_rating')), 'avg_communication'],
-      ],
-      raw: true,
-    });
+    let stats = null;
+    if (count > 0) {
+      console.log(`[Reviews] Calculando estatísticas...`);
+      stats = await Review.findOne({
+        where: { property_id: property.id, is_visible: true },
+        attributes: [
+          [sequelize.fn('AVG', sequelize.col('rating')), 'avg_rating'],
+          [sequelize.fn('COUNT', sequelize.col('id')), 'total_reviews'],
+          [sequelize.fn('AVG', sequelize.col('cleanliness_rating')), 'avg_cleanliness'],
+          [sequelize.fn('AVG', sequelize.col('location_rating')), 'avg_location'],
+          [sequelize.fn('AVG', sequelize.col('value_rating')), 'avg_value'],
+          [sequelize.fn('AVG', sequelize.col('communication_rating')), 'avg_communication'],
+        ],
+        raw: true,
+      });
+      console.log(`[Reviews] Estatísticas calculadas:`, stats);
+    }
 
     res.json({
       reviews,
@@ -123,7 +156,12 @@ const getPropertyReviews = async (req, res) => {
     });
   } catch (error) {
     console.error("Erro ao buscar avaliações:", error);
-    res.status(500).json({ error: "Erro interno do servidor" });
+    console.error("Stack trace:", error.stack);
+    res.status(500).json({
+      error: "Erro interno do servidor",
+      message: error.message,
+      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
   }
 };
 

@@ -8,6 +8,7 @@ import {
 } from "react-icons/fa";
 import api from "../services/api";
 import Loading from "../components/common/Loading";
+import { BetaNotice } from "../components/common/BetaBadge";
 
 const BookingCheckout = () => {
   const location = useLocation();
@@ -35,15 +36,50 @@ const BookingCheckout = () => {
 
   useEffect(() => {
     if (!isAuthenticated) {
+      // Salvar dados da reserva no sessionStorage antes de redirecionar
+      if (property && bookingData) {
+        sessionStorage.setItem('pendingBooking', JSON.stringify({
+          property,
+          bookingData,
+          timestamp: Date.now()
+        }));
+      }
       navigate("/guest-login", { state: { from: location } });
       return;
     }
 
+    // Se não tem dados no state mas tem no sessionStorage, recuperar
     if (!property || !bookingData) {
+      const pendingBooking = sessionStorage.getItem('pendingBooking');
+      if (pendingBooking) {
+        try {
+          const { property: savedProperty, bookingData: savedBookingData, timestamp } = JSON.parse(pendingBooking);
+
+          // Verificar se os dados não estão muito antigos (30 minutos)
+          const thirtyMinutes = 30 * 60 * 1000;
+          if (Date.now() - timestamp < thirtyMinutes) {
+            // Restaurar os dados no state do location
+            navigate("/booking-checkout", {
+              state: { property: savedProperty, bookingData: savedBookingData },
+              replace: true
+            });
+            sessionStorage.removeItem('pendingBooking');
+            return;
+          } else {
+            // Dados muito antigos, limpar
+            sessionStorage.removeItem('pendingBooking');
+          }
+        } catch (error) {
+          console.error('Erro ao recuperar dados da reserva:', error);
+          sessionStorage.removeItem('pendingBooking');
+        }
+      }
+
+      // Se não conseguiu recuperar, redirecionar para properties
       navigate("/properties");
       return;
     }
-  }, [isAuthenticated, property, bookingData]);
+  }, [isAuthenticated, property, bookingData, navigate, location]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -62,9 +98,9 @@ const BookingCheckout = () => {
       return false;
     }
 
-    const phoneRegex = /^\(\d{2}\)\s?\d{4,5}-?\d{4}$/;
+    const phoneRegex = /^(\(?\d{2}\)?\s?)?\d{4,5}-?\d{4}$/;
     if (!phoneRegex.test(guestInfo.phone)) {
-      setError("Telefone inválido. Use o formato (XX) XXXXX-XXXX");
+      setError("Telefone inválido. Use o formato (XX) XXXXX-XXXX ou XX XXXXX-XXXX");
       return false;
     }
 
@@ -91,6 +127,11 @@ const BookingCheckout = () => {
       setLoading(true);
       setError("");
 
+      const isBetaMode = import.meta.env.VITE_BETA_MODE === "true";
+
+      // Normalizar telefone (remover parênteses, espaços e traços)
+      const normalizedPhone = guestInfo.phone.replace(/[^\d]/g, '');
+
       // Criar reserva
       const bookingResponse = await api.post("/api/bookings", {
         property_id: property.id,
@@ -99,22 +140,42 @@ const BookingCheckout = () => {
         guests: bookingData.totalGuests,
         guest_name: guestInfo.fullName,
         guest_email: guestInfo.email,
-        guest_phone: guestInfo.phone,
+        guest_phone: normalizedPhone,
         guest_document: guestInfo.document,
         special_requests: guestInfo.specialRequests,
         payment_method: paymentMethod,
-        rooms_data: JSON.stringify(bookingData.rooms)
+        rooms_data: bookingData.rooms ? JSON.stringify(bookingData.rooms) : JSON.stringify([])
       });
 
       const booking = bookingResponse.data.booking;
 
-      // Criar preferência de pagamento no Mercado Pago
+      // Modo Beta: Reserva criada sem pagamento
+      if (isBetaMode || bookingResponse.data.betaMode) {
+        // Limpar dados pendentes do sessionStorage
+        sessionStorage.removeItem('pendingBooking');
+
+        // Redirecionar para página de sucesso com mensagem Beta
+        navigate("/booking-success", {
+          state: {
+            booking,
+            betaMode: true,
+            message: bookingResponse.data.message,
+            betaNotice: bookingResponse.data.betaNotice,
+          },
+        });
+        return;
+      }
+
+      // Modo Produção: Criar preferência de pagamento no Mercado Pago
       const paymentResponse = await api.post("/api/payments/create-preference", {
         booking_id: booking.id,
         payment_method: paymentMethod
       });
 
       const { init_point, sandbox_init_point } = paymentResponse.data.payment;
+
+      // Limpar dados pendentes do sessionStorage antes de redirecionar para MP
+      sessionStorage.removeItem('pendingBooking');
 
       // Redirecionar para Mercado Pago
       const paymentUrl = import.meta.env.MODE === "production" ? init_point : sandbox_init_point;
@@ -146,6 +207,8 @@ const BookingCheckout = () => {
   if (!property || !bookingData) {
     return <Loading text="Carregando..." />;
   }
+
+  const isBetaMode = import.meta.env.VITE_BETA_MODE === "true";
 
   // Cálculo de preços
   const nights = bookingData.nights;
@@ -195,6 +258,13 @@ const BookingCheckout = () => {
             </div>
           </div>
         </div>
+
+        {/* Beta Mode Notice */}
+        {isBetaMode && (
+          <div className="mb-8">
+            <BetaNotice />
+          </div>
+        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Content - Formulário */}
@@ -264,7 +334,7 @@ const BookingCheckout = () => {
                           name="phone"
                           value={guestInfo.phone}
                           onChange={handleInputChange}
-                          placeholder="(XX) XXXXX-XXXX"
+                          placeholder="(XX) XXXXX-XXXX ou XX XXXXX-XXXX"
                           className="input pl-12"
                           required
                         />
@@ -526,10 +596,12 @@ const BookingCheckout = () => {
                     </span>
                     <span className="font-bold text-airbnb-black">{bookingData.totalGuests}</span>
                   </div>
-                  <div className="flex items-center justify-between text-sm mt-2">
-                    <span className="text-airbnb-grey-600">Quartos:</span>
-                    <span className="font-bold text-airbnb-black">{bookingData.rooms.length}</span>
-                  </div>
+                  {bookingData.rooms && bookingData.rooms.length > 0 && (
+                    <div className="flex items-center justify-between text-sm mt-2">
+                      <span className="text-airbnb-grey-600">Quartos:</span>
+                      <span className="font-bold text-airbnb-black">{bookingData.rooms.length}</span>
+                    </div>
+                  )}
                 </div>
               </div>
 

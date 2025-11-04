@@ -40,7 +40,17 @@ const GuestLogin = () => {
     if (result.success) {
       // Verificar se o usuário é realmente um hóspede (client)
       if (result.user.role === "client") {
-        navigate(from, { replace: true });
+        // Verificar se há uma reserva pendente no sessionStorage
+        const pendingBooking = sessionStorage.getItem('pendingBooking');
+
+        if (pendingBooking && from === "/booking-checkout") {
+          // Se há reserva pendente e está tentando acessar checkout,
+          // redirecionar diretamente para o checkout (os dados serão recuperados lá)
+          navigate("/booking-checkout", { replace: true });
+        } else {
+          // Caso contrário, seguir o fluxo normal
+          navigate(from, { replace: true });
+        }
       } else {
         // Se não for cliente, fazer logout e mostrar erro
         setError("Esta área é apenas para hóspedes. Administradores devem usar o painel admin.");

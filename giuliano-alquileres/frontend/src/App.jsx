@@ -29,29 +29,26 @@ const GuestLogin = lazy(() => import("./pages/auth/GuestLogin"));
 const GuestRegister = lazy(() => import("./pages/auth/GuestRegister"));
 
 // User Profile Pages
-const Profile = lazy(() => import("./pages/Profile"));
 const ProfileAirbnb = lazy(() => import("./pages/ProfileAirbnb"));
 
 // Admin Pages
-const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"));
 const AdminDashboardNew = lazy(() => import("./pages/admin/AdminDashboardNew"));
 const AdminProperties = lazy(() => import("./pages/admin/AdminProperties"));
-const AdminNewProperty = lazy(() => import("./pages/admin/AdminNewProperty"));
 const AdminNewPropertyAirbnb = lazy(() => import("./pages/admin/AdminNewPropertyAirbnb"));
 const EditProperty = lazy(() => import("./pages/admin/EditProperty"));
 const UsersPage = lazy(() => import("./pages/admin/UsersPage"));
 const AdminCityGuides = lazy(() => import("./pages/admin/AdminCityGuides"));
+const AdminBookings = lazy(() => import("./pages/admin/AdminBookings"));
 
 // Booking & Payment Pages
-const Checkout = lazy(() => import("./pages/Checkout"));
 const BookingCheckout = lazy(() => import("./pages/BookingCheckout"));
 const BookingConfirmation = lazy(() => import("./pages/BookingConfirmation"));
+const BookingSuccess = lazy(() => import("./pages/BookingSuccess"));
 const PaymentSuccess = lazy(() => import("./pages/PaymentSuccess"));
 const PaymentPending = lazy(() => import("./pages/PaymentPending"));
 const PaymentFailure = lazy(() => import("./pages/PaymentFailure"));
 
 // User Account Pages
-const MyBookings = lazy(() => import("./pages/MyBookings"));
 const MyBookingsNew = lazy(() => import("./pages/MyBookingsNew"));
 const Favorites = lazy(() => import("./pages/Favorites"));
 const MyReviews = lazy(() => import("./pages/MyReviews"));
@@ -113,22 +110,12 @@ function App() {
             {/* --- Rotas que AMBOS (admin e admin_master) podem acessar --- */}
             {/* Graças à nossa lógica no ProtectedRoute, o admin_master também terá acesso aqui. */}
 
-            {/* Dashboard Principal do Admin - Nova Versão */}
+            {/* Dashboard Principal do Admin */}
             <Route
               path="/admin"
               element={
                 <ProtectedRoute requiredRole="admin">
                   <AdminDashboardNew />
-                </ProtectedRoute>
-              }
-            />
-
-            {/* Dashboard Antigo */}
-            <Route
-              path="/admin/dashboard-old"
-              element={
-                <ProtectedRoute requiredRole="admin">
-                  <AdminDashboard />
                 </ProtectedRoute>
               }
             />
@@ -143,22 +130,12 @@ function App() {
               }
             />
 
-            {/* Criar Novo Imóvel - Versão Airbnb */}
+            {/* Criar Novo Imóvel */}
             <Route
               path="/admin/properties/new"
               element={
                 <ProtectedRoute requiredRole="admin">
                   <AdminNewPropertyAirbnb />
-                </ProtectedRoute>
-              }
-            />
-
-            {/* Criar Novo Imóvel - Versão Antiga */}
-            <Route
-              path="/admin/properties/new-old"
-              element={
-                <ProtectedRoute requiredRole="admin">
-                  <AdminNewProperty />
                 </ProtectedRoute>
               }
             />
@@ -183,11 +160,21 @@ function App() {
               }
             />
 
+            {/* Gerenciar Reservas - Admin */}
+            <Route
+              path="/admin/bookings"
+              element={
+                <ProtectedRoute requiredRole="admin">
+                  <AdminBookings />
+                </ProtectedRoute>
+              }
+            />
+
             {/* =====================================
                 ROTAS DE PAGAMENTO (Protegidas)
             ====================================== */}
 
-            {/* Nova Página de Checkout Profissional */}
+            {/* Página de Checkout */}
             <Route
               path="/booking-checkout"
               element={
@@ -197,12 +184,12 @@ function App() {
               }
             />
 
-            {/* Página de Checkout Antiga (para bookings existentes) */}
+            {/* Página de Sucesso da Reserva (Beta Mode + Production) */}
             <Route
-              path="/checkout/:bookingId"
+              path="/booking-success"
               element={
                 <ProtectedRoute>
-                  <Checkout />
+                  <BookingSuccess />
                 </ProtectedRoute>
               }
             />
@@ -226,7 +213,7 @@ function App() {
                 ROTAS DO USUÁRIO (Protegidas)
             ====================================== */}
 
-            {/* Perfil do Usuário - Estilo Airbnb */}
+            {/* Perfil do Usuário */}
             <Route
               path="/profile"
               element={
@@ -236,32 +223,12 @@ function App() {
               }
             />
 
-            {/* Perfil Antigo - Para Backup */}
-            <Route
-              path="/profile-old"
-              element={
-                <ProtectedRoute>
-                  <Profile />
-                </ProtectedRoute>
-              }
-            />
-
-            {/* Minhas Reservas - Nova Versão */}
+            {/* Minhas Reservas */}
             <Route
               path="/my-bookings"
               element={
                 <ProtectedRoute>
                   <MyBookingsNew />
-                </ProtectedRoute>
-              }
-            />
-
-            {/* Minhas Reservas - Versão Antiga (manter por compatibilidade) */}
-            <Route
-              path="/my-bookings-old"
-              element={
-                <ProtectedRoute>
-                  <MyBookings />
                 </ProtectedRoute>
               }
             />

@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const { verifyToken } = require("../middleware/auth");
+const { requirePaymentEnabled } = require("../config/betaMode");
 const {
   createPaymentPreference,
   handleWebhook,
@@ -19,8 +20,13 @@ router.post("/webhook", handleWebhook);
 // ROTAS PROTEGIDAS (requerem autenticação)
 // ============================================
 
-// Criar preferência de pagamento
-router.post("/create-preference", verifyToken, createPaymentPreference);
+// Criar preferência de pagamento (desabilitado no modo Beta)
+router.post(
+  "/create-preference",
+  verifyToken,
+  requirePaymentEnabled,
+  createPaymentPreference
+);
 
 // Listar meus pagamentos
 router.get("/my", verifyToken, getMyPayments);

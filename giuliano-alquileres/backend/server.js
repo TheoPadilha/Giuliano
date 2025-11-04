@@ -71,10 +71,15 @@ app.use(
 // Rate limiting geral para toda a API
 const generalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutos
-  max: 100, // Aumentado para não bloquear desenvolvimento
+  max: process.env.NODE_ENV === "production" ? 100 : 1000, // Mais permissivo em dev
   message: { error: "Muitas requisições. Tente novamente em 15 minutos." },
   standardHeaders: true,
   legacyHeaders: false,
+  skip: (req) => {
+    // Pular rate limit para localhost em desenvolvimento
+    return process.env.NODE_ENV === "development" &&
+           (req.ip === "::1" || req.ip === "127.0.0.1" || req.ip === "::ffff:127.0.0.1");
+  },
   handler: (req, res) => {
     res.status(429).json({
       success: false,

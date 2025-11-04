@@ -38,8 +38,13 @@ const Booking = sequelize.define(
       validate: {
         isDate: true,
         isAfterToday(value) {
-          if (new Date(value) < new Date().setHours(0, 0, 0, 0)) {
-            throw new Error("Check-in deve ser no futuro");
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+          const checkInDate = new Date(value);
+          checkInDate.setHours(0, 0, 0, 0);
+
+          if (checkInDate < today) {
+            throw new Error("Check-in deve ser hoje ou no futuro");
           }
         },
       },
@@ -118,6 +123,11 @@ const Booking = sequelize.define(
       type: DataTypes.STRING(20),
       allowNull: false,
     },
+    guest_document: {
+      type: DataTypes.STRING(20),
+      allowNull: true,
+      comment: "CPF ou outro documento do hóspede",
+    },
     // Mensagem especial do hóspede
     special_requests: {
       type: DataTypes.TEXT,
@@ -141,6 +151,17 @@ const Booking = sequelize.define(
     paid_at: {
       type: DataTypes.DATE,
       allowNull: true,
+    },
+    // Confirmação (para modo Beta)
+    confirmed_at: {
+      type: DataTypes.DATE,
+      allowNull: true,
+      comment: "Data de confirmação manual pelo proprietário",
+    },
+    owner_notes: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+      comment: "Notas do proprietário sobre a reserva",
     },
     // Cancelamento
     cancelled_at: {

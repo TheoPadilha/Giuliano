@@ -17,7 +17,15 @@
       "Bash(xargs ls:*)",
       "Bash(npm install:*)",
       "Bash(timeout:*)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(npm run:*)",
+      "Bash(powershell -Command \"Get-Process -Name node -ErrorAction SilentlyContinue | Stop-Process -Force; Start-Sleep -Seconds 2\")",
+      "Bash(nul)",
+      "Bash(dir:*)",
+      "Bash(ping:*)",
+      "Bash(powershell -Command \"Get-Process -Name node -ErrorAction SilentlyContinue | Stop-Process -Force\")",
+      "Bash(set PGPASSWORD=256310@Tp)",
+      "Bash(del check-reviews-table.js)"
     ],
     "deny": [],
     "ask": []

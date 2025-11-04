@@ -1,0 +1,10 @@
+Criar a parte de avaliações para cada imovel; 
+
+Quando vou reservar um imovel e não estou logado, o sistema reclama para eu logar, eu logo porem inves de jogar para a parte de pagamento esta me jogando para o properties;
+
+
+quando um admim for acessar o painel administrativo não é para mostrar a aba usuarios so é para aparecer para os admim master
+
+tens que criar a tela de detalhes da reserva no /my-bookings/id.....
+
+na tela minhas reservas esta aparecendo duas validações por exemplo confirmada e pendente tens que aparece somente uma 

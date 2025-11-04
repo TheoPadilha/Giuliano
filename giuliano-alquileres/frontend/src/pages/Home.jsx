@@ -38,7 +38,8 @@ const Home = () => {
         const featuredResponse = await propertiesAPI.getFeatured();
         const featured = featuredResponse.data.properties || featuredResponse.data || [];
 
-        setFeaturedProperties(featured);
+        // Garantir que seja sempre um array
+        setFeaturedProperties(Array.isArray(featured) ? featured : []);
       } catch (error) {
         console.error("Erro ao carregar propriedades:", error);
         setFeaturedProperties([]);
@@ -128,7 +129,7 @@ const Home = () => {
               Encontre a acomodação perfeita para suas férias
             </h1>
             <p className="text-xl md:text-2xl text-white/90 mb-8">
-              Mais de 500 opções de aluguel por temporada em Balneário Camboriú
+              Mais de 500 opções de aluguel para temporada no litoral catarinense
             </p>
             <Link
               to="/properties"

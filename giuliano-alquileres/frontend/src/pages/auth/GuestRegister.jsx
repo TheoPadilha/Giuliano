@@ -90,7 +90,16 @@ const GuestRegister = () => {
       setLoading(false);
 
       if (loginResult.success) {
-        navigate("/", { replace: true });
+        // Verificar se há uma reserva pendente no sessionStorage
+        const pendingBooking = sessionStorage.getItem('pendingBooking');
+
+        if (pendingBooking) {
+          // Se há reserva pendente, redirecionar para o checkout
+          navigate("/booking-checkout", { replace: true });
+        } else {
+          // Caso contrário, redirecionar para home
+          navigate("/", { replace: true });
+        }
       } else {
         // Se o login automático falhar, redirecionar para página de login
         navigate("/guest-login", {

@@ -106,9 +106,20 @@ const PropertyDetails = () => {
     if (!property?.uuid) return;
 
     try {
-      const response = await api.get(`/api/bookings/property/${property.uuid}/occupied`);
-      setOccupiedDates(response.data.occupiedDates || []);
+      // Definir intervalo de datas: hoje até 12 meses no futuro
+      const today = new Date();
+      const oneYearFromNow = new Date();
+      oneYearFromNow.setFullYear(today.getFullYear() + 1);
+
+      const startDate = today.toISOString().split('T')[0];
+      const endDate = oneYearFromNow.toISOString().split('T')[0];
+
+      const response = await api.get(
+        `/api/bookings/property/${property.uuid}/occupied?start_date=${startDate}&end_date=${endDate}`
+      );
+      setOccupiedDates(response.data.occupied_dates || []);
     } catch (error) {
+      console.error("Erro ao buscar datas ocupadas:", error);
       // Silenciosamente definir array vazio se houver erro
       setOccupiedDates([]);
     }
@@ -319,7 +330,7 @@ const PropertyDetails = () => {
             </div>
 
             {/* Reviews */}
-            <ReviewSection propertyId={property.id} />
+            <ReviewSection propertyId={property.uuid} />
           </div>
 
           {/* Coluna Direita - Card de Reserva */}
@@ -446,7 +457,8 @@ const PropertyDetails = () => {
                           checkOut: bookingDates.checkOut,
                           nights: totalNights,
                           guests,
-                          totalGuests
+                          totalGuests,
+                          rooms: [] // Adicionar array vazio de rooms por padrão
                         }
                       }
                     });

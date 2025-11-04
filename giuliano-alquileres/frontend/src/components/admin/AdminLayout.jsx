@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useAuth } from "../../contexts/AuthContext";
 import { useNavigate, useLocation } from "react-router-dom";
-import { FaHome, FaPlus, FaUsers, FaChartBar, FaGlobe, FaBars, FaTimes } from "react-icons/fa";
+import { FaHome, FaPlus, FaUsers, FaChartBar, FaGlobe, FaBars, FaTimes, FaCalendarAlt } from "react-icons/fa";
 
 const AdminLayout = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -28,6 +28,12 @@ const AdminLayout = ({ children }) => {
       href: "/admin/properties",
       icon: FaHome,
       current: location.pathname === "/admin/properties",
+    },
+    {
+      name: "Reservas",
+      href: "/admin/bookings",
+      icon: FaCalendarAlt,
+      current: location.pathname === "/admin/bookings",
     },
     {
       name: "Novo Imóvel",

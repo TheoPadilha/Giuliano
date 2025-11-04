@@ -10,6 +10,7 @@ import ThemeToggle from "../common/ThemeToggle";
 import { useAuth } from "../../contexts/AuthContext";
 import DateRangePicker from "../search/DateRangePicker";
 import GuestsPicker from "../search/GuestsPicker";
+import BetaBadge from "../common/BetaBadge";
 
 const AirbnbHeader = ({ onFilterButtonClick }) => {
   const { t } = useTranslation();
@@ -212,6 +213,7 @@ const AirbnbHeader = ({ onFilterButtonClick }) => {
                 Ziguealuga
               </span>
             </div>
+            
           </Link>
 
           {/* Barra de Busca Completa - Centro */}
