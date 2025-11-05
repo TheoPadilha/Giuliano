@@ -8,3 +8,7 @@ quando um admim for acessar o painel administrativo não é para mostrar a aba u
 tens que criar a tela de detalhes da reserva no /my-bookings/id.....
 
 na tela minhas reservas esta aparecendo duas validações por exemplo confirmada e pendente tens que aparece somente uma 
+
+daixar a logo do whatsApp apenas na home no resto do site tirar 
+
+no /properties podemos deixar no header 
