@@ -9,7 +9,6 @@ import {
 } from "react-icons/fa";
 import Loading from "../components/common/Loading";
 import BookingStatusBadge from "../components/booking/BookingStatusBadge";
-import PaymentStatusBadge from "../components/booking/PaymentStatusBadge";
 import CreateReviewModal from "../components/property/CreateReviewModal";
 
 const MyBookingsNew = () => {
@@ -244,9 +243,8 @@ const MyBookingsNew = () => {
                         className="w-full h-full object-cover"
                       />
                     )}
-                    <div className="absolute top-4 left-4 flex gap-2">
+                    <div className="absolute top-4 left-4">
                       <BookingStatusBadge status={booking.status} />
-                      <PaymentStatusBadge status={booking.payment_status} />
                     </div>
                   </div>
 
@@ -321,7 +319,7 @@ const MyBookingsNew = () => {
                       <div className="flex items-center gap-3">
                         {/* View Details */}
                         <Link
-                          to={`/booking/${booking.uuid}`}
+                          to={`/my-bookings/${booking.uuid}`}
                           className="btn-secondary flex items-center gap-2"
                         >
                           <FaEye />

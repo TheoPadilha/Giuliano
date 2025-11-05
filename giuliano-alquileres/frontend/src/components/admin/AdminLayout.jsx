@@ -16,7 +16,7 @@ const AdminLayout = ({ children }) => {
     navigate("/");
   };
 
-  const navigation = [
+  const allNavigation = [
     {
       name: "Dashboard",
       href: "/admin",
@@ -46,8 +46,17 @@ const AdminLayout = ({ children }) => {
       href: "/admin/users",
       icon: FaUsers,
       current: location.pathname === "/admin/users",
+      adminMasterOnly: true, // Apenas admin_master pode ver
     },
   ];
+
+  // Filtrar navegação baseado no role do usuário
+  const navigation = allNavigation.filter(item => {
+    if (item.adminMasterOnly) {
+      return user?.role === "admin_master";
+    }
+    return true;
+  });
 
   return (
     <div className="min-h-screen bg-airbnb-grey-50">

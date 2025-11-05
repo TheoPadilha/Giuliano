@@ -6,6 +6,7 @@ import PropertyCard from "../components/property/PropertyCard";
 import Loading from "../components/common/Loading";
 import AirbnbHeader from "../components/layout/AirbnbHeader";
 import Footer from "../components/layout/Footer";
+import WhatsAppButton from "../components/common/WhatsAppButton";
 import {
   FaBuilding,
   FaHome,
@@ -309,6 +310,9 @@ const Home = () => {
       </section>
 
       <Footer />
+
+      {/* Botão WhatsApp - Apenas na Home */}
+      <WhatsAppButton />
     </div>
   );
 };

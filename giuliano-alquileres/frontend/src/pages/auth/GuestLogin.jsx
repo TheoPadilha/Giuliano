@@ -43,13 +43,13 @@ const GuestLogin = () => {
         // Verificar se há uma reserva pendente no sessionStorage
         const pendingBooking = sessionStorage.getItem('pendingBooking');
 
-        if (pendingBooking && from === "/booking-checkout") {
-          // Se há reserva pendente e está tentando acessar checkout,
-          // redirecionar diretamente para o checkout (os dados serão recuperados lá)
+        if (pendingBooking) {
+          // Se há reserva pendente, SEMPRE redirecionar para checkout
+          console.log("Reserva pendente encontrada, redirecionando para checkout");
           navigate("/booking-checkout", { replace: true });
         } else {
           // Caso contrário, seguir o fluxo normal
-          navigate(from, { replace: true });
+          navigate(from === "/guest-login" ? "/properties" : from, { replace: true });
         }
       } else {
         // Se não for cliente, fazer logout e mostrar erro

@@ -12,7 +12,7 @@ import PageLoader from "./components/common/PageLoader";
 // --- Páginas Críticas (Loaded Immediately) ---
 // Keep home and essential pages as eager imports for better initial load
 import Home from "./pages/Home";
-import WhatsAppButton from "./components/common/WhatsAppButton";
+// import WhatsAppButton from "./components/common/WhatsAppButton"; // Movido para Home.jsx
 
 // --- Lazy Loaded Pages (Code Splitting) ---
 
@@ -50,6 +50,7 @@ const PaymentFailure = lazy(() => import("./pages/PaymentFailure"));
 
 // User Account Pages
 const MyBookingsNew = lazy(() => import("./pages/MyBookingsNew"));
+const BookingDetails = lazy(() => import("./pages/BookingDetails"));
 const Favorites = lazy(() => import("./pages/Favorites"));
 const MyReviews = lazy(() => import("./pages/MyReviews"));
 
@@ -233,6 +234,16 @@ function App() {
               }
             />
 
+            {/* Detalhes da Reserva */}
+            <Route
+              path="/my-bookings/:id"
+              element={
+                <ProtectedRoute>
+                  <BookingDetails />
+                </ProtectedRoute>
+              }
+            />
+
             {/* Meus Favoritos */}
             <Route
               path="/favorites"
@@ -262,7 +273,7 @@ function App() {
             </main>
 
             {/* Shared components outside main content */}
-            <WhatsAppButton />
+            {/* WhatsAppButton agora aparece apenas no Home */}
             <CookieConsent />
           </div>
         </Router>

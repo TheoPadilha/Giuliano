@@ -2,7 +2,7 @@ import { useState } from "react";
 import { FaStar, FaTimes } from "react-icons/fa";
 import { reviewsAPI } from "../../services/api";
 
-const CreateReviewModal = ({ isOpen, onClose, booking, onSuccess }) => {
+const CreateReviewModal = ({ booking, onClose, onSuccess }) => {
   const [formData, setFormData] = useState({
     rating: 5,
     comment: "",
@@ -25,7 +25,6 @@ const CreateReviewModal = ({ isOpen, onClose, booking, onSuccess }) => {
 
     try {
       await reviewsAPI.create({
-        property_id: booking.property.id,
         booking_id: booking.id,
         ...formData,
       });
@@ -44,7 +43,7 @@ const CreateReviewModal = ({ isOpen, onClose, booking, onSuccess }) => {
     }
   };
 
-  if (!isOpen) return null;
+  if (!booking) return null;
 
   const StarRating = ({ label, field, value }) => (
     <div className="mb-4">
