@@ -128,7 +128,31 @@ app.get("/", (req, res) => {
     message: "Giuliano Alquileres API funcionando!",
     version: "1.0.0",
     environment: process.env.NODE_ENV,
+    domain: "ziguealuga.com",
   });
+});
+
+// Health check endpoint para deploy (Render, Railway, etc)
+app.get("/health", async (req, res) => {
+  try {
+    // Testar conexão com banco de dados
+    await sequelize.authenticate();
+
+    res.status(200).json({
+      status: "healthy",
+      timestamp: new Date().toISOString(),
+      uptime: process.uptime(),
+      database: "connected",
+      environment: process.env.NODE_ENV,
+    });
+  } catch (error) {
+    res.status(503).json({
+      status: "unhealthy",
+      timestamp: new Date().toISOString(),
+      database: "disconnected",
+      error: error.message,
+    });
+  }
 });
 
 // Importar rotas com rate limiters específicos

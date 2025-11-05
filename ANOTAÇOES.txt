@@ -1,14 +1,46 @@
-Criar a parte de avaliações para cada imovel; 
+Criar a parte de avaliações para cada imovel; - FEITO
 
-Quando vou reservar um imovel e não estou logado, o sistema reclama para eu logar, eu logo porem inves de jogar para a parte de pagamento esta me jogando para o properties;
+Quando vou reservar um imovel e não estou logado, o sistema reclama para eu logar, eu logo porem inves de jogar para a parte de pagamento esta me jogando para o properties; - Verificar
 
 
-quando um admim for acessar o painel administrativo não é para mostrar a aba usuarios so é para aparecer para os admim master
+quando um admim for acessar o painel administrativo não é para mostrar a aba usuarios so é para aparecer para os admim master - FEITO 
 
-tens que criar a tela de detalhes da reserva no /my-bookings/id.....
+tens que criar a tela de detalhes da reserva no /my-bookings/id..... - FEITO
 
-na tela minhas reservas esta aparecendo duas validações por exemplo confirmada e pendente tens que aparece somente uma 
+na tela minhas reservas esta aparecendo duas validações por exemplo confirmada e pendente tens que aparece somente uma - FEITO
 
-daixar a logo do whatsApp apenas na home no resto do site tirar 
+daixar a logo do whatsApp apenas na home no resto do site tirar - feito
 
-no /properties podemos deixar no header 
+
+
+//////////////////////////////////////////////////////////
+
+
+quando estamos em por exemplo:
+my-bookings/d4d39fb2-d0c8-4239-b1ef-4715641f5aa1
+e vamos em ver detalhe do imovel retorna uma pagina não encontrada - Verificar
+
+
+quando um hospede aluga um imovel por um determinado tempo tens que bloquear no calendario pelo menos para mais 3 dias depois, pois tens a limpeza do ambiente e etc.
+apenas deixando no calendario como indisponivel
+tem que corrigir tambem pois no calendario eu por exemplo marco do dia 1 ate o dia 5, depois de todo o precesso o imovel fica indisponivel nesses dias porem o dia 5 tem que ficar invalido tambem no calendario - Verificar
+
+na pagina detalhes da reserva esta aparecendo duas validaçoes - Verificar
+
+Tem que atualizar o status do imovel por exemplo estou com um imovel que esta ocupado, porem quando vou ver o imovel no /properties/id  nada mostra que ele ta ocupado tens que deixar explicito o status do imovel e caso o status dele seja ocupado, nenhum dia do calendario deve estar disponivel, se estiver em manutenção tem que ter um aviso no detalhes do imovel e o calendario deve estar indisponivel o preenchimento tambem, se estiver inativo nem apareça nos properties na verdade se estiver com quaquer outro status a não ser disponivel nem mostre o imovel no properties 
+
+
+
+Implementar o controle de exibição e status dos imóveis conforme as regras abaixo:
+
+No endpoint de listagem de imóveis (/properties), devem ser exibidos apenas imóveis com status igual a “disponivel”. Imóveis com status “ocupado”, “manutencao”, “inativo” ou qualquer outro não devem aparecer na listagem.
+
+Na página de detalhes do imóvel (/properties/:id), o campo de status deve ser retornado e exibido de forma explícita no front-end (por exemplo, “Status: Disponível”). Caso o imóvel possua qualquer status diferente de “disponivel”, o backend deve retornar erro 404 ou impedir o acesso à página de detalhes, garantindo que o imóvel não possa ser visualizado publicamente. Nenhum imóvel com status diferente de “disponivel” deve permitir interação no calendário, nem exibir dias disponíveis ou liberar o botão de reserva.
+
+O comportamento do calendário deve seguir a seguinte lógica: se o status for “ocupado” ou “manutencao”, o calendário deve estar totalmente bloqueado, sem dias disponíveis para seleção. Se o status for “inativo”, o imóvel não deve aparecer em nenhuma rota pública, incluindo listagens, buscas e página de detalhes.
+
+Em resumo, o sistema deve exibir apenas imóveis disponíveis, bloquear qualquer tentativa de reserva em imóveis não disponíveis e garantir que o status seja apresentado de forma clara no painel administrativo, para que o proprietário ou administrador saiba em que situação o imóvel se encontra.
+
+
+sistema de visualizado de imoveis no painel administrativo tem o painel de visualização seria possivel por um numero real nesse painel ?
+

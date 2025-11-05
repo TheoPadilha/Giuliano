@@ -1,0 +1,49 @@
+services:
+  # Backend API
+  - type: web
+    name: ziguealuga-api
+    env: node
+    region: oregon
+    plan: starter
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 5000
+      - key: CORS_ORIGIN
+        value: https://ziguealuga.com,https://www.ziguealuga.com
+      - key: FRONTEND_URL
+        value: https://ziguealuga.com
+      - key: BACKEND_URL
+        value: https://api.ziguealuga.com
+      # Database será preenchido automaticamente se usar PostgreSQL do Render
+      - key: DATABASE_URL
+        fromDatabase:
+          name: ziguealuga-db
+          property: connectionString
+      # Variáveis sensíveis devem ser configuradas manualmente no dashboard
+      - key: JWT_SECRET
+        sync: false
+      - key: MERCADOPAGO_ACCESS_TOKEN
+        sync: false
+      - key: MERCADOPAGO_PUBLIC_KEY
+        sync: false
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASS
+        sync: false
+
+  # PostgreSQL Database
+  - type: pserv
+    name: ziguealuga-db
+    env: docker
+    region: oregon
+    plan: starter
+    image: postgres:15
+    disk:
+      name: ziguealuga-data
+      mountPath: /var/lib/postgresql/data
+      sizeGB: 10
