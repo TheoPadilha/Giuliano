@@ -153,7 +153,7 @@ router.post('/initialize', async (req, res) => {
           password_hash: hash,
           phone: '+5547989105580',
           role: 'admin_master',
-          status: 'active',
+          status: 'approved',
           country: 'Brasil'
         });
         results.admin = 'created';
