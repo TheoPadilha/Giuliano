@@ -6,10 +6,18 @@ const path = require("path");
 require("dotenv").config();
 
 // Validar variáveis de ambiente críticas
-const requiredEnvVars = ["JWT_SECRET", "DB_PASSWORD"];
+const requiredEnvVars = ["JWT_SECRET"];
 const missingEnvVars = requiredEnvVars.filter(
   (varName) => !process.env[varName]
 );
+
+// Validar banco de dados: deve ter DATABASE_URL (produção) OU DB_PASSWORD (desenvolvimento)
+if (!process.env.DATABASE_URL && !process.env.DB_PASSWORD) {
+  console.error(
+    "❌ Erro: Configure DATABASE_URL (produção) ou DB_PASSWORD (desenvolvimento)"
+  );
+  process.exit(1);
+}
 
 if (missingEnvVars.length > 0) {
   console.error(
