@@ -6,6 +6,7 @@ import { FavoritesProvider } from "./contexts/FavoritesContext";
 import { DarkModeProvider } from "./contexts/DarkModeContext";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import { initGA, initGTM } from "./utils/googleAnalytics";
+import { startKeepAlive, stopKeepAlive } from "./utils/keepAlive";
 import CookieConsent from "./components/common/CookieConsent";
 import PageLoader from "./components/common/PageLoader";
 import ScrollToTop from "./components/common/ScrollToTop";
@@ -66,6 +67,14 @@ function App() {
   useEffect(() => {
     initGA();
     initGTM();
+
+    // Iniciar keep-alive para manter o backend acordado (Render free tier)
+    startKeepAlive();
+
+    // Cleanup: parar keep-alive quando o componente desmontar
+    return () => {
+      stopKeepAlive();
+    };
   }, []);
 
   return (
