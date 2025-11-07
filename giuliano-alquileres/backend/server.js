@@ -182,8 +182,8 @@ app.use("/api/city-guides", require("./routes/cityGuides"));
 // app.use("/api/setup", require("./routes/setup"));
 
 // Rota temporária para seed de dados
-// ⚠️ REMOVER APÓS POPULAR COMODIDADES
-app.use("/api/seed", require("./routes/seed"));
+// ⚠️ REMOVIDO POR SEGURANÇA - Seed de comodidades já foi concluído
+// app.use("/api/seed", require("./routes/seed"));
 
 // Middleware de erro global
 app.use((err, req, res, next) => {
