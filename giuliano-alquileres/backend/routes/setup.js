@@ -146,11 +146,11 @@ router.post('/initialize', async (req, res) => {
         results.admin = 'already_exists';
         console.log('⏭️  Admin já existe');
       } else {
-        const hash = await bcrypt.hash('admin123', 10);
+        // Passar senha em texto puro - o hook beforeCreate fará o hash
         const admin = await User.create({
           name: 'Giuliano Admin',
           email: 'admin@ziguealuga.com',
-          password_hash: hash,
+          password_hash: 'admin123', // Hook do model fará o hash automaticamente
           phone: '+5547989105580',
           role: 'admin_master',
           status: 'approved',
@@ -220,12 +220,11 @@ router.post('/reset-admin', async (req, res) => {
       where: { email: 'admin@ziguealuga.com' }
     });
 
-    // Criar novo admin
-    const hash = await bcrypt.hash('admin123', 10);
+    // Criar novo admin (senha em texto puro - hook fará o hash)
     const admin = await User.create({
       name: 'Giuliano Admin',
       email: 'admin@ziguealuga.com',
-      password_hash: hash,
+      password_hash: 'admin123', // Hook do model fará o hash automaticamente
       phone: '+5547989105580',
       role: 'admin_master',
       status: 'approved',
