@@ -1,0 +1,59 @@
+# Configuração de Deploy para Render.com
+# Este arquivo configura o backend e o banco de dados automaticamente
+
+services:
+  # Backend API
+  - type: web
+    name: giuliano-backend
+    env: node
+    region: oregon
+    plan: free
+    buildCommand: cd giuliano-alquileres/backend && npm install
+    startCommand: cd giuliano-alquileres/backend && npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 5000
+      - key: DATABASE_URL
+        fromDatabase:
+          name: giuliano-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: FRONTEND_URL
+        value: https://giulianoa-frontend.onrender.com
+      - key: BACKEND_URL
+        sync: false
+      - key: CORS_ORIGIN
+        value: https://giulianoa-frontend.onrender.com
+      # Email - você vai adicionar manualmente
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_PORT
+        sync: false
+      - key: SMTP_SECURE
+        sync: false
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASS
+        sync: false
+      - key: SMTP_FROM_EMAIL
+        sync: false
+      - key: SMTP_FROM_NAME
+        sync: false
+      - key: PASSWORD_RESET_TOKEN_EXPIRY
+        value: 60
+      # Mercado Pago - você vai adicionar manualmente
+      - key: MERCADOPAGO_ACCESS_TOKEN
+        sync: false
+      - key: MERCADOPAGO_PUBLIC_KEY
+        sync: false
+
+databases:
+  # PostgreSQL Database
+  - name: giuliano-db
+    plan: free
+    databaseName: giuliano_alquileres
+    user: giuliano_user
