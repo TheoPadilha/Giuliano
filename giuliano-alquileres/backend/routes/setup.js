@@ -212,4 +212,43 @@ router.get('/status', async (req, res) => {
   }
 });
 
+// Endpoint para verificar e recriar admin
+router.post('/reset-admin', async (req, res) => {
+  try {
+    // Deletar admin antigo se existir
+    await User.destroy({
+      where: { email: 'admin@ziguealuga.com' }
+    });
+
+    // Criar novo admin
+    const hash = await bcrypt.hash('admin123', 10);
+    const admin = await User.create({
+      name: 'Giuliano Admin',
+      email: 'admin@ziguealuga.com',
+      password_hash: hash,
+      phone: '+5547989105580',
+      role: 'admin_master',
+      status: 'approved',
+      country: 'Brasil'
+    });
+
+    res.json({
+      success: true,
+      message: 'Admin recriado com sucesso!',
+      admin: {
+        id: admin.id,
+        email: admin.email,
+        role: admin.role,
+        status: admin.status
+      }
+    });
+  } catch (error) {
+    console.error('Erro ao recriar admin:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
 module.exports = router;
