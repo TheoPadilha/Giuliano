@@ -177,6 +177,9 @@ app.use("/api/reviews", require("./routes/reviews"));
 app.use("/api/favorites", require("./routes/favorites"));
 app.use("/api/city-guides", require("./routes/cityGuides"));
 
+// Rota de setup inicial (apenas para primeiro deploy)
+app.use("/api/setup", require("./routes/setup"));
+
 // Middleware de erro global
 app.use((err, req, res, next) => {
   console.error(err.stack);
