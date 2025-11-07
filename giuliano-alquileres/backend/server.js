@@ -178,7 +178,12 @@ app.use("/api/favorites", require("./routes/favorites"));
 app.use("/api/city-guides", require("./routes/cityGuides"));
 
 // Rota de setup inicial (apenas para primeiro deploy)
-app.use("/api/setup", require("./routes/setup"));
+// ⚠️ REMOVIDO POR SEGURANÇA - Setup já foi concluído
+// app.use("/api/setup", require("./routes/setup"));
+
+// Rota temporária para seed de dados
+// ⚠️ REMOVER APÓS POPULAR COMODIDADES
+app.use("/api/seed", require("./routes/seed"));
 
 // Middleware de erro global
 app.use((err, req, res, next) => {

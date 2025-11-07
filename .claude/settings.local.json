@@ -25,7 +25,10 @@
       "Bash(ping:*)",
       "Bash(powershell -Command \"Get-Process -Name node -ErrorAction SilentlyContinue | Stop-Process -Force\")",
       "Bash(set PGPASSWORD=256310@Tp)",
-      "Bash(del check-reviews-table.js)"
+      "Bash(del check-reviews-table.js)",
+      "Bash(git push:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
     ],
     "deny": [],
     "ask": []
