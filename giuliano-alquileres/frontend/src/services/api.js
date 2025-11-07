@@ -8,7 +8,7 @@ const API_URL = (
 // Instância principal do axios
 const api = axios.create({
   baseURL: `${API_URL}`,
-  timeout: 10000,
+  timeout: 60000, // 60s - Aumentado para lidar com cold start do Render
   headers: {
     "Content-Type": "application/json",
   },
