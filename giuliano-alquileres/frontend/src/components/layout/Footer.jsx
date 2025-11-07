@@ -38,9 +38,9 @@ const Footer = () => {
     {
       title: "Suporte",
       links: [
+        { label: "FAQ - Perguntas Frequentes", href: "/faq" },
         { label: "Centro de ajuda", href: "/help" },
         { label: "Cancelamento", href: "/cancellation" },
-        { label: "Resposta à COVID-19", href: "/covid" },
         { label: "Entre em contato", href: "/contact" },
       ]
     },

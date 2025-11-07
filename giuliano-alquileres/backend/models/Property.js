@@ -134,6 +134,11 @@ const Property = sequelize.define(
       type: DataTypes.BOOLEAN,
       defaultValue: false,
     },
+    view_count: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0,
+      allowNull: false,
+    },
   },
   {
     tableName: "properties",

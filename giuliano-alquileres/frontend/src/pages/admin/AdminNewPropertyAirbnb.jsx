@@ -5,7 +5,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import AdminLayout from "../../components/admin/AdminLayout";
 import api from "../../services/api";
 import { useAuth } from "../../contexts/AuthContext";
-import CITIES_SC from "../../data/cities";
 import {
   Home,
   MapPin,
@@ -113,29 +112,15 @@ const AdminNewPropertyAirbnb = () => {
     const fetchData = async () => {
       try {
         const [citiesRes, amenitiesRes] = await Promise.all([
-          api.get("/api/utilities/cities").catch(() => ({ data: { cities: [] } })),
+          api.get("/api/utilities/cities"),
           api.get("/api/utilities/amenities"),
         ]);
 
-        // Se o backend não retornar cidades, usar arquivo local
+        // Usar apenas cidades do backend (todas já estão no banco de dados)
         const backendCities = citiesRes.data.cities || [];
-        const localCities = CITIES_SC.map((city, index) => ({
-          id: index + 1000, // IDs temporários para cidades locais
-          name: city.name,
-          state: city.state,
-          region: city.region
-        }));
-
-        // Combinar cidades do backend com locais, removendo duplicatas
-        const allCities = [...backendCities];
-        localCities.forEach(localCity => {
-          if (!allCities.find(c => c.name === localCity.name)) {
-            allCities.push(localCity);
-          }
-        });
 
         // Ordenar alfabeticamente
-        setCities(allCities.sort((a, b) => a.name.localeCompare(b.name)));
+        setCities(backendCities.sort((a, b) => a.name.localeCompare(b.name)));
         setAmenities(amenitiesRes.data.amenities || []);
       } catch (err) {
         console.error("Erro ao carregar dados:", err);
@@ -499,12 +484,19 @@ const AdminNewPropertyAirbnb = () => {
       // Criar propriedade
       const propertyData = {
         ...formData,
+        city_id: formData.city_id ? parseInt(formData.city_id) : null,
         latitude: formData.latitude ? parseFloat(formData.latitude) : null,
         longitude: formData.longitude ? parseFloat(formData.longitude) : null,
         price_per_night: parseFloat(formData.price_per_night),
         weekend_price: formData.weekend_price ? parseFloat(formData.weekend_price) : null,
         high_season_price: formData.high_season_price ? parseFloat(formData.high_season_price) : null,
+        max_guests: parseInt(formData.max_guests),
+        bedrooms: parseInt(formData.bedrooms),
+        bathrooms: parseInt(formData.bathrooms),
       };
+
+      console.log("📤 Dados sendo enviados para criar imóvel:", propertyData);
+      console.log("📤 city_id:", propertyData.city_id, "tipo:", typeof propertyData.city_id);
 
       setSuccess("Criando imóvel...");
       const response = await api.post("/api/properties", propertyData);
@@ -551,10 +543,14 @@ const AdminNewPropertyAirbnb = () => {
         navigate("/admin/properties");
       }, 2000);
     } catch (err) {
-      console.error("Erro ao criar imóvel:", err);
-      const errorMessage = err.response?.data?.message || "Erro desconhecido ao criar imóvel";
-      setError(`❌ ${errorMessage}. Verifique os dados e tente novamente.`);
-      setTimeout(() => setError(""), 8000);
+      console.error("❌ Erro ao criar imóvel:", err);
+      console.error("❌ Resposta do servidor:", err.response?.data);
+
+      const errorMessage = err.response?.data?.error || err.response?.data?.message || "Erro desconhecido ao criar imóvel";
+      const errorDetails = err.response?.data?.details || "";
+
+      setError(`❌ ${errorMessage}${errorDetails ? `: ${errorDetails}` : ""}. Verifique os dados e tente novamente.`);
+      setTimeout(() => setError(""), 10000);
 
       // Se houver erro específico de validação do backend, voltar para step relevante
       if (err.response?.status === 400) {

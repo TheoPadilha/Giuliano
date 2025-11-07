@@ -422,6 +422,95 @@ const sendWelcomeEmail = async (user) => {
   }
 };
 
+/**
+ * Email de Recuperação de Senha
+ */
+const sendPasswordResetEmail = async (user, resetToken) => {
+  if (!transporter) {
+    console.warn("⚠️  Email não enviado - Sistema não configurado");
+    return { success: false, error: "Email não configurado" };
+  }
+
+  const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
+  const subject = `🔐 Recuperação de Senha - Giuliano Alquileres`;
+
+  const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+    .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+    .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }
+    .button { display: inline-block; background: #667eea; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; margin: 20px 0; }
+    .footer { text-align: center; color: #666; font-size: 12px; margin-top: 30px; }
+    .warning { background: #fff3cd; padding: 15px; border-radius: 5px; margin: 20px 0; border-left: 4px solid #ffc107; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🔐 Recuperação de Senha</h1>
+      <p>Solicitação de redefinição de senha</p>
+    </div>
+
+    <div class="content">
+      <p>Olá <strong>${user.name}</strong>,</p>
+
+      <p>Recebemos uma solicitação para redefinir a senha da sua conta.</p>
+
+      <p>Para criar uma nova senha, clique no botão abaixo:</p>
+
+      <center>
+        <a href="${resetUrl}" class="button">
+          Redefinir Minha Senha
+        </a>
+      </center>
+
+      <p>Ou copie e cole este link no seu navegador:</p>
+      <p style="background: #f0f0f0; padding: 10px; border-radius: 5px; word-break: break-all; font-size: 12px;">
+        ${resetUrl}
+      </p>
+
+      <div class="warning">
+        <strong>⚠️ Importante:</strong>
+        <ul style="margin: 10px 0;">
+          <li>Este link é válido por <strong>60 minutos</strong></li>
+          <li>Se você não solicitou esta redefinição, ignore este email</li>
+          <li>Sua senha atual permanecerá ativa até que você a altere</li>
+        </ul>
+      </div>
+
+      <p><strong>Precisa de ajuda?</strong> Entre em contato com nosso suporte.</p>
+    </div>
+
+    <div class="footer">
+      <p>Giuliano Alquileres © ${new Date().getFullYear()}</p>
+      <p>Este é um email automático, por favor não responda.</p>
+    </div>
+  </div>
+</body>
+</html>
+  `;
+
+  try {
+    const info = await transporter.sendMail({
+      from: `"Giuliano Alquileres" <${process.env.SMTP_USER}>`,
+      to: user.email,
+      subject: subject,
+      html: html,
+    });
+
+    console.log("✅ Email de recuperação de senha enviado:", info.messageId);
+    return { success: true, messageId: info.messageId };
+  } catch (error) {
+    console.error("❌ Erro ao enviar email de recuperação:", error);
+    return { success: false, error: error.message };
+  }
+};
+
 // ============================================
 // EXPORTAR FUNÇÕES
 // ============================================
@@ -430,4 +519,5 @@ module.exports = {
   sendCheckInReminder,
   sendCancellationEmail,
   sendWelcomeEmail,
+  sendPasswordResetEmail,
 };

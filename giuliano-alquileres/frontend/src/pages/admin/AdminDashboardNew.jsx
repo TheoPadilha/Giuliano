@@ -56,7 +56,7 @@ const AdminDashboardNew = () => {
           availableProperties: properties.filter((p) => p.status === "available").length,
           totalRevenue: properties.reduce((sum, p) => sum + parseFloat(p.price_per_night || 0), 0),
           monthlyBookings: Math.floor(properties.length * 2.5), // Simulado
-          totalViews: properties.length * 145, // Simulado
+          totalViews: properties.reduce((sum, p) => sum + (p.view_count || 0), 0), // Real view count
           recentProperties: properties.slice(0, 5),
         });
       } catch (error) {

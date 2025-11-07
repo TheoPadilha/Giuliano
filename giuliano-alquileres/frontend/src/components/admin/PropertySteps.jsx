@@ -50,8 +50,8 @@ export const Step2Location = ({ formData, handleInputChange, cities, handleGeoco
         className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent"
       >
         <option value="">Selecione uma cidade</option>
-        {cities.map(city => (
-          <option key={city.id} value={city.id}>
+        {cities.map((city, idx) => (
+          <option key={city.id || `city-${idx}`} value={city.id}>
             {city.name} - {city.state}
           </option>
         ))}
@@ -375,13 +375,13 @@ export const Step4Amenities = ({ formData, amenities, handleAmenityToggle }) => 
 
             {/* Amenities Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              {amenitiesByCategory[category].map((amenity) => {
+              {amenitiesByCategory[category].map((amenity, idx) => {
                 const isSelected = formData.amenities.includes(amenity.id);
                 const IconComponent = getIconComponent(amenity.icon);
 
                 return (
                   <label
-                    key={amenity.id}
+                    key={amenity.id || `amenity-${category}-${idx}`}
                     className={`
                       group relative flex items-center gap-3 p-4
                       border-2 rounded-xl cursor-pointer
@@ -627,7 +627,7 @@ export const Step6Photos = ({ uploadedPhotos, handlePhotoUpload, setMainPhoto, r
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           {uploadedPhotos.map((photo, index) => (
-            <div key={photo.id} className="relative group bg-gray-100 rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all">
+            <div key={photo.id || `photo-${index}`} className="relative group bg-gray-100 rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all">
               <img
                 src={photo.url}
                 alt={`Foto ${index + 1}`}
@@ -809,8 +809,8 @@ export const Step7Review = ({ formData, cities, amenities, uploadedPhotos }) => 
         <div className="bg-white rounded-xl p-6 border border-gray-200">
           <h4 className="font-bold text-gray-900 mb-3">Comodidades ({selectedAmenities.length})</h4>
           <div className="flex flex-wrap gap-2">
-            {selectedAmenities.map(amenity => (
-              <span key={amenity.id} className="bg-gray-100 text-gray-700 px-3 py-1 rounded-lg text-sm">
+            {selectedAmenities.map((amenity, idx) => (
+              <span key={amenity.id || `review-amenity-${idx}`} className="bg-gray-100 text-gray-700 px-3 py-1 rounded-lg text-sm">
                 {amenity.name}
               </span>
             ))}

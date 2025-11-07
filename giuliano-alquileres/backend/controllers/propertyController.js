@@ -104,10 +104,18 @@ const getProperties = async (req, res) => {
       }
     }
 
-    // 2. Status de disponibilidade
-    if (status && status.trim()) {
-      where.status = status;
-      console.log(`📌 Filtrando por status: ${status}`);
+    // 2. Filtro de status - força "available" para usuários não-admin
+    if (!currentUser || currentUser.role === 'client') {
+      // Usuários não autenticados ou clientes: mostrar APENAS disponíveis
+      where.status = 'available';
+      console.log('🔒 Rota pública: Filtrando apenas imóveis disponíveis');
+    } else if (currentUser && (currentUser.role === 'admin' || currentUser.role === 'admin_master')) {
+      // Admins podem filtrar por status específico
+      if (status && status.trim()) {
+        where.status = status;
+        console.log(`📌 Admin filtrando por status: ${status}`);
+      }
+      // Se admin não especificar status, mostra todos para gestão
     }
 
     // 3. Cidade
@@ -365,6 +373,25 @@ const getPropertyByUuid = async (req, res) => {
       });
     }
 
+    // 🔒 Controle de acesso por status
+    const currentUser = req.user;
+    if (property.status !== 'available') {
+      // Se o imóvel não está disponível, verificar se é admin
+      if (!currentUser || (currentUser.role !== 'admin' && currentUser.role !== 'admin_master')) {
+        return res.status(404).json({
+          error: "Imóvel não encontrado",
+        });
+      }
+      console.log(`⚠️ Admin acessando imóvel com status: ${property.status}`);
+    }
+
+    // 📊 Incrementar contador de visualizações
+    // Apenas incrementar para usuários não-admin visualizando imóveis disponíveis
+    if (property.status === 'available' && (!currentUser || currentUser.role === 'client')) {
+      await property.increment('view_count', { by: 1 });
+      console.log(`👁️ Visualização registrada para imóvel ${property.uuid} (Total: ${property.view_count + 1})`);
+    }
+
     res.json({ property });
   } catch (error) {
     console.error("Erro ao buscar imóvel:", error);
@@ -459,13 +486,21 @@ const updateProperty = async (req, res) => {
       });
     }
 
-    // 🔥 VALIDAÇÃO: Apenas admin_master pode alterar o status ou is_featured
+    // 🔥 VALIDAÇÃO: Apenas admin_master pode alterar is_featured
+    // Proprietários (admin) podem alterar o status dos próprios imóveis
     if (req.user.role !== "admin_master") {
-      // Se não for admin_master, remove status e is_featured dos dados de atualização
-      delete propertyData.status;
+      // Remove is_featured - apenas admin_master pode marcar como destaque
       delete propertyData.is_featured;
 
-      // Adicionalmente, verificar se o usuário está tentando alterar o user_id
+      // Verificar se o usuário é o proprietário do imóvel
+      const isOwner = property.user_id === req.user.id;
+
+      // Se não for o proprietário e não for admin_master, não pode alterar status
+      if (!isOwner && propertyData.status) {
+        delete propertyData.status;
+      }
+
+      // Verificar se está tentando alterar o user_id
       if (propertyData.user_id && propertyData.user_id !== req.user.id) {
         return res.status(403).json({
           error:

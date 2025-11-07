@@ -325,10 +325,17 @@ Booking.getOccupiedDates = async function (propertyId, startDate, endDate) {
     order: [["check_in", "ASC"]],
   });
 
-  return bookings.map((booking) => ({
-    start: booking.check_in,
-    end: booking.check_out,
-  }));
+  return bookings.map((booking) => {
+    // Adicionar +3 dias após checkout para limpeza e manutenção
+    const checkoutDate = new Date(booking.check_out);
+    checkoutDate.setDate(checkoutDate.getDate() + 3);
+    const extendedCheckout = checkoutDate.toISOString().split('T')[0];
+
+    return {
+      start: booking.check_in,
+      end: extendedCheckout, // Checkout original + 3 dias
+    };
+  });
 };
 
 module.exports = Booking;

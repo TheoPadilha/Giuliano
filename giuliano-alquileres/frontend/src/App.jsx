@@ -8,25 +8,29 @@ import ProtectedRoute from "./components/auth/ProtectedRoute";
 import { initGA, initGTM } from "./utils/googleAnalytics";
 import CookieConsent from "./components/common/CookieConsent";
 import PageLoader from "./components/common/PageLoader";
+import ScrollToTop from "./components/common/ScrollToTop";
 
 // --- Páginas Críticas (Loaded Immediately) ---
-// Keep home and essential pages as eager imports for better initial load
+// Páginas principais carregadas imediatamente para melhor experiência do usuário
 import Home from "./pages/Home";
-// import WhatsAppButton from "./components/common/WhatsAppButton"; // Movido para Home.jsx
+import Properties from "./pages/Properties";
+import PropertyDetails from "./pages/PropertyDetails";
+import GuestLogin from "./pages/auth/GuestLogin";
+import Login from "./pages/auth/Login";
+import TermsOfService from "./pages/TermsOfService";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import FAQ from "./pages/FAQ";
+import NotFoundPage from "./pages/NotFoundPage";
 
 // --- Lazy Loaded Pages (Code Splitting) ---
-
-// Public Pages
-const Properties = lazy(() => import("./pages/Properties"));
-const PropertyDetails = lazy(() => import("./pages/PropertyDetails"));
-const NotFoundPage = lazy(() => import("./pages/NotFoundPage"));
+// Páginas menos acessadas carregadas sob demanda
 
 // Auth Pages
-const Login = lazy(() => import("./pages/auth/Login"));
 const Register = lazy(() => import("./pages/auth/Register"));
 const RegisterNew = lazy(() => import("./pages/auth/RegisterNew"));
-const GuestLogin = lazy(() => import("./pages/auth/GuestLogin"));
 const GuestRegister = lazy(() => import("./pages/auth/GuestRegister"));
+const ForgotPassword = lazy(() => import("./pages/auth/ForgotPassword"));
+const ResetPassword = lazy(() => import("./pages/auth/ResetPassword"));
 
 // User Profile Pages
 const ProfileAirbnb = lazy(() => import("./pages/ProfileAirbnb"));
@@ -69,6 +73,7 @@ function App() {
       <AuthProvider>
         <FavoritesProvider>
           <Router>
+            <ScrollToTop />
             <div className="min-h-screen bg-gray-50">
             {/* Main content wrapper */}
             <main id="main-content">
@@ -89,6 +94,15 @@ function App() {
             {/* Autenticação de Hóspedes/Clientes */}
             <Route path="/guest-login" element={<GuestLogin />} />
             <Route path="/guest-register" element={<GuestRegister />} />
+
+            {/* Recuperação de Senha */}
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
+
+            {/* Páginas Legais e Suporte */}
+            <Route path="/terms" element={<TermsOfService />} />
+            <Route path="/privacy" element={<PrivacyPolicy />} />
+            <Route path="/faq" element={<FAQ />} />
 
             {/* Design System Style Guide */}
             <Route path="/style-guide" element={<StyleGuide />} />

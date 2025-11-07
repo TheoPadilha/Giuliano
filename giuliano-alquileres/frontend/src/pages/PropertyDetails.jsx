@@ -151,6 +151,32 @@ const PropertyDetails = () => {
     return types[type] || type;
   };
 
+  const getStatusInfo = (status) => {
+    const statusMap = {
+      available: {
+        label: "Disponível",
+        color: "bg-green-100 text-green-800 border-green-300",
+        icon: "✓"
+      },
+      occupied: {
+        label: "Ocupado",
+        color: "bg-red-100 text-red-800 border-red-300",
+        icon: "✕"
+      },
+      maintenance: {
+        label: "Em Manutenção",
+        color: "bg-yellow-100 text-yellow-800 border-yellow-300",
+        icon: "⚙"
+      },
+      inactive: {
+        label: "Inativo",
+        color: "bg-gray-100 text-gray-800 border-gray-300",
+        icon: "○"
+      }
+    };
+    return statusMap[status] || statusMap.available;
+  };
+
   if (loading) return <Loading text="Carregando detalhes do imóvel..." />;
 
   if (error || !property) {
@@ -252,7 +278,7 @@ const PropertyDetails = () => {
               <div className="flex items-start justify-between mb-4">
                 <div className="flex-1">
                   <h1 className="text-3xl font-bold text-gray-900 mb-2">{property.title}</h1>
-                  <div className="flex items-center gap-4 text-gray-600">
+                  <div className="flex items-center gap-4 text-gray-600 mb-3">
                     <div className="flex items-center gap-1">
                       <FaStar className="text-yellow-400" />
                       <span className="font-medium">4.9</span>
@@ -263,6 +289,13 @@ const PropertyDetails = () => {
                       <FaMapMarkerAlt className="text-red-600" />
                       <span>{property.city?.name}, {property.city?.state}</span>
                     </div>
+                  </div>
+                  {/* Status Badge */}
+                  <div className="inline-flex items-center gap-2">
+                    <span className={`px-3 py-1 rounded-lg text-sm font-semibold border ${getStatusInfo(property.status).color}`}>
+                      <span className="mr-1">{getStatusInfo(property.status).icon}</span>
+                      Status: {getStatusInfo(property.status).label}
+                    </span>
                   </div>
                 </div>
                 {property.is_featured && (
@@ -317,15 +350,28 @@ const PropertyDetails = () => {
             {/* Calendário de Disponibilidade */}
             <div className="border-b border-gray-200 pb-8">
               <h2 className="text-2xl font-bold text-gray-900 mb-6">Selecione as datas</h2>
-              <div className="bg-gray-50 rounded-2xl p-6">
-                <DateRangePicker
-                  checkIn={bookingDates.checkIn}
-                  checkOut={bookingDates.checkOut}
-                  onChange={setBookingDates}
-                  onClose={() => {}}
-                  occupiedDates={occupiedDates}
-                  compact={true}
-                />
+              <div className={`bg-gray-50 rounded-2xl p-6 ${property.status !== 'available' ? 'opacity-50 pointer-events-none' : ''}`}>
+                {property.status !== 'available' ? (
+                  <div className="text-center py-8">
+                    <p className="text-gray-700 font-medium mb-2">
+                      {property.status === 'occupied' && '🔒 Calendário bloqueado - Imóvel ocupado'}
+                      {property.status === 'maintenance' && '⚙️ Calendário bloqueado - Em manutenção'}
+                      {property.status === 'inactive' && '○ Calendário bloqueado - Imóvel inativo'}
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      Este imóvel não está disponível para reservas no momento.
+                    </p>
+                  </div>
+                ) : (
+                  <DateRangePicker
+                    checkIn={bookingDates.checkIn}
+                    checkOut={bookingDates.checkOut}
+                    onChange={setBookingDates}
+                    onClose={() => {}}
+                    occupiedDates={occupiedDates}
+                    compact={true}
+                  />
+                )}
               </div>
             </div>
 
@@ -353,11 +399,33 @@ const PropertyDetails = () => {
                   </div>
                 </div>
 
+                {/* Aviso de Indisponibilidade */}
+                {property.status !== 'available' && (
+                  <div className={`mb-4 p-4 rounded-xl border-2 ${
+                    property.status === 'occupied' ? 'bg-red-50 border-red-200' :
+                    property.status === 'maintenance' ? 'bg-yellow-50 border-yellow-200' :
+                    'bg-gray-50 border-gray-200'
+                  }`}>
+                    <p className="text-sm font-semibold text-gray-900 mb-1">
+                      {property.status === 'occupied' && '🔒 Imóvel Ocupado'}
+                      {property.status === 'maintenance' && '⚙️ Em Manutenção'}
+                      {property.status === 'inactive' && '○ Imóvel Inativo'}
+                    </p>
+                    <p className="text-xs text-gray-700">
+                      Este imóvel não está disponível para reservas no momento.
+                    </p>
+                  </div>
+                )}
+
                 {/* Seleção de Datas */}
                 <div className="mb-4">
                   <div
-                    onClick={() => setShowDatePicker(!showDatePicker)}
-                    className="grid grid-cols-2 border border-gray-300 rounded-xl overflow-hidden cursor-pointer hover:border-gray-400 transition-colors"
+                    onClick={() => property.status === 'available' && setShowDatePicker(!showDatePicker)}
+                    className={`grid grid-cols-2 border border-gray-300 rounded-xl overflow-hidden ${
+                      property.status === 'available'
+                        ? 'cursor-pointer hover:border-gray-400'
+                        : 'cursor-not-allowed opacity-50 bg-gray-50'
+                    } transition-colors`}
                   >
                     <div className="p-3 border-r border-gray-300">
                       <div className="text-xs font-bold text-gray-900 mb-1">CHECK-IN</div>
@@ -377,8 +445,12 @@ const PropertyDetails = () => {
                 {/* Seleção de Hóspedes */}
                 <div className="mb-6 relative">
                   <div
-                    className="border border-gray-300 rounded-xl p-3 cursor-pointer hover:border-gray-400 transition-colors"
-                    onClick={() => setShowGuestsPicker(!showGuestsPicker)}
+                    className={`border border-gray-300 rounded-xl p-3 ${
+                      property.status === 'available'
+                        ? 'cursor-pointer hover:border-gray-400'
+                        : 'cursor-not-allowed opacity-50 bg-gray-50'
+                    } transition-colors`}
+                    onClick={() => property.status === 'available' && setShowGuestsPicker(!showGuestsPicker)}
                   >
                     <div className="text-xs font-bold text-gray-900 mb-1">HÓSPEDES</div>
                     <div className="text-sm text-gray-600">
@@ -389,7 +461,7 @@ const PropertyDetails = () => {
                   </div>
 
                   {/* Picker de Hóspedes */}
-                  {showGuestsPicker && (
+                  {showGuestsPicker && property.status === 'available' && (
                     <GuestsPicker
                       guests={guests}
                       onChange={(newGuests) => {
@@ -437,6 +509,11 @@ const PropertyDetails = () => {
                 {/* Botão de Reserva */}
                 <button
                   onClick={() => {
+                    if (property.status !== 'available') {
+                      alert("Este imóvel não está disponível para reservas no momento.");
+                      return;
+                    }
+
                     if (!bookingDates.checkIn || !bookingDates.checkOut) {
                       alert("Por favor, selecione as datas de check-in e check-out");
                       return;
@@ -463,10 +540,14 @@ const PropertyDetails = () => {
                       }
                     });
                   }}
-                  disabled={!bookingDates.checkIn || !bookingDates.checkOut}
+                  disabled={property.status !== 'available' || !bookingDates.checkIn || !bookingDates.checkOut}
                   className="w-full bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white py-4 rounded-xl font-bold text-lg shadow-lg hover:shadow-xl transition-all transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                 >
-                  {bookingDates.checkIn && bookingDates.checkOut ? 'Reservar Agora' : 'Selecione as Datas'}
+                  {property.status !== 'available'
+                    ? 'Imóvel Indisponível'
+                    : bookingDates.checkIn && bookingDates.checkOut
+                      ? 'Reservar Agora'
+                      : 'Selecione as Datas'}
                 </button>
 
                 <p className="text-center text-sm text-gray-600 mt-4">Você não será cobrado nesta etapa</p>

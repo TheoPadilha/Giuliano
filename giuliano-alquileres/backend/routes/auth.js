@@ -16,6 +16,12 @@ module.exports = (authLimiter, registerLimiter) => {
   // POST /api/auth/login - Fazer login (com rate limiter específico)
   router.post("/login", authLimiter, authController.login);
 
+  // POST /api/auth/forgot-password - Solicitar recuperação de senha
+  router.post("/forgot-password", authLimiter, authController.forgotPassword);
+
+  // POST /api/auth/reset-password - Redefinir senha com token
+  router.post("/reset-password", authLimiter, authController.resetPassword);
+
   // Rotas protegidas (com autenticação)
 
   // GET /api/auth/verify - Verificar se token é válido

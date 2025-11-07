@@ -1,6 +1,8 @@
 const Joi = require("joi");
 const jwt = require("jsonwebtoken");
+const crypto = require("crypto");
 const User = require("../models/User");
+const { sendPasswordResetEmail } = require("../services/emailService");
 
 // Validação de registro
 const registerSchema = Joi.object({
@@ -288,6 +290,131 @@ exports.refresh = async (req, res) => {
     return res.status(500).json({
       success: false,
       error: "Erro ao renovar token",
+    });
+  }
+};
+
+/**
+ * @desc    Solicitar recuperação de senha
+ * @route   POST /api/auth/forgot-password
+ * @access  Public
+ */
+exports.forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        error: "Email é obrigatório",
+      });
+    }
+
+    // Buscar usuário
+    const user = await User.findByEmail(email);
+    if (!user) {
+      // Por segurança, não revelar se o email existe ou não
+      return res.status(200).json({
+        success: true,
+        message: "Se o email existir em nossa base, você receberá as instruções de recuperação",
+      });
+    }
+
+    // Gerar token de recuperação
+    const resetToken = crypto.randomBytes(32).toString("hex");
+    const resetTokenHash = crypto
+      .createHash("sha256")
+      .update(resetToken)
+      .digest("hex");
+
+    // Definir expiração (60 minutos)
+    const expiryMinutes = parseInt(process.env.PASSWORD_RESET_TOKEN_EXPIRY) || 60;
+    const resetTokenExpires = new Date(Date.now() + expiryMinutes * 60 * 1000);
+
+    // Salvar token no banco
+    user.reset_token = resetTokenHash;
+    user.reset_token_expires = resetTokenExpires;
+    await user.save();
+
+    // Enviar email
+    await sendPasswordResetEmail(user, resetToken);
+
+    return res.status(200).json({
+      success: true,
+      message: "Se o email existir em nossa base, você receberá as instruções de recuperação",
+    });
+  } catch (err) {
+    console.error("Erro ao solicitar recuperação de senha:", err);
+    return res.status(500).json({
+      success: false,
+      error: "Erro ao processar solicitação. Tente novamente.",
+    });
+  }
+};
+
+/**
+ * @desc    Redefinir senha com token
+ * @route   POST /api/auth/reset-password
+ * @access  Public
+ */
+exports.resetPassword = async (req, res) => {
+  try {
+    const { token, newPassword } = req.body;
+
+    if (!token || !newPassword) {
+      return res.status(400).json({
+        success: false,
+        error: "Token e nova senha são obrigatórios",
+      });
+    }
+
+    // Validar senha
+    if (newPassword.length < 6) {
+      return res.status(400).json({
+        success: false,
+        error: "Senha deve ter no mínimo 6 caracteres",
+      });
+    }
+
+    // Hash do token recebido
+    const resetTokenHash = crypto
+      .createHash("sha256")
+      .update(token)
+      .digest("hex");
+
+    // Buscar usuário com token válido
+    const { Op } = require("sequelize");
+    const user = await User.findOne({
+      where: {
+        reset_token: resetTokenHash,
+        reset_token_expires: {
+          [Op.gt]: new Date(), // Token não expirado
+        },
+      },
+    });
+
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        error: "Token inválido ou expirado",
+      });
+    }
+
+    // Atualizar senha
+    user.password_hash = newPassword; // O hook beforeUpdate fará o hash
+    user.reset_token = null;
+    user.reset_token_expires = null;
+    await user.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Senha redefinida com sucesso! Você já pode fazer login com a nova senha.",
+    });
+  } catch (err) {
+    console.error("Erro ao redefinir senha:", err);
+    return res.status(500).json({
+      success: false,
+      error: "Erro ao redefinir senha. Tente novamente.",
     });
   }
 };

@@ -8,6 +8,7 @@ const {
 const Joi = require("joi");
 const logger = require("../utils/logger");
 const { isBetaMode, getBetaConfig, betaLog } = require("../config/betaMode");
+const { sendBookingConfirmation } = require("../services/emailService");
 
 // Esquema de validação para criar reserva
 const createBookingSchema = Joi.object({
@@ -613,7 +614,14 @@ const confirmBooking = async (req, res) => {
         {
           model: Property,
           as: "property",
-          attributes: ["id", "title", "user_id"],
+          attributes: ["id", "title", "user_id", "address", "city_id"],
+          include: [
+            {
+              model: City,
+              as: "city",
+              attributes: ["name", "state"],
+            },
+          ],
         },
         {
           model: User,
@@ -657,6 +665,20 @@ const confirmBooking = async (req, res) => {
     });
 
     console.log("[Booking] Reserva confirmada com sucesso!");
+
+    // Enviar email de confirmação para o hóspede
+    try {
+      console.log("[Booking] Enviando email de confirmação...");
+      await sendBookingConfirmation(booking, booking.property, booking.guest);
+      console.log("[Booking] Email de confirmação enviado com sucesso!");
+    } catch (emailError) {
+      console.error("[Booking] Erro ao enviar email de confirmação:", emailError);
+      // Não bloqueia a confirmação se o email falhar
+      logger.error("Erro ao enviar email de confirmação", {
+        error: emailError.message,
+        booking_id: booking.id
+      });
+    }
 
     logger.info("Reserva confirmada pelo proprietário", {
       booking_id: booking.id,

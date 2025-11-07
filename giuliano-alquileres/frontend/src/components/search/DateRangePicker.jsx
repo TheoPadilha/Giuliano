@@ -64,9 +64,19 @@ const DateRangePicker = ({ checkIn, checkOut, onChange, onClose, occupiedDates =
   const isDateOccupied = (date) => {
     if (!date) return false;
     return occupiedDates.some((range) => {
-      const start = new Date(range.start);
-      const end = new Date(range.end);
-      return date >= start && date <= end;
+      // Parse dates without timezone issues - use local dates
+      const [startYear, startMonth, startDay] = range.start.split('-').map(Number);
+      const [endYear, endMonth, endDay] = range.end.split('-').map(Number);
+      const start = new Date(startYear, startMonth - 1, startDay);
+      const end = new Date(endYear, endMonth - 1, endDay);
+
+      // Reset time to midnight for accurate comparison
+      const checkDate = new Date(date);
+      checkDate.setHours(0, 0, 0, 0);
+      start.setHours(0, 0, 0, 0);
+      end.setHours(0, 0, 0, 0);
+
+      return checkDate >= start && checkDate <= end;
     });
   };
 

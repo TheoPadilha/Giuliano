@@ -337,15 +337,15 @@ const EditProperty = () => {
   return (
     <AdminLayout>
       <div className="max-w-6xl mx-auto">
-        {/* Header */}
+        {/* Header com Status Visual */}
         <div className="mb-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="heading-2 text-airbnb-black">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex-1">
+              <h1 className="heading-2 text-airbnb-black mb-2">
                 Editar Imóvel
               </h1>
               <p className="body-base text-airbnb-grey-600">
-                Atualize: <strong>{propertyData?.title}</strong>
+                <strong>{propertyData?.title}</strong>
               </p>
               <p className="body-small text-airbnb-grey-500 mt-1">
                 ID: {propertyData?.uuid || propertyData?.id || id}
@@ -354,6 +354,35 @@ const EditProperty = () => {
             <button onClick={handleCancel} className="btn-secondary">
               Voltar
             </button>
+          </div>
+
+          {/* Status Badge Visual */}
+          <div className="flex items-center gap-3">
+            <span className="text-sm font-medium text-gray-600">Status atual:</span>
+            {propertyData?.status === 'available' && (
+              <span className="px-4 py-2 bg-green-100 text-green-700 rounded-full text-sm font-semibold flex items-center gap-2">
+                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                Disponível
+              </span>
+            )}
+            {propertyData?.status === 'occupied' && (
+              <span className="px-4 py-2 bg-orange-100 text-orange-700 rounded-full text-sm font-semibold flex items-center gap-2">
+                <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+                Ocupado
+              </span>
+            )}
+            {propertyData?.status === 'maintenance' && (
+              <span className="px-4 py-2 bg-yellow-100 text-yellow-700 rounded-full text-sm font-semibold flex items-center gap-2">
+                <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                Em Manutenção
+              </span>
+            )}
+            {propertyData?.status === 'inactive' && (
+              <span className="px-4 py-2 bg-gray-100 text-gray-700 rounded-full text-sm font-semibold flex items-center gap-2">
+                <div className="w-2 h-2 bg-gray-500 rounded-full"></div>
+                Inativo
+              </span>
+            )}
           </div>
         </div>
 
@@ -452,22 +481,99 @@ const EditProperty = () => {
                     </select>
                   </div>
 
-                  {/* Status */}
-                  <div>
-                    <label className="label">
-                      Status
+                  {/* Status - Versão Melhorada com Cards */}
+                  <div className="md:col-span-2">
+                    <label className="label mb-3">
+                      Status do Imóvel *
                     </label>
-                    <select
-                      name="status"
-                      value={formData.status}
-                      onChange={handleInputChange}
-                      className="input"
-                    >
-                      <option value="available">Disponível</option>
-                      <option value="occupied">Ocupado</option>
-                      <option value="maintenance">Manutenção</option>
-                      <option value="inactive">Inativo</option>
-                    </select>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                      {/* Disponível */}
+                      <button
+                        type="button"
+                        onClick={() => setFormData({...formData, status: 'available'})}
+                        className={`p-4 rounded-xl border-2 transition-all text-left ${
+                          formData.status === 'available'
+                            ? 'border-green-500 bg-green-50 ring-2 ring-green-200'
+                            : 'border-gray-200 hover:border-green-300 bg-white'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2 mb-1">
+                          <div className={`w-3 h-3 rounded-full ${
+                            formData.status === 'available' ? 'bg-green-500' : 'bg-gray-300'
+                          }`}></div>
+                          <span className={`font-semibold text-sm ${
+                            formData.status === 'available' ? 'text-green-700' : 'text-gray-700'
+                          }`}>Disponível</span>
+                        </div>
+                        <p className="text-xs text-gray-500">Aceita reservas</p>
+                      </button>
+
+                      {/* Ocupado */}
+                      <button
+                        type="button"
+                        onClick={() => setFormData({...formData, status: 'occupied'})}
+                        className={`p-4 rounded-xl border-2 transition-all text-left ${
+                          formData.status === 'occupied'
+                            ? 'border-orange-500 bg-orange-50 ring-2 ring-orange-200'
+                            : 'border-gray-200 hover:border-orange-300 bg-white'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2 mb-1">
+                          <div className={`w-3 h-3 rounded-full ${
+                            formData.status === 'occupied' ? 'bg-orange-500' : 'bg-gray-300'
+                          }`}></div>
+                          <span className={`font-semibold text-sm ${
+                            formData.status === 'occupied' ? 'text-orange-700' : 'text-gray-700'
+                          }`}>Ocupado</span>
+                        </div>
+                        <p className="text-xs text-gray-500">Em uso no momento</p>
+                      </button>
+
+                      {/* Manutenção */}
+                      <button
+                        type="button"
+                        onClick={() => setFormData({...formData, status: 'maintenance'})}
+                        className={`p-4 rounded-xl border-2 transition-all text-left ${
+                          formData.status === 'maintenance'
+                            ? 'border-yellow-500 bg-yellow-50 ring-2 ring-yellow-200'
+                            : 'border-gray-200 hover:border-yellow-300 bg-white'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2 mb-1">
+                          <div className={`w-3 h-3 rounded-full ${
+                            formData.status === 'maintenance' ? 'bg-yellow-500' : 'bg-gray-300'
+                          }`}></div>
+                          <span className={`font-semibold text-sm ${
+                            formData.status === 'maintenance' ? 'text-yellow-700' : 'text-gray-700'
+                          }`}>Manutenção</span>
+                        </div>
+                        <p className="text-xs text-gray-500">Temporariamente indisponível</p>
+                      </button>
+
+                      {/* Inativo */}
+                      <button
+                        type="button"
+                        onClick={() => setFormData({...formData, status: 'inactive'})}
+                        className={`p-4 rounded-xl border-2 transition-all text-left ${
+                          formData.status === 'inactive'
+                            ? 'border-gray-500 bg-gray-50 ring-2 ring-gray-200'
+                            : 'border-gray-200 hover:border-gray-300 bg-white'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2 mb-1">
+                          <div className={`w-3 h-3 rounded-full ${
+                            formData.status === 'inactive' ? 'bg-gray-500' : 'bg-gray-300'
+                          }`}></div>
+                          <span className={`font-semibold text-sm ${
+                            formData.status === 'inactive' ? 'text-gray-700' : 'text-gray-700'
+                          }`}>Inativo</span>
+                        </div>
+                        <p className="text-xs text-gray-500">Não aparece no site</p>
+                      </button>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-2">
+                      ℹ️ O status controla a visibilidade e disponibilidade do imóvel no sistema
+                    </p>
                   </div>
                 </div>
               </div>

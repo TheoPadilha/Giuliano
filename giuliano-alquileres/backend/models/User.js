@@ -66,6 +66,17 @@ const User = sequelize.define(
       defaultValue: "approved", // Clientes são aprovados automaticamente, apenas admins precisam aprovação
       allowNull: false,
     },
+    // Campos para recuperação de senha
+    reset_token: {
+      type: DataTypes.STRING(255),
+      allowNull: true,
+      comment: "Token para recuperação de senha",
+    },
+    reset_token_expires: {
+      type: DataTypes.DATE,
+      allowNull: true,
+      comment: "Data de expiração do token de recuperação",
+    },
   },
   {
     tableName: "users",

@@ -91,6 +91,16 @@ const BookingDetails = () => {
     });
   };
 
+  const getCancelledByLabel = (cancelledBy) => {
+    const labels = {
+      guest: "Hóspede",
+      owner: "Proprietário",
+      admin: "Administrador",
+      system: "Sistema",
+    };
+    return labels[cancelledBy] || cancelledBy;
+  };
+
   const canCancel = booking && ["pending", "confirmed"].includes(booking.status);
   const canReview = booking && booking.status === "completed" && !booking.has_review;
 
@@ -155,8 +165,20 @@ const BookingDetails = () => {
                   </p>
                 </div>
                 <div className="flex flex-wrap gap-3">
-                  <BookingStatusBadge status={booking.status} />
-                  <PaymentStatusBadge status={booking.payment_status} />
+                  {/* Mostrar badge unificado quando ambos são pending para evitar redundância */}
+                  {booking.status === 'pending' && booking.payment_status === 'pending' ? (
+                    <span className="inline-flex items-center gap-2 font-semibold rounded-full border-2 bg-yellow-100 text-yellow-800 border-yellow-300 text-sm px-3 py-1.5">
+                      <FaClock className="text-sm" />
+                      <span>Aguardando Pagamento</span>
+                    </span>
+                  ) : (
+                    <>
+                      <BookingStatusBadge status={booking.status} />
+                      {booking.payment_status !== 'pending' && (
+                        <PaymentStatusBadge status={booking.payment_status} />
+                      )}
+                    </>
+                  )}
                 </div>
               </div>
             </div>
@@ -188,7 +210,7 @@ const BookingDetails = () => {
                       )}
                     </div>
                     <Link
-                      to={`/properties/${booking.property?.uuid}`}
+                      to={`/property/${booking.property?.uuid}`}
                       className="btn-secondary inline-block"
                     >
                       Ver Detalhes do Imóvel
@@ -308,7 +330,7 @@ const BookingDetails = () => {
                       {booking.cancelled_by && (
                         <div>
                           <label className="label text-red-700">Cancelado por</label>
-                          <p className="text-red-900 capitalize">{booking.cancelled_by}</p>
+                          <p className="text-red-900">{getCancelledByLabel(booking.cancelled_by)}</p>
                         </div>
                       )}
                     </div>
@@ -401,13 +423,6 @@ const BookingDetails = () => {
                     <FaFileDownload />
                     Baixar Comprovante
                   </button>
-
-                  <Link
-                    to={`/properties/${booking.property?.uuid}`}
-                    className="btn-secondary w-full text-center block"
-                  >
-                    Ver Imóvel
-                  </Link>
                 </div>
               </div>
             </div>
