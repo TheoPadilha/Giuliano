@@ -2,7 +2,7 @@ import axios from "axios";
 
 // Remover barra final para evitar URLs duplas
 const API_URL = (
-  import.meta.env.VITE_API_URL || "https://giulianoa-backend.onrender.com"
+  import.meta.env.VITE_API_URL || "https://giuliano.onrender.com"
 ).replace(/\/$/, "");
 
 // Instância principal do axios
