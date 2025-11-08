@@ -17,6 +17,12 @@ if (process.env.DATABASE_URL) {
         rejectUnauthorized: false, // Essencial para a conexão no Render
       },
     },
+    pool: {
+      max: 5, // Máximo de conexões (Render free tier tem limite baixo)
+      min: 0, // Mínimo de conexões
+      acquire: 60000, // Timeout para adquirir conexão (60s)
+      idle: 10000, // Tempo que conexão fica ociosa antes de ser liberada (10s)
+    },
     logging: false, // Desativa o logging em produção
     define: {
       timestamps: true,
