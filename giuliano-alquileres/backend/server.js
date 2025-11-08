@@ -178,8 +178,8 @@ app.use("/api/favorites", require("./routes/favorites"));
 app.use("/api/city-guides", require("./routes/cityGuides"));
 
 // Rota de setup inicial (apenas para primeiro deploy)
-// ⚠️ REMOVIDO POR SEGURANÇA - Setup já foi concluído
-// app.use("/api/setup", require("./routes/setup"));
+// ⚠️ ATENÇÃO: Remover ou proteger depois de usar!
+app.use("/api/setup", require("./routes/setup"));
 
 // Rota temporária para seed de dados
 // ⚠️ REMOVIDO POR SEGURANÇA - Seed de comodidades já foi concluído
