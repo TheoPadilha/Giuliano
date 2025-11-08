@@ -9,6 +9,8 @@ const express = require('express');
 const router = express.Router();
 const { sequelize, City, User } = require('../models');
 const bcrypt = require('bcryptjs');
+const { Umzug, SequelizeStorage } = require('umzug');
+const path = require('path');
 
 // Lista de cidades de SC
 const CITIES_SC = [
@@ -246,6 +248,45 @@ router.post('/reset-admin', async (req, res) => {
     res.status(500).json({
       success: false,
       error: error.message
+    });
+  }
+});
+
+// Endpoint para rodar migrations pendentes
+router.post('/migrate', async (req, res) => {
+  try {
+    console.log('\n🔄 Executando migrations pendentes...');
+
+    // Configurar Umzug para rodar migrations
+    const umzug = new Umzug({
+      migrations: {
+        glob: path.join(__dirname, '../migrations/*.js')
+      },
+      context: sequelize.getQueryInterface(),
+      storage: new SequelizeStorage({ sequelize }),
+      logger: console
+    });
+
+    // Rodar migrations pendentes
+    const migrations = await umzug.up();
+
+    console.log('✅ Migrations concluídas!\n');
+
+    res.json({
+      success: true,
+      message: 'Migrations executadas com sucesso!',
+      migrations: migrations.map(m => m.name),
+      count: migrations.length
+    });
+
+  } catch (error) {
+    console.error('\n❌ Erro ao rodar migrations:', error);
+
+    res.status(500).json({
+      success: false,
+      error: 'Erro ao executar migrations',
+      message: error.message,
+      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
     });
   }
 });
