@@ -66,14 +66,13 @@ const uploadPropertyPhotos = async (req, res) => {
       const isMain = index === mainPhotoIdx && existingPhotos.length === 0; // Só definir como principal se não houver fotos
 
       let cloudinaryData = null;
-      let filename = file.filename;
+      const filename = file.filename; // Manter o filename original sempre
 
       // Se Cloudinary está configurado, fazer upload para lá
       if (isConfigured()) {
         try {
           console.log(`📤 Fazendo upload para Cloudinary: ${file.filename}`);
           cloudinaryData = await uploadImage(file.path, 'properties');
-          filename = cloudinaryData.publicId; // Salvar publicId ao invés do filename local
           console.log(`✅ Upload concluído: ${cloudinaryData.url}`);
 
           // Deletar arquivo local após upload bem-sucedido

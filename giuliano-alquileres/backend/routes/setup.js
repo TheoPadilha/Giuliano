@@ -7,10 +7,11 @@
 
 const express = require('express');
 const router = express.Router();
-const { sequelize, City, User } = require('../models');
+const { sequelize, City, User, PropertyPhoto } = require('../models');
 const bcrypt = require('bcryptjs');
 const { Umzug, SequelizeStorage } = require('umzug');
 const path = require('path');
+const cloudinary = require('cloudinary').v2;
 
 // Lista de cidades de SC
 const CITIES_SC = [
@@ -293,6 +294,68 @@ router.post('/migrate', async (req, res) => {
     res.status(500).json({
       success: false,
       error: 'Erro ao executar migrations',
+      message: error.message,
+      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
+  }
+});
+
+// Endpoint para corrigir fotos antigas com publicId no campo filename
+router.post('/fix-photos', async (req, res) => {
+  try {
+    console.log('\n🔧 Corrigindo fotos antigas...');
+
+    // Buscar todas as fotos que não têm cloudinary_url preenchida
+    const photos = await PropertyPhoto.findAll({
+      where: {
+        cloudinary_url: null
+      }
+    });
+
+    console.log(`📊 Encontradas ${photos.length} fotos sem cloudinary_url`);
+
+    let fixed = 0;
+    let skipped = 0;
+
+    for (const photo of photos) {
+      // Se o filename contém '/', é um publicId do Cloudinary
+      if (photo.filename && photo.filename.includes('/')) {
+        console.log(`🔧 Corrigindo foto ID ${photo.id}: ${photo.filename}`);
+
+        // Construir a URL do Cloudinary baseado no publicId
+        const cloudinaryUrl = cloudinary.url(photo.filename, {
+          secure: true,
+          transformation: []
+        });
+
+        // Atualizar a foto com a URL e o publicId corretos
+        await photo.update({
+          cloudinary_url: cloudinaryUrl,
+          cloudinary_public_id: photo.filename
+        });
+
+        fixed++;
+      } else {
+        skipped++;
+      }
+    }
+
+    console.log(`✅ Correção concluída! ${fixed} fotos corrigidas, ${skipped} mantidas.\n`);
+
+    res.json({
+      success: true,
+      message: 'Fotos corrigidas com sucesso!',
+      fixed,
+      skipped,
+      total: photos.length
+    });
+
+  } catch (error) {
+    console.error('\n❌ Erro ao corrigir fotos:', error);
+
+    res.status(500).json({
+      success: false,
+      error: 'Erro ao corrigir fotos',
       message: error.message,
       details: process.env.NODE_ENV === 'development' ? error.stack : undefined
     });

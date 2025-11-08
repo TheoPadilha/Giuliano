@@ -65,8 +65,15 @@ const PropertyCard = ({ property, layout = "vertical", showPremiumBadge = false 
           return image.cloudinary_url;
         }
 
-        // Se tem filename, construir URL local
+        // Se tem filename, verificar se não é um publicId do Cloudinary
         if (image.filename) {
+          // Se filename contém '/', é provavelmente um publicId antigo do Cloudinary
+          // Nesse caso, não construir URL local pois não existe arquivo local
+          if (image.filename.includes('/')) {
+            console.warn('⚠️ Filename parece ser publicId do Cloudinary, mas cloudinary_url está vazia');
+            return null;
+          }
+
           const url = `${UPLOADS_URL}/properties/${image.filename}`;
           console.log('🖼️ Local URL:', url);
           return url;
