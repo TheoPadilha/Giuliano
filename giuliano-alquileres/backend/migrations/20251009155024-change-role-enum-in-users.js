@@ -3,10 +3,16 @@
 
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.sequelize.query("ALTER TYPE \"enum_users_role\" ADD VALUE 'admin_master'");
-    console.log(
-      "Valor de ENUM admin_master já existe, pulando esta migration."
-    );
+    try {
+      await queryInterface.sequelize.query("ALTER TYPE \"enum_users_role\" ADD VALUE IF NOT EXISTS 'admin_master'");
+      console.log('✅ Valor admin_master adicionado ao ENUM');
+    } catch (error) {
+      if (error.message.includes('already exists')) {
+        console.log("⏭️  Valor de ENUM admin_master já existe, pulando esta migration.");
+      } else {
+        throw error;
+      }
+    }
   },
 
   async down(queryInterface, Sequelize) {
