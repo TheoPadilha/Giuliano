@@ -422,19 +422,22 @@ const PhotoUpload = ({ propertyUuid, onUploadComplete }) => {
                 {/* Imagem */}
                 <div className="aspect-w-16 aspect-h-9">
                   <img
-                    src={`${import.meta.env.VITE_API_URL || "http://localhost:5000"}/uploads/properties/${photo.filename}`}
+                    src={
+                      photo.cloudinary_url ||
+                      `${import.meta.env.VITE_API_URL || "http://localhost:5000"}/uploads/properties/${photo.filename}`
+                    }
                     alt={photo.alt_text}
                     className="w-full h-48 object-cover"
                     onError={(e) => {
                       console.error(
-                        `❌ Erro ao carregar imagem: ${photo.filename}`
+                        `❌ Erro ao carregar imagem: ${photo.cloudinary_url || photo.filename}`
                       );
                       e.target.src =
                         "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjI0IiBoZWlnaHQ9IjI0IiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik0xMiA4QzEwLjg5NTQgOCAxMCA4Ljg5NTQzIDEwIDEwQzEwIDExLjEwNDYgMTAuODk1NCAxMiAxMiAxMkMxMy4xMDQ2IDEyIDE0IDExLjEwNDYgMTQgMTBDMTQgOC44OTU0MyAxMy4xMDQ2IDggMTIgOFoiIGZpbGw9IiM5Q0EzQUYiLz4KPHBhdGggZD0iTTIxIDNIM0MyLjQ0NzcxIDMgMiAzLjQ0NzcxIDIgNFYyMEMyIDIwLjU1MjMgMi40NDc3MSAyMSAzIDIxSDIxQzIxLjU1MjMgMjEgMjIgMjAuNTUyMyAyMiAyMFY0QzIyIDMuNDQ3NzEgMjEuNTUyMyAzIDIxIDNaTTIwIDE5SDRWNUgyMFYxOVoiIGZpbGw9IiM5Q0EzQUYiLz4KPC9zdmc+";
                       e.target.onerror = null;
                     }}
                     onLoad={() =>
-                      console.log(`✅ Imagem carregada: ${photo.filename}`)
+                      console.log(`✅ Imagem carregada: ${photo.cloudinary_url || photo.filename}`)
                     }
                   />
                 </div>
