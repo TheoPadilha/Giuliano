@@ -260,9 +260,17 @@ router.post('/migrate', async (req, res) => {
     // Configurar Umzug para rodar migrations
     const umzug = new Umzug({
       migrations: {
-        glob: path.join(__dirname, '../migrations/*.js')
+        glob: path.join(__dirname, '../migrations/*.js'),
+        resolve: ({ name, path: filepath, context: sequelize }) => {
+          const migration = require(filepath);
+          return {
+            name,
+            up: async () => migration.up(sequelize.getQueryInterface(), sequelize.constructor),
+            down: async () => migration.down(sequelize.getQueryInterface(), sequelize.constructor)
+          };
+        }
       },
-      context: sequelize.getQueryInterface(),
+      context: sequelize,
       storage: new SequelizeStorage({ sequelize }),
       logger: console
     });
