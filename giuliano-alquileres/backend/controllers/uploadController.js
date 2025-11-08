@@ -264,14 +264,27 @@ const deletePhoto = async (req, res) => {
     }
 
     const filename = photo.filename;
+    const cloudinaryPublicId = photo.cloudinary_public_id;
     const wasMain = photo.is_main;
     const propertyId = photo.property_id;
 
+    // Se a foto está no Cloudinary, deletar de lá
+    if (cloudinaryPublicId && isConfigured()) {
+      try {
+        console.log(`🗑️ Deletando do Cloudinary: ${cloudinaryPublicId}`);
+        await deleteImage(cloudinaryPublicId);
+        console.log(`✅ Deletado do Cloudinary com sucesso`);
+      } catch (cloudinaryError) {
+        console.error('⚠️ Erro ao deletar do Cloudinary:', cloudinaryError);
+        // Continua para deletar do banco mesmo se falhar no Cloudinary
+      }
+    } else {
+      // Se não está no Cloudinary, deletar arquivo local
+      deleteFile(filename);
+    }
+
     // Deletar registro do banco
     await photo.destroy();
-
-    // Deletar arquivo físico
-    deleteFile(filename);
 
     // Se era foto principal, definir outra como principal
     if (wasMain) {
