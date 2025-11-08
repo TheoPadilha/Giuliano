@@ -84,6 +84,11 @@ const AdminProperties = () => {
     const firstPhoto = property.photos[0];
     const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
+    // Prioridade para cloudinary_url
+    if (firstPhoto.cloudinary_url) {
+      return firstPhoto.cloudinary_url;
+    }
+
     if (typeof firstPhoto === "string") {
       if (firstPhoto.startsWith("http")) {
         return firstPhoto;

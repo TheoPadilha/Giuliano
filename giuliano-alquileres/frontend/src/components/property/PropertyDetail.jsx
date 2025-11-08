@@ -38,6 +38,11 @@ const PropertyDetails = () => {
   const getPhotoUrl = (photo) => {
     if (!photo) return null;
 
+    // Prioridade para cloudinary_url
+    if (photo.cloudinary_url) {
+      return photo.cloudinary_url;
+    }
+
     // Se photo é uma string (filename)
     if (typeof photo === "string") {
       // Se já é uma URL completa

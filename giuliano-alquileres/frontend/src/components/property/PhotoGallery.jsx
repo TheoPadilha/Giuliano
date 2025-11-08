@@ -86,6 +86,10 @@ const PhotoGallery = ({ photos = [], propertyTitle = "", className = "" }) => {
 
   // URL da foto
   const getPhotoUrl = (photo) => {
+    // Prioridade para cloudinary_url
+    if (photo.cloudinary_url) {
+      return photo.cloudinary_url;
+    }
     return `${import.meta.env.VITE_API_URL || "http://localhost:5000"}/uploads/properties/${photo.filename}`;
   };
 

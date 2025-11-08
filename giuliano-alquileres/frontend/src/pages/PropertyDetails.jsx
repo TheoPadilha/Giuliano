@@ -232,7 +232,7 @@ const PropertyDetails = () => {
             {/* Foto Principal */}
             <div className="col-span-2 row-span-2 relative group cursor-pointer" onClick={() => setShowAllPhotos(true)}>
               <img
-                src={`${import.meta.env.VITE_API_URL}/uploads/properties/${photos[0].filename}`}
+                src={photos[0].cloudinary_url || `${import.meta.env.VITE_API_URL}/uploads/properties/${photos[0].filename}`}
                 alt={property.title}
                 className="w-full h-full object-cover group-hover:brightness-90 transition-all"
               />
@@ -246,7 +246,7 @@ const PropertyDetails = () => {
                 onClick={() => setShowAllPhotos(true)}
               >
                 <img
-                  src={`${import.meta.env.VITE_API_URL}/uploads/properties/${photo.filename}`}
+                  src={photo.cloudinary_url || `${import.meta.env.VITE_API_URL}/uploads/properties/${photo.filename}`}
                   alt={`Foto ${index + 2}`}
                   className="w-full h-full object-cover group-hover:brightness-90 transition-all"
                 />
@@ -618,7 +618,7 @@ const PropertyDetails = () => {
                 {photos.map((photo) => (
                   <img
                     key={photo.id}
-                    src={`${import.meta.env.VITE_API_URL}/uploads/properties/${photo.filename}`}
+                    src={photo.cloudinary_url || `${import.meta.env.VITE_API_URL}/uploads/properties/${photo.filename}`}
                     alt={photo.alt_text || property.title}
                     className="w-full rounded-xl"
                   />
