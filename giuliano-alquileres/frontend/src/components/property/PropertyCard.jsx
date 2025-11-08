@@ -32,7 +32,7 @@ const PropertyCard = ({ property, layout = "vertical", showPremiumBadge = false 
     trackPropertyClick(property, 0);
   };
 
-  // Pegar primeira imagem ou usar placeholder
+  // Pegar imagem principal ou primeira imagem
   const getImageUrl = () => {
     if (imageError) {
       return "https://placehold.co/800x600/e0e0e0/666666?text=Sem+Imagem";
@@ -42,15 +42,30 @@ const PropertyCard = ({ property, layout = "vertical", showPremiumBadge = false 
     const images = property.photos || property.images || property.property_images || [];
 
     if (images.length > 0) {
-      const image = images[0];
+      // Prioridade 1: Foto marcada como principal (is_main)
+      let image = images.find(img => img.is_main === true);
+
+      // Prioridade 2: Foto com menor display_order
+      if (!image) {
+        image = images.reduce((prev, curr) =>
+          (curr.display_order < prev.display_order) ? curr : prev
+        );
+      }
+
+      // Prioridade 3: Primeira do array
+      if (!image) {
+        image = images[0];
+      }
 
       // Se tem filename, construir URL completa
-      if (image.filename) {
-        return `${UPLOADS_URL}/properties/${image.filename}`;
+      if (image && image.filename) {
+        const url = `${UPLOADS_URL}/properties/${image.filename}`;
+        console.log('🖼️ Image URL:', url);
+        return url;
       }
 
       // Senão tentar pegar de image_url, url ou o próprio objeto (string)
-      return image.image_url || image.url || image;
+      return image?.image_url || image?.url || image || "https://placehold.co/800x600/e0e0e0/666666?text=Sem+Imagem";
     }
 
     return "https://placehold.co/800x600/e0e0e0/666666?text=Sem+Imagem";
