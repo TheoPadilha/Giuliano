@@ -1,6 +1,8 @@
 const { Property, PropertyPhoto } = require("../models");
 const { deleteFile } = require("../middleware/upload");
+const { uploadImage, deleteImage, isConfigured } = require("../config/cloudinary");
 const Joi = require("joi");
+const fs = require('fs').promises;
 
 // Schema para validação de upload
 const uploadSchema = Joi.object({
@@ -63,9 +65,32 @@ const uploadPropertyPhotos = async (req, res) => {
         parsedAltTexts[index] || `Foto ${index + 1} - ${property.title}`;
       const isMain = index === mainPhotoIdx && existingPhotos.length === 0; // Só definir como principal se não houver fotos
 
+      let cloudinaryData = null;
+      let filename = file.filename;
+
+      // Se Cloudinary está configurado, fazer upload para lá
+      if (isConfigured()) {
+        try {
+          console.log(`📤 Fazendo upload para Cloudinary: ${file.filename}`);
+          cloudinaryData = await uploadImage(file.path, 'properties');
+          filename = cloudinaryData.publicId; // Salvar publicId ao invés do filename local
+          console.log(`✅ Upload concluído: ${cloudinaryData.url}`);
+
+          // Deletar arquivo local após upload bem-sucedido
+          await fs.unlink(file.path).catch(err =>
+            console.warn('Erro ao deletar arquivo local:', err)
+          );
+        } catch (error) {
+          console.error('❌ Erro ao fazer upload para Cloudinary:', error);
+          // Se falhar, continua com upload local
+        }
+      }
+
       return await PropertyPhoto.create({
         property_id: property.id,
-        filename: file.filename,
+        filename: filename,
+        cloudinary_url: cloudinaryData?.url || null,
+        cloudinary_public_id: cloudinaryData?.publicId || null,
         original_name: file.originalname,
         alt_text: altText,
         is_main: isMain,
@@ -92,7 +117,7 @@ const uploadPropertyPhotos = async (req, res) => {
         alt_text: photo.alt_text,
         is_main: photo.is_main,
         display_order: photo.display_order,
-        url: `/uploads/properties/${photo.filename}`,
+        url: photo.cloudinary_url || `/uploads/properties/${photo.filename}`,
       })),
     });
   } catch (error) {
@@ -141,7 +166,7 @@ const getPropertyPhotos = async (req, res) => {
     res.json({
       photos: photos.map((photo) => ({
         ...photo.toJSON(),
-        url: `/uploads/properties/${photo.filename}`,
+        url: photo.cloudinary_url || `/uploads/properties/${photo.filename}`,
       })),
     });
   } catch (error) {

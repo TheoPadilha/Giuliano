@@ -24,6 +24,16 @@ const PropertyPhoto = sequelize.define(
         notEmpty: { msg: "Nome do arquivo é obrigatório" },
       },
     },
+    cloudinary_url: {
+      type: DataTypes.STRING(500),
+      allowNull: true,
+      comment: "URL da imagem no Cloudinary CDN",
+    },
+    cloudinary_public_id: {
+      type: DataTypes.STRING(255),
+      allowNull: true,
+      comment: "Public ID da imagem no Cloudinary para deleção",
+    },
     original_name: {
       type: DataTypes.STRING(255),
       allowNull: true,
@@ -86,6 +96,11 @@ PropertyPhoto.beforeUpdate(async (photo) => {
 
 // Método para obter URL completa da foto
 PropertyPhoto.prototype.getFullUrl = function (baseUrl = "") {
+  // Se tem URL do Cloudinary, usar ela (CDN)
+  if (this.cloudinary_url) {
+    return this.cloudinary_url;
+  }
+  // Senão, usar URL local
   return `${baseUrl}/uploads/properties/${this.filename}`;
 };
 
