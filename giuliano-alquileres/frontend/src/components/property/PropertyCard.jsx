@@ -57,15 +57,26 @@ const PropertyCard = ({ property, layout = "vertical", showPremiumBadge = false 
         image = images[0];
       }
 
-      // Se tem filename, construir URL completa
-      if (image && image.filename) {
-        const url = `${UPLOADS_URL}/properties/${image.filename}`;
-        console.log('🖼️ Image URL:', url);
-        return url;
+      // Prioridade: cloudinary_url > URL local > image_url/url
+      if (image) {
+        // Se tem cloudinary_url, usar ela (CDN)
+        if (image.cloudinary_url) {
+          console.log('🖼️ Cloudinary URL:', image.cloudinary_url);
+          return image.cloudinary_url;
+        }
+
+        // Se tem filename, construir URL local
+        if (image.filename) {
+          const url = `${UPLOADS_URL}/properties/${image.filename}`;
+          console.log('🖼️ Local URL:', url);
+          return url;
+        }
+
+        // Tentar pegar de image_url, url ou o próprio objeto (string)
+        return image.image_url || image.url || image;
       }
 
-      // Senão tentar pegar de image_url, url ou o próprio objeto (string)
-      return image?.image_url || image?.url || image || "https://placehold.co/800x600/e0e0e0/666666?text=Sem+Imagem";
+      return "https://placehold.co/800x600/e0e0e0/666666?text=Sem+Imagem";
     }
 
     return "https://placehold.co/800x600/e0e0e0/666666?text=Sem+Imagem";
