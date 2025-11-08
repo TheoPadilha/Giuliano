@@ -113,6 +113,8 @@ const uploadPropertyPhotos = async (req, res) => {
       photos: createdPhotos.map((photo) => ({
         id: photo.id,
         filename: photo.filename,
+        cloudinary_url: photo.cloudinary_url,
+        cloudinary_public_id: photo.cloudinary_public_id,
         original_name: photo.original_name,
         alt_text: photo.alt_text,
         is_main: photo.is_main,
@@ -155,6 +157,8 @@ const getPropertyPhotos = async (req, res) => {
       attributes: [
         "id",
         "filename",
+        "cloudinary_url",
+        "cloudinary_public_id",
         "original_name",
         "alt_text",
         "is_main",
