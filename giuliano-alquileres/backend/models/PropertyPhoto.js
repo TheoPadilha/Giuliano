@@ -101,7 +101,31 @@ PropertyPhoto.prototype.getFullUrl = function (baseUrl = "") {
     return this.cloudinary_url;
   }
   // Senão, usar URL local
-  return `${baseUrl}/uploads/properties/${this.filename}`;
+  // Em produção, o Render não persiste arquivos, então a URL local só funciona se o Cloudinary não estiver configurado
+  // e o arquivo tiver sido carregado localmente (o que não deve acontecer em produção).
+  // A URL local deve ser completa, mas o `baseUrl` não está sendo passado corretamente.
+  // Como o frontend está buscando a URL completa, vamos garantir que o backend sempre retorne a URL completa.
+  // No entanto, o frontend deve ser corrigido para usar a URL completa retornada pela API.
+  // Por enquanto, vamos garantir que o backend retorne a URL correta, mesmo que o frontend precise de correção.
+  // A URL local é construída no frontend, o backend só retorna o caminho.
+  // A correção deve ser feita no frontend, mas vamos garantir que o backend não dependa de `baseUrl` para a URL local.
+  // O problema é que o frontend está usando a URL local, mas o arquivo não existe.
+  // A correção é forçar o uso da URL do Cloudinary no frontend, ou garantir que o backend retorne a URL completa.
+
+  // O `getFullUrl` é usado internamente no backend (ex: `uploadController.js` linha 121 e `getPropertyPhotos` linha 172).
+  // A linha 172 do `getPropertyPhotos` usa: `url: photo.cloudinary_url || `/uploads/properties/${photo.filename}``
+  // Isso significa que o frontend está recebendo a URL relativa `/uploads/properties/...` quando o Cloudinary não é usado.
+  // O frontend deve ser corrigido para usar a URL do Cloudinary se disponível, ou a URL completa da API se for local.
+
+  // A correção mais segura é garantir que o frontend use a URL do Cloudinary se ela existir no objeto da foto.
+  // O objeto retornado pela API já tem `cloudinary_url` e `filename`.
+
+  // Vamos corrigir o frontend para usar `cloudinary_url` se existir.
+  // O `getFullUrl` não é usado para a resposta da API, então não precisa ser alterado.
+  // A correção é no frontend.
+
+  // Vou avançar para a fase 3 e corrigir o frontend.
+  return `${baseUrl}/uploads/properties/${this.filename};
 };
 
 // Método para definir como foto principal

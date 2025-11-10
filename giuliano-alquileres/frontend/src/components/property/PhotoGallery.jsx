@@ -90,7 +90,15 @@ const PhotoGallery = ({ photos = [], propertyTitle = "", className = "" }) => {
     if (photo.cloudinary_url) {
       return photo.cloudinary_url;
     }
-    return `${import.meta.env.VITE_API_URL || "http://localhost:5000"}/uploads/properties/${photo.filename}`;
+    // Se não houver cloudinary_url, usar a URL local.
+    // O VITE_API_URL deve ser configurado no ambiente de produção do frontend (Render).
+    // Se o VITE_API_URL não estiver configurado, ele usará http://localhost:5000, o que está errado em produção.
+    // O Render do frontend deve ter VITE_API_URL apontando para o backend (https://giuliano.onrender.com).
+    // A correção é garantir que o frontend use a URL do Cloudinary se existir.
+    // O código já faz isso. O problema é que as imagens foram salvas localmente no backend.
+    // A correção é garantir que o frontend use a URL do Cloudinary se existir.
+    // O código já está correto.
+    return `${import.meta.env.VITE_API_URL || "https://giuliano.onrender.com"}/uploads/properties/${photo.filename}`;
   };
 
   // Placeholder para imagem com erro

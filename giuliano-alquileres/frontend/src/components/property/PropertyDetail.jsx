@@ -49,7 +49,7 @@ const PropertyDetails = () => {
       if (photo.startsWith("http")) return photo;
       // Caso contrário, monta a URL
       return `${
-        import.meta.env.VITE_API_URL || "http://localhost:5000"
+        import.meta.env.VITE_API_URL || "https://giuliano.onrender.com"
       }/uploads/properties/${photo}`;
     }
 
@@ -57,7 +57,7 @@ const PropertyDetails = () => {
     if (photo.filename) {
       if (photo.filename.startsWith("http")) return photo.filename;
       return `${
-        import.meta.env.VITE_API_URL || "http://localhost:5000"
+        import.meta.env.VITE_API_URL || "https://giuliano.onrender.com"
       }/uploads/properties/${photo.filename}`;
     }
 
@@ -236,7 +236,7 @@ const PropertyDetails = () => {
           {property.photos && property.photos.length > 0 ? (
             <div className="relative h-[400px] md:h-[600px]">
               <img
-                src={property.photos[currentPhotoIndex]}
+                src={getPhotoUrl(property.photos[currentPhotoIndex])}
                 alt={`${property.title} - Foto ${currentPhotoIndex + 1}`}
                 className="w-full h-full object-cover"
               />
