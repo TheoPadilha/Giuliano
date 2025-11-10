@@ -118,7 +118,7 @@ const uploadPropertyPhotos = async (req, res) => {
         alt_text: photo.alt_text,
         is_main: photo.is_main,
         display_order: photo.display_order,
-        url: photo.cloudinary_url || `/uploads/properties/${photo.filename}`,
+        url: photo.cloudinary_url,
       })),
     });
   } catch (error) {
@@ -169,7 +169,7 @@ const getPropertyPhotos = async (req, res) => {
     res.json({
       photos: photos.map((photo) => ({
         ...photo.toJSON(),
-        url: photo.cloudinary_url || `/uploads/properties/${photo.filename}`,
+        url: photo.cloudinary_url,
       })),
     });
   } catch (error) {
@@ -204,7 +204,7 @@ const setMainPhoto = async (req, res) => {
         id: photo.id,
         filename: photo.filename,
         is_main: true,
-        url: `/uploads/properties/${photo.filename}`,
+        url: photo.cloudinary_url,
       },
     });
   } catch (error) {
@@ -343,7 +343,7 @@ const updatePhoto = async (req, res) => {
         id: photo.id,
         filename: photo.filename,
         alt_text: photo.alt_text,
-        url: `/uploads/properties/${photo.filename}`,
+        url: photo.cloudinary_url,
       },
     });
   } catch (error) {
