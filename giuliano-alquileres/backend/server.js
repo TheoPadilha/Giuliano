@@ -144,6 +144,42 @@ app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
 // Servir arquivos estáticos
+// Servir arquivos estáticos
+// O Render pode não ter o diretório 'uploads' no mesmo nível que o 'server.js'
+// O caminho absoluto é mais seguro em ambientes de produção como o Render.
+// No entanto, o `path.join(__dirname, "uploads")` está correto para a estrutura do projeto.
+// O problema é que o Render pode estar executando o `server.js` de um diretório diferente
+// ou o diretório `uploads` não está persistindo.
+// Se o problema for a persistência, a solução é usar um serviço de armazenamento externo (Cloudinary, S3).
+// Como o código já tem dependência do Cloudinary (linha 18 do package.json), vou verificar se o upload está sendo feito para o Cloudinary.
+
+// Se o upload estiver sendo feito localmente, o problema é que o Render não persiste arquivos.
+// Vou assumir que o problema é a persistência e que o upload deveria estar usando o Cloudinary,
+// mas o código está servindo localmente.
+
+// Se o upload estiver sendo feito localmente, a rota estática está correta.
+// O problema é que o arquivo não existe no servidor do Render.
+// A rota estática está correta: /uploads -> ./uploads
+// O caminho da imagem é: https://giuliano.onrender.com/uploads/properties/...
+// O caminho no servidor é: /uploads/properties/...
+
+// Se o upload for local, a correção é migrar para o Cloudinary.
+// Se o upload já for para o Cloudinary, o problema é que o frontend está usando a URL local.
+
+// Vou verificar o controller de upload para ver se o Cloudinary está sendo usado.
+// O arquivo é `Giuliano/giuliano-alquileres/backend/controllers/uploadController.js`
+
+// Por enquanto, vou apenas garantir que o caminho estático está o mais robusto possível,
+// embora o `path.join` já faça isso.
+
+// A rota estática está correta. O problema é que o arquivo não existe no servidor do Render.
+// O Render não persiste arquivos no sistema de arquivos local.
+// A solução correta é usar o Cloudinary, que já está nas dependências.
+
+// Vou verificar o `uploadController.js` para confirmar se o Cloudinary está sendo usado.
+// Se não estiver, a correção será implementá-lo.
+
+// Por enquanto, não vou alterar o `server.js`. Vou para a fase 2 para diagnosticar o uso do Cloudinary.
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // Rota de teste

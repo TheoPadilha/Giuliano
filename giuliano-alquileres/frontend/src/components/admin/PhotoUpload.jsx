@@ -424,7 +424,7 @@ const PhotoUpload = ({ propertyUuid, onUploadComplete }) => {
                   <img
                     src={
                       photo.cloudinary_url ||
-                      `${import.meta.env.VITE_API_URL || "http://localhost:5000"}/uploads/properties/${photo.filename}`
+                      `${import.meta.env.VITE_API_URL || "https://giuliano.onrender.com"}/uploads/properties/${photo.filename}`
                     }
                     alt={photo.alt_text}
                     className="w-full h-48 object-cover"

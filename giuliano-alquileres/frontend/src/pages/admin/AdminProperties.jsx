@@ -82,25 +82,17 @@ const AdminProperties = () => {
     }
 
     const firstPhoto = property.photos[0];
-    const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
-    // Prioridade para cloudinary_url
+    // O backend foi corrigido para retornar a URL completa (cloudinary_url) na propriedade 'url'
+    // ou null se o Cloudinary não estiver configurado.
+    // Se a URL for uma string vazia ou null, o componente de imagem deve mostrar o placeholder.
+    if (firstPhoto.url && firstPhoto.url.startsWith("http")) {
+      return firstPhoto.url;
+    }
+
+    // Para compatibilidade com dados antigos que podem ter apenas cloudinary_url
     if (firstPhoto.cloudinary_url) {
       return firstPhoto.cloudinary_url;
-    }
-
-    if (typeof firstPhoto === "string") {
-      if (firstPhoto.startsWith("http")) {
-        return firstPhoto;
-      }
-      return `${API_URL}/uploads/properties/${firstPhoto}`;
-    }
-
-    if (firstPhoto.filename) {
-      if (firstPhoto.filename.startsWith("http")) {
-        return firstPhoto.filename;
-      }
-      return `${API_URL}/uploads/properties/${firstPhoto.filename}`;
     }
 
     return null;
