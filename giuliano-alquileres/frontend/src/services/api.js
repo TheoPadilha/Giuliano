@@ -1,9 +1,12 @@
 import axios from "axios";
 
-// Remover barra final para evitar URLs duplas
-const API_URL = (
-  import.meta.env.VITE_API_URL || "https://giuliano.onrender.com"
-).replace(/\/$/, "");
+// Normalizar VITE_API_URL:
+// - remover barras finais
+// - remover o sufixo /api caso o valor tenha sido configurado com /api
+const rawApiEnv = import.meta.env.VITE_API_URL || "https://giuliano.onrender.com";
+let API_URL = rawApiEnv.replace(/\/+$/g, "");
+// Se foi informado com /api no final, removemos para evitar /api/api
+API_URL = API_URL.replace(/\/api$/i, "");
 
 // Instância principal do axios
 const api = axios.create({
@@ -158,7 +161,7 @@ export default api;
 export { API_URL };
 
 // ===== EXPORT DA URL DE UPLOADS =====
-export const UPLOADS_URL = import.meta.env.VITE_UPLOADS_URL || `${API_URL}/uploads`;
+export const UPLOADS_URL = (import.meta.env.VITE_UPLOADS_URL || `${API_URL}/uploads`).replace(/\/+$/g, "");
 
 
 
