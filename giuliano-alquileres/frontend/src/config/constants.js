@@ -1,9 +1,15 @@
 // giuliano-alquileres/frontend/src/config/constants.js
 
-export const API_URL =
-  import.meta.env.VITE_API_URL || "http://localhost:5000/api";
-export const UPLOADS_URL =
-  import.meta.env.VITE_UPLOADS_URL || "http://localhost:5000/uploads";
+// VITE_API_URL pode ser fornecido com ou sem o sufixo /api.
+// Normalizamos para garantir que `API_URL` termine em `/api` exatamente uma vez.
+const rawApiEnv = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+const normalizedApi = rawApiEnv.replace(/\/+$/g, ""); // remove trailing slashes
+export const API_URL = normalizedApi.endsWith("/api")
+  ? normalizedApi
+  : `${normalizedApi}/api`;
+
+const rawUploadsEnv = import.meta.env.VITE_UPLOADS_URL || "http://localhost:5000/uploads";
+export const UPLOADS_URL = rawUploadsEnv.replace(/\/+$/g, "");
 
 export const getPhotoUrl = (filename) => {
   if (!filename) return null;
