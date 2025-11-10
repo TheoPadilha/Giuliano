@@ -125,7 +125,7 @@ PropertyPhoto.prototype.getFullUrl = function (baseUrl = "") {
   // A correção é no frontend.
 
   // Vou avançar para a fase 3 e corrigir o frontend.
-  return `${baseUrl}/uploads/properties/${this.filename};
+  return `${baseUrl}/uploads/properties/${this.filename}`;
 };
 
 // Método para definir como foto principal
