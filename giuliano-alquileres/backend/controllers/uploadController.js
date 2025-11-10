@@ -107,6 +107,9 @@ const uploadPropertyPhotos = async (req, res) => {
       }
     }
 
+    // Montar base para URLs locais (fallback para FRONTEND_BASE_URL ou host da requisição)
+    const hostBase = process.env.FRONTEND_BASE_URL || `${req.protocol}://${req.get("host")}`;
+
     res.status(201).json({
       message: `${createdPhotos.length} foto(s) enviada(s) com sucesso`,
       photos: createdPhotos.map((photo) => ({
@@ -118,7 +121,9 @@ const uploadPropertyPhotos = async (req, res) => {
         alt_text: photo.alt_text,
         is_main: photo.is_main,
         display_order: photo.display_order,
-        url: photo.cloudinary_url || `/uploads/properties/${photo.filename}`,
+        url:
+          photo.cloudinary_url ||
+          (photo.filename ? `${hostBase}/uploads/properties/${photo.filename}` : null),
       })),
     });
   } catch (error) {
@@ -166,10 +171,14 @@ const getPropertyPhotos = async (req, res) => {
       ],
     });
 
+    const hostBase = process.env.FRONTEND_BASE_URL || `${req.protocol}://${req.get("host")}`;
+
     res.json({
       photos: photos.map((photo) => ({
         ...photo.toJSON(),
-        url: photo.cloudinary_url || `/uploads/properties/${photo.filename}`,
+        url:
+          photo.cloudinary_url ||
+          (photo.filename ? `${hostBase}/uploads/properties/${photo.filename}` : null),
       })),
     });
   } catch (error) {
@@ -198,13 +207,15 @@ const setMainPhoto = async (req, res) => {
     // Definir como principal
     await photo.setAsMain();
 
+    const hostBase = process.env.FRONTEND_BASE_URL || `${req.protocol}://${req.get("host")}`;
+
     res.json({
       message: "Foto principal definida com sucesso",
       photo: {
         id: photo.id,
         filename: photo.filename,
         is_main: true,
-        url: `/uploads/properties/${photo.filename}`,
+        url: photo.cloudinary_url || (photo.filename ? `${hostBase}/uploads/properties/${photo.filename}` : null),
       },
     });
   } catch (error) {
@@ -337,13 +348,15 @@ const updatePhoto = async (req, res) => {
     // Atualizar
     await photo.update({ alt_text: alt_text.trim() });
 
+    const hostBase = process.env.FRONTEND_BASE_URL || `${req.protocol}://${req.get("host")}`;
+
     res.json({
       message: "Foto atualizada com sucesso",
       photo: {
         id: photo.id,
         filename: photo.filename,
         alt_text: photo.alt_text,
-        url: `/uploads/properties/${photo.filename}`,
+        url: photo.cloudinary_url || (photo.filename ? `${hostBase}/uploads/properties/${photo.filename}` : null),
       },
     });
   } catch (error) {

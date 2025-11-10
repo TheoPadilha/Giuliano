@@ -6,26 +6,38 @@ const path = require("path");
 require("dotenv").config();
 
 // Validar variáveis de ambiente críticas
+// Se STRICT_ENV=true, o servidor irá se comportar como antes (falhar no boot se alguma env crítica faltar).
+// Caso contrário, apenas logamos um warning e continuamos em modo degradado para permitir que o servidor
+// suba (útil para PaaS com arquivos estáticos ou quando você quer inspecionar logs/arquivos).
 const requiredEnvVars = ["JWT_SECRET"];
 const missingEnvVars = requiredEnvVars.filter(
   (varName) => !process.env[varName]
 );
 
+const strictEnv = process.env.STRICT_ENV === "true";
+
 // Validar banco de dados: deve ter DATABASE_URL (produção) OU DB_PASSWORD (desenvolvimento)
 if (!process.env.DATABASE_URL && !process.env.DB_PASSWORD) {
-  console.error(
-    "❌ Erro: Configure DATABASE_URL (produção) ou DB_PASSWORD (desenvolvimento)"
-  );
-  process.exit(1);
+  const msg =
+    "❌ Erro: Configure DATABASE_URL (produção) ou DB_PASSWORD (desenvolvimento)";
+  if (strictEnv) {
+    console.error(msg);
+    process.exit(1);
+  } else {
+    console.warn(`${msg} - iniciando em modo degradado (STRICT_ENV not set).`);
+  }
 }
 
 if (missingEnvVars.length > 0) {
-  console.error(
-    `❌ Erro: Variáveis de ambiente obrigatórias não encontradas: ${missingEnvVars.join(
-      ", "
-    )}`
-  );
-  process.exit(1);
+  const msg = `❌ Erro: Variáveis de ambiente obrigatórias não encontradas: ${missingEnvVars.join(
+    ", "
+  )}`;
+  if (strictEnv) {
+    console.error(msg);
+    process.exit(1);
+  } else {
+    console.warn(`${msg} - iniciando em modo degradado (STRICT_ENV not set).`);
+  }
 }
 
 // Definir NODE_ENV padrão como production (segurança)
@@ -85,8 +97,12 @@ const generalLimiter = rateLimit({
   legacyHeaders: false,
   skip: (req) => {
     // Pular rate limit para localhost em desenvolvimento
-    return process.env.NODE_ENV === "development" &&
-           (req.ip === "::1" || req.ip === "127.0.0.1" || req.ip === "::ffff:127.0.0.1");
+    return (
+      process.env.NODE_ENV === "development" &&
+      (req.ip === "::1" ||
+        req.ip === "127.0.0.1" ||
+        req.ip === "::ffff:127.0.0.1")
+    );
   },
   handler: (req, res) => {
     res.status(429).json({
