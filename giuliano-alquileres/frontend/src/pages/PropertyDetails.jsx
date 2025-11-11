@@ -126,17 +126,23 @@ const PropertyDetails = () => {
   };
 
   const handleWhatsApp = () => {
-    const totalGuests = rooms.reduce((total, room) => total + room.adults + room.children.length, 0);
+    const totalGuests = guests.adults + guests.children;
 
-    let roomsInfo = '';
-    rooms.forEach((room, index) => {
-      roomsInfo += `\n   Quarto ${index + 1}: ${room.adults} adulto${room.adults > 1 ? 's' : ''}`;
-      if (room.children.length > 0) {
-        roomsInfo += `, ${room.children.length} criança${room.children.length > 1 ? 's' : ''} (${room.children.map(age => `${age} ano${age !== 1 ? 's' : ''}`).join(', ')})`;
-      }
-    });
+    let guestsInfo = '';
+    if (guests.adults > 0) {
+      guestsInfo += `\n   ${guests.adults} adulto${guests.adults > 1 ? 's' : ''}`;
+    }
+    if (guests.children > 0) {
+      guestsInfo += `${guests.adults > 0 ? ', ' : '\n   '}${guests.children} criança${guests.children > 1 ? 's' : ''}`;
+    }
+    if (guests.infants > 0) {
+      guestsInfo += `, ${guests.infants} bebê${guests.infants > 1 ? 's' : ''}`;
+    }
+    if (guests.pets > 0) {
+      guestsInfo += `, ${guests.pets} pet${guests.pets > 1 ? 's' : ''}`;
+    }
 
-    const message = `Olá! Tenho interesse no imóvel: "${property.title}"${bookingDates.checkIn ? `\n📅 Check-in: ${bookingDates.checkIn}\n📅 Check-out: ${bookingDates.checkOut}` : ''}\n👥 ${rooms.length} quarto${rooms.length > 1 ? 's' : ''}, ${totalGuests} hóspede${totalGuests > 1 ? 's' : ''}${roomsInfo}\n🔗 ${window.location.href}`;
+    const message = `Olá! Tenho interesse no imóvel: "${property.title}"${bookingDates.checkIn ? `\n📅 Check-in: ${bookingDates.checkIn}\n📅 Check-out: ${bookingDates.checkOut}` : ''}\n👥 ${totalGuests} hóspede${totalGuests > 1 ? 's' : ''}${guestsInfo}\n🔗 ${window.location.href}`;
     const phoneNumber = "5547989105580";
     window.open(`https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`, "_blank");
   };
