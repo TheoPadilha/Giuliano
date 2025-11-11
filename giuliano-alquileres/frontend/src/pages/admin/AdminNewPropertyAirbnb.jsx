@@ -1,5 +1,5 @@
 // AdminNewPropertyAirbnb.jsx - VERSÃO ULTRA PROFISSIONAL ESTILO AIRBNB
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import AdminLayout from "../../components/admin/AdminLayout";
@@ -79,6 +79,7 @@ const AMENITY_ICONS = {
 const AdminNewPropertyAirbnb = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const errorRef = useRef(null);
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [cities, setCities] = useState([]);
@@ -106,6 +107,35 @@ const AdminNewPropertyAirbnb = () => {
     is_featured: false,
     amenities: [],
   });
+
+  // Scroll automático para o topo quando houver erro
+  useEffect(() => {
+    if (error) {
+      // Scroll suave para o topo da página
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+
+      // Se o errorRef existir, fazer scroll para o elemento de erro
+      if (errorRef.current) {
+        errorRef.current.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center'
+        });
+      }
+    }
+  }, [error]);
+
+  // Scroll automático para o topo quando houver sucesso
+  useEffect(() => {
+    if (success) {
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+    }
+  }, [success]);
 
   // Carregar cidades e amenidades
   useEffect(() => {
@@ -643,28 +673,35 @@ const AdminNewPropertyAirbnb = () => {
           <AnimatePresence>
             {error && (
               <motion.div
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                className="mb-6 bg-red-50 border border-red-200 text-red-700 px-6 py-4 rounded-xl flex items-center gap-3"
+                ref={errorRef}
+                initial={{ opacity: 0, y: -20, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -20, scale: 0.95 }}
+                className="mb-6 bg-red-50 border-2 border-red-400 text-red-700 px-6 py-4 rounded-xl flex items-center gap-3 shadow-lg"
               >
-                <div className="w-8 h-8 bg-red-200 rounded-full flex items-center justify-center flex-shrink-0">
-                  ⚠️
+                <div className="w-10 h-10 bg-red-500 rounded-full flex items-center justify-center flex-shrink-0 animate-pulse">
+                  <span className="text-white text-xl font-bold">⚠️</span>
                 </div>
-                <p className="font-medium">{error}</p>
+                <div className="flex-1">
+                  <p className="font-bold text-base mb-1">Erro no Cadastro</p>
+                  <p className="font-medium text-sm">{error}</p>
+                </div>
               </motion.div>
             )}
             {success && (
               <motion.div
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                className="mb-6 bg-green-50 border border-green-200 text-green-700 px-6 py-4 rounded-xl flex items-center gap-3"
+                initial={{ opacity: 0, y: -20, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -20, scale: 0.95 }}
+                className="mb-6 bg-green-50 border-2 border-green-400 text-green-700 px-6 py-4 rounded-xl flex items-center gap-3 shadow-lg"
               >
-                <div className="w-8 h-8 bg-green-200 rounded-full flex items-center justify-center flex-shrink-0">
-                  ✓
+                <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0">
+                  <span className="text-white text-xl font-bold">✓</span>
                 </div>
-                <p className="font-medium">{success}</p>
+                <div className="flex-1">
+                  <p className="font-bold text-base mb-1">Sucesso!</p>
+                  <p className="font-medium text-sm">{success}</p>
+                </div>
               </motion.div>
             )}
           </AnimatePresence>
