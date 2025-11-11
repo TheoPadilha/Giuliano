@@ -183,7 +183,31 @@ const BookingCheckout = () => {
 
     } catch (error) {
       console.error("Erro ao criar reserva:", error);
-      setError(error.response?.data?.error || "Erro ao processar reserva. Tente novamente.");
+
+      // Tratamento específico para conflito de datas (409)
+      if (error.response?.status === 409) {
+        const errorMessage = error.response?.data?.message || error.response?.data?.error;
+        setError(errorMessage || "As datas selecionadas não estão mais disponíveis. Por favor, escolha outras datas.");
+
+        // Opcional: Redirecionar de volta para a página do imóvel após 3 segundos
+        setTimeout(() => {
+          if (property?.uuid) {
+            navigate(`/property/${property.uuid}`, {
+              state: {
+                error: errorMessage,
+                conflictDates: {
+                  checkIn: bookingData.checkIn,
+                  checkOut: bookingData.checkOut
+                }
+              }
+            });
+          }
+        }, 3000);
+      } else {
+        // Outros erros
+        setError(error.response?.data?.message || error.response?.data?.error || "Erro ao processar reserva. Tente novamente.");
+      }
+
       setLoading(false);
     }
   };

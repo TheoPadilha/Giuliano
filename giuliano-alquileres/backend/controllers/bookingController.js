@@ -100,6 +100,7 @@ const createBooking = async (req, res) => {
     }
 
     // 5. Verificar disponibilidade (sem reservas conflitantes)
+    console.log("[Booking] Verificando disponibilidade das datas...");
     const isAvailable = await Booking.checkAvailability(
       property_id,
       check_in,
@@ -112,10 +113,19 @@ const createBooking = async (req, res) => {
         check_in,
         check_out,
       });
+      console.log("[Booking] ❌ Datas não disponíveis - Há outra reserva neste período");
       return res.status(409).json({
-        error: "Propriedade já está reservada para estas datas",
+        error: "Datas não disponíveis",
+        message: "Este imóvel já possui uma reserva (pendente ou confirmada) neste período. Por favor, escolha outras datas.",
+        details: {
+          property_id,
+          requested_check_in: check_in,
+          requested_check_out: check_out,
+        }
       });
     }
+
+    console.log("[Booking] ✅ Datas disponíveis");
 
     // 6. Verificar bloqueios manuais
     const isBlocked = await PropertyAvailability.isBlocked(

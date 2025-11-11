@@ -270,10 +270,12 @@ Booking.prototype.canCheckIn = function () {
 
 // Métodos estáticos
 Booking.checkAvailability = async function (propertyId, checkIn, checkOut) {
+  // Verifica reservas que possam conflitar com as datas solicitadas
+  // Inclui: pending (aguardando confirmação), confirmed (confirmadas) e in_progress (em andamento)
   const conflictingBookings = await this.count({
     where: {
       property_id: propertyId,
-      status: ["confirmed", "in_progress"],
+      status: ["pending", "confirmed", "in_progress"],
       [sequelize.Sequelize.Op.or]: [
         {
           // Nova reserva começa durante uma reserva existente
@@ -310,10 +312,11 @@ Booking.checkAvailability = async function (propertyId, checkIn, checkOut) {
 };
 
 Booking.getOccupiedDates = async function (propertyId, startDate, endDate) {
+  // Inclui reservas pendentes, confirmadas e em andamento para bloquear o calendário
   const bookings = await this.findAll({
     where: {
       property_id: propertyId,
-      status: ["confirmed", "in_progress"],
+      status: ["pending", "confirmed", "in_progress"],
       check_out: {
         [sequelize.Sequelize.Op.gte]: startDate,
       },
@@ -321,7 +324,7 @@ Booking.getOccupiedDates = async function (propertyId, startDate, endDate) {
         [sequelize.Sequelize.Op.lte]: endDate,
       },
     },
-    attributes: ["check_in", "check_out"],
+    attributes: ["check_in", "check_out", "status"],
     order: [["check_in", "ASC"]],
   });
 
@@ -334,6 +337,7 @@ Booking.getOccupiedDates = async function (propertyId, startDate, endDate) {
     return {
       start: booking.check_in,
       end: extendedCheckout, // Checkout original + 3 dias
+      status: booking.status, // Incluir status para referência
     };
   });
 };
