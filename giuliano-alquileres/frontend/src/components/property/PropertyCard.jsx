@@ -1,29 +1,104 @@
-// PropertyCard.jsx - Versão Minimalista e Elegante (SEM Context)
-import { useState } from "react";
-import { Link } from "react-router-dom";
+// PropertyCard.jsx - Versão Minimalista e Elegante (COM integração de favoritos)
+import { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { FaHeart, FaRegHeart, FaStar, FaCrown } from "react-icons/fa";
 import { IoBedOutline, IoLocationOutline } from "react-icons/io5";
 import { BsPeople } from "react-icons/bs";
 import { MdBathtub } from "react-icons/md";
 import { trackPropertyClick, trackAddToWishlist } from "../../utils/googleAnalytics";
 import { UPLOADS_URL } from "../../services/api";
+import { useAuth } from "../../contexts/AuthContext";
+import api from "../../services/api";
 
 const PropertyCard = ({ property, layout = "vertical", showPremiumBadge = false }) => {
-  // Estado local para favorito (sem dependência de Context)
+  const { user, isAuthenticated } = useAuth();
+  const navigate = useNavigate();
+
+  // Estado para favorito (integrado com backend)
   const [isFavorite, setIsFavorite] = useState(false);
   const [imageError, setImageError] = useState(false);
+  const [favoriteLoading, setFavoriteLoading] = useState(false);
 
-  // Toggle simples de favorito
-  const handleFavoriteClick = (e) => {
+  // Verificar se é favorito ao carregar (apenas se estiver logado)
+  useEffect(() => {
+    if (isAuthenticated && property?.id) {
+      console.log('[PropertyCard] Verificando favorito para property.id:', property.id);
+      checkIsFavorite();
+    } else {
+      console.log('[PropertyCard] NÃO verificando favorito. isAuthenticated:', isAuthenticated, 'property.id:', property?.id);
+    }
+  }, [property?.id, isAuthenticated]);
+
+  // Verificar se o imóvel está nos favoritos
+  const checkIsFavorite = async () => {
+    try {
+      console.log('[PropertyCard] Chamando API /api/favorites/check/' + property.id);
+      const response = await api.get(`/api/favorites/check/${property.id}`);
+      console.log('[PropertyCard] Resposta da API:', response.data);
+      setIsFavorite(response.data.isFavorite);
+    } catch (error) {
+      console.error('[PropertyCard] Erro ao verificar favorito:', error);
+      console.error('[PropertyCard] Detalhes do erro:', error.response?.data);
+    }
+  };
+
+  // Toggle de favorito (com integração ao backend)
+  const handleFavoriteClick = async (e) => {
     e.preventDefault();
     e.stopPropagation();
 
-    const newFavoriteState = !isFavorite;
-    setIsFavorite(newFavoriteState);
+    console.log('[PropertyCard] Clique no botão de favorito. property.id:', property.id, 'isAuthenticated:', isAuthenticated);
 
-    // Rastrear adição aos favoritos
-    if (newFavoriteState) {
-      trackAddToWishlist(property);
+    // Se não estiver logado, redirecionar para login
+    if (!isAuthenticated) {
+      console.log('[PropertyCard] Usuário não autenticado, redirecionando para login');
+      navigate('/guest-login', {
+        state: {
+          from: { pathname: `/property/${property.uuid || property.id}` },
+          message: 'Faça login para adicionar imóveis aos seus favoritos'
+        }
+      });
+      return;
+    }
+
+    setFavoriteLoading(true);
+    try {
+      if (isFavorite) {
+        // Remover dos favoritos
+        console.log('[PropertyCard] Removendo dos favoritos. property.id:', property.id);
+        await api.delete(`/api/favorites/${property.id}`);
+        setIsFavorite(false);
+        console.log('[PropertyCard] ✅ Removido dos favoritos com sucesso!');
+      } else {
+        // Adicionar aos favoritos
+        console.log('[PropertyCard] Adicionando aos favoritos. property.id:', property.id);
+        await api.post(`/api/favorites/${property.id}`);
+        setIsFavorite(true);
+        console.log('[PropertyCard] ✅ Adicionado aos favoritos com sucesso!');
+
+        // Rastrear adição aos favoritos no Google Analytics
+        trackAddToWishlist(property);
+      }
+    } catch (error) {
+      console.error('[PropertyCard] ❌ Erro ao alterar favorito:', error);
+      console.error('[PropertyCard] Status do erro:', error.response?.status);
+      console.error('[PropertyCard] Mensagem do erro:', error.response?.data);
+
+      // Se houver erro de autenticação, redirecionar para login
+      if (error.response?.status === 401) {
+        console.log('[PropertyCard] Erro 401, redirecionando para login');
+        navigate('/guest-login', {
+          state: {
+            from: { pathname: `/property/${property.uuid || property.id}` },
+            message: 'Sua sessão expirou. Faça login novamente.'
+          }
+        });
+      } else {
+        // Mostrar erro para o usuário
+        alert(`Erro ao ${isFavorite ? 'remover' : 'adicionar'} favorito: ${error.response?.data?.error || error.message}`);
+      }
+    } finally {
+      setFavoriteLoading(false);
     }
   };
 
@@ -123,12 +198,19 @@ const PropertyCard = ({ property, layout = "vertical", showPremiumBadge = false 
             {/* Botão de Favorito */}
             <button
               onClick={handleFavoriteClick}
-              className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center bg-white/90 backdrop-blur-sm rounded-full hover:scale-110 active:scale-95 transition-all shadow-sm z-10"
+              disabled={favoriteLoading}
+              className={`absolute top-3 right-3 w-8 h-8 flex items-center justify-center rounded-full hover:scale-110 active:scale-95 transition-all shadow-md z-10 ${
+                isFavorite
+                  ? 'bg-red-500 hover:bg-red-600'
+                  : 'bg-white/90 backdrop-blur-sm hover:bg-white'
+              } ${
+                favoriteLoading ? 'opacity-60 cursor-not-allowed' : ''
+              }`}
             >
               {isFavorite ? (
-                <FaHeart className="text-rausch text-base" />
+                <FaHeart className={`text-white text-base ${favoriteLoading ? 'animate-pulse' : ''}`} />
               ) : (
-                <FaRegHeart className="text-airbnb-black text-base" />
+                <FaRegHeart className={`text-gray-700 text-base ${favoriteLoading ? 'animate-pulse' : ''}`} />
               )}
             </button>
 
@@ -241,12 +323,19 @@ const PropertyCard = ({ property, layout = "vertical", showPremiumBadge = false 
             {/* Botão de Favorito */}
             <button
               onClick={handleFavoriteClick}
-              className="absolute top-2 right-2 w-8 h-8 flex items-center justify-center bg-white/90 backdrop-blur-sm rounded-full hover:scale-110 active:scale-95 transition-all shadow-sm"
+              disabled={favoriteLoading}
+              className={`absolute top-2 right-2 w-8 h-8 flex items-center justify-center rounded-full hover:scale-110 active:scale-95 transition-all shadow-md ${
+                isFavorite
+                  ? 'bg-red-500 hover:bg-red-600'
+                  : 'bg-white/90 backdrop-blur-sm hover:bg-white'
+              } ${
+                favoriteLoading ? 'opacity-60 cursor-not-allowed' : ''
+              }`}
             >
               {isFavorite ? (
-                <FaHeart className="text-rausch text-base" />
+                <FaHeart className={`text-white text-base ${favoriteLoading ? 'animate-pulse' : ''}`} />
               ) : (
-                <FaRegHeart className="text-airbnb-black text-base" />
+                <FaRegHeart className={`text-gray-700 text-base ${favoriteLoading ? 'animate-pulse' : ''}`} />
               )}
             </button>
 

@@ -38,60 +38,88 @@ export const Step2Location = ({ formData, handleInputChange, cities, handleGeoco
       <p className="text-gray-600">Onde está localizado seu imóvel?</p>
     </div>
 
-    {/* Cidade */}
-    <div>
-      <label className="block text-sm font-bold text-gray-700 mb-2">
-        Cidade *
-      </label>
-      <select
-        name="city_id"
-        value={formData.city_id}
-        onChange={handleInputChange}
-        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent"
-      >
-        <option value="">Selecione uma cidade</option>
-        {cities.map((city, idx) => (
-          <option key={city.id || `city-${idx}`} value={city.id}>
-            {city.name} - {city.state}
-          </option>
-        ))}
-      </select>
-      <p className="text-xs text-gray-500 mt-1">{cities.length} cidades disponíveis</p>
-    </div>
+    {/* Caixa de Destaque - Busca Automática de Coordenadas */}
+    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-300 rounded-2xl p-6 shadow-lg">
+      <div className="flex items-start gap-4 mb-4">
+        <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0">
+          <MapPin className="w-6 h-6 text-white" />
+        </div>
+        <div>
+          <h3 className="text-xl font-bold text-gray-900 mb-2">🗺️ Busca Automática de Coordenadas</h3>
+          <p className="text-gray-700 font-medium leading-relaxed">
+            <strong>Não precisa buscar latitude e longitude manualmente!</strong><br />
+            Digite o endereço completo e clique em "Buscar Coordenadas" que o sistema encontra automaticamente.
+          </p>
+        </div>
+      </div>
 
-    {/* Endereço */}
-    <div>
-      <label className="block text-sm font-bold text-gray-700 mb-2">
-        Endereço Completo *
-      </label>
-      <div className="flex gap-3">
+      {/* Passo 1: Cidade */}
+      <div className="mb-4">
+        <label className="block text-base font-bold text-gray-900 mb-2 flex items-center gap-2">
+          <span className="w-7 h-7 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold">1</span>
+          Selecione a Cidade *
+        </label>
+        <select
+          name="city_id"
+          value={formData.city_id}
+          onChange={handleInputChange}
+          className="w-full px-5 py-4 text-lg border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white font-medium shadow-sm"
+        >
+          <option value="">📍 Escolha a cidade do imóvel</option>
+          {cities.map((city, idx) => (
+            <option key={city.id || `city-${idx}`} value={city.id}>
+              {city.name} - {city.state}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {/* Passo 2: Endereço Completo */}
+      <div className="mb-4">
+        <label className="block text-base font-bold text-gray-900 mb-2 flex items-center gap-2">
+          <span className="w-7 h-7 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold">2</span>
+          Digite o Endereço Completo *
+        </label>
         <input
           type="text"
           name="address"
           value={formData.address}
           onChange={handleInputChange}
-          placeholder="Rua, número e complemento"
-          className="flex-1 px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent"
+          placeholder="Exemplo: Rua das Flores, 123"
+          className="w-full px-5 py-4 text-lg border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-medium shadow-sm"
         />
-        <button
-          type="button"
-          onClick={handleGeocodeAddress}
-          disabled={loading}
-          className="px-6 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {loading ? (
-            <>
-              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-              <span className="hidden md:inline">Buscando...</span>
-            </>
-          ) : (
-            <>
-              <Search className="w-5 h-5" />
-              <span className="hidden md:inline">Buscar no Mapa</span>
-            </>
-          )}
-        </button>
+        <p className="text-sm text-gray-600 mt-2 ml-1 flex items-start gap-2">
+          <span className="text-blue-600 font-bold">💡 Dica:</span>
+          <span>Digite o endereço como: "Nome da Rua, Número" ou "Nome da Rua, Número, Bairro"</span>
+        </p>
       </div>
+
+      {/* Passo 3: Botão de Busca - GRANDE e DESTACADO */}
+      <button
+        type="button"
+        onClick={handleGeocodeAddress}
+        disabled={loading || !formData.city_id || !formData.address}
+        className="w-full py-5 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-xl font-bold text-lg hover:from-green-700 hover:to-green-800 transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transform hover:scale-[1.02] active:scale-[0.98]"
+      >
+        <span className="w-8 h-8 bg-white text-green-600 rounded-full flex items-center justify-center text-base font-bold">3</span>
+        {loading ? (
+          <>
+            <div className="w-6 h-6 border-3 border-white border-t-transparent rounded-full animate-spin" />
+            <span>Buscando coordenadas no mapa...</span>
+          </>
+        ) : (
+          <>
+            <Search className="w-6 h-6" />
+            <span>🔍 Buscar Coordenadas Automaticamente</span>
+          </>
+        )}
+      </button>
+
+      {(!formData.city_id || !formData.address) && (
+        <p className="text-sm text-orange-700 mt-3 text-center font-medium bg-orange-100 py-2 px-4 rounded-lg">
+          ⚠️ Preencha a cidade e o endereço acima para buscar as coordenadas
+        </p>
+      )}
     </div>
 
     {/* Bairro */}
@@ -109,13 +137,32 @@ export const Step2Location = ({ formData, handleInputChange, cities, handleGeoco
       />
     </div>
 
-    {/* Coordenadas */}
-    <div className="bg-blue-50 border border-blue-200 rounded-xl p-6">
-      <div className="flex items-center gap-3 mb-4">
-        <MapPin className="w-6 h-6 text-blue-600" />
-        <div>
-          <h3 className="font-bold text-gray-900">Coordenadas GPS</h3>
-          <p className="text-sm text-gray-600">Para exibição no mapa (opcional)</p>
+    {/* Coordenadas - Resultado da Busca Automática */}
+    <div className={`rounded-xl p-6 transition-all ${
+      formData.latitude && formData.longitude
+        ? 'bg-green-50 border-2 border-green-300 shadow-lg'
+        : 'bg-gray-50 border border-gray-200'
+    }`}>
+      <div className="flex items-start gap-3 mb-4">
+        {formData.latitude && formData.longitude ? (
+          <div className="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center flex-shrink-0">
+            <CheckCircle2 className="w-6 h-6 text-white" />
+          </div>
+        ) : (
+          <div className="w-10 h-10 bg-gray-400 rounded-full flex items-center justify-center flex-shrink-0">
+            <MapPin className="w-6 h-6 text-white" />
+          </div>
+        )}
+        <div className="flex-1">
+          <h3 className="font-bold text-gray-900 text-lg">
+            {formData.latitude && formData.longitude ? '✅ Coordenadas Encontradas!' : '📍 Coordenadas GPS'}
+          </h3>
+          <p className="text-sm text-gray-600 mt-1">
+            {formData.latitude && formData.longitude
+              ? 'As coordenadas foram preenchidas automaticamente. Você pode editá-las se necessário.'
+              : 'As coordenadas serão preenchidas automaticamente quando você buscar o endereço acima. Opcional: você também pode digitá-las manualmente se preferir.'
+            }
+          </p>
         </div>
       </div>
 
@@ -128,7 +175,12 @@ export const Step2Location = ({ formData, handleInputChange, cities, handleGeoco
             value={formData.latitude}
             onChange={handleInputChange}
             placeholder="-26.9944"
-            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className={`w-full px-4 py-3 border-2 rounded-xl focus:ring-2 focus:ring-blue-500 transition-all ${
+              formData.latitude
+                ? 'border-green-400 bg-white font-semibold'
+                : 'border-gray-300 bg-gray-100'
+            }`}
+            readOnly={false}
           />
         </div>
 
@@ -140,17 +192,32 @@ export const Step2Location = ({ formData, handleInputChange, cities, handleGeoco
             value={formData.longitude}
             onChange={handleInputChange}
             placeholder="-48.6386"
-            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className={`w-full px-4 py-3 border-2 rounded-xl focus:ring-2 focus:ring-blue-500 transition-all ${
+              formData.longitude
+                ? 'border-green-400 bg-white font-semibold'
+                : 'border-gray-300 bg-gray-100'
+            }`}
+            readOnly={false}
           />
         </div>
       </div>
 
       {formData.latitude && formData.longitude && (
-        <div className="mt-4 p-4 bg-white rounded-lg border border-blue-200">
-          <p className="text-sm text-green-600 font-medium flex items-center gap-2">
-            <CheckCircle2 className="w-4 h-4" />
-            Localização definida com sucesso!
-          </p>
+        <div className="mt-4 p-4 bg-white rounded-lg border-2 border-green-300 shadow-sm">
+          <div className="flex items-center justify-between">
+            <p className="text-base text-green-700 font-bold flex items-center gap-2">
+              <CheckCircle2 className="w-5 h-5" />
+              Localização no mapa definida com sucesso!
+            </p>
+            <a
+              href={`https://www.google.com/maps?q=${formData.latitude},${formData.longitude}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm text-blue-600 hover:text-blue-800 font-semibold underline flex items-center gap-1"
+            >
+              🌐 Ver no Google Maps
+            </a>
+          </div>
         </div>
       )}
     </div>
