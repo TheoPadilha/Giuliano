@@ -362,4 +362,187 @@ router.post('/fix-photos', async (req, res) => {
   }
 });
 
+// ═══════════════════════════════════════════════════════════
+// ENDPOINT PARA CRIAR ADMIN MASTER PERSONALIZADO
+// ⚠️ USAR APENAS UMA VEZ E DEPOIS REMOVER!
+// ═══════════════════════════════════════════════════════════
+
+/**
+ * @route   GET /api/setup/create-custom-admin
+ * @desc    Criar ou atualizar admin master com email e senha personalizados
+ * @access  Protegido por chave secreta na query
+ *
+ * USO (Cole no navegador):
+ * https://giuliano-backend.onrender.com/api/setup/create-custom-admin?secret=giuliano2025setup&email=mundogiu73@gmail.com&password=admin123&name=Giuliano+Admin
+ *
+ * OU Local:
+ * http://localhost:3001/api/setup/create-custom-admin?secret=giuliano2025setup&email=mundogiu73@gmail.com&password=admin123&name=Giuliano+Admin
+ */
+router.get('/create-custom-admin', async (req, res) => {
+  try {
+    // 1. Verificar chave secreta
+    const { secret, email, password, name, phone } = req.query;
+
+    if (secret !== 'giuliano2025setup') {
+      return res.status(403).json({
+        success: false,
+        error: 'Chave secreta inválida'
+      });
+    }
+
+    // 2. Validar parâmetros obrigatórios
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        error: 'Email e senha são obrigatórios',
+        usage: '/api/setup/create-custom-admin?secret=giuliano2025setup&email=SEU_EMAIL&password=SUA_SENHA&name=SEU_NOME'
+      });
+    }
+
+    const adminName = name || 'Admin Master';
+    const adminPhone = phone || '+5547999951103';
+
+    console.log('\n═══════════════════════════════════════');
+    console.log('🔄 SETUP: Criando/Atualizando Admin Master Personalizado');
+    console.log('═══════════════════════════════════════');
+    console.log('Email:', email);
+    console.log('Nome:', adminName);
+    console.log('Telefone:', adminPhone);
+    console.log('═══════════════════════════════════════\n');
+
+    // 3. Verificar se usuário já existe
+    let user = await User.findOne({ where: { email } });
+
+    if (user) {
+      console.log('⚠️  Usuário já existe. Atualizando...');
+
+      // Gerar hash da nova senha
+      const password_hash = await bcrypt.hash(password, 12);
+
+      // Atualizar usuário existente
+      await user.update({
+        name: adminName,
+        password_hash,
+        phone: adminPhone,
+        role: 'admin_master',
+        status: 'approved'
+      });
+
+      console.log('✅ Usuário atualizado com sucesso!');
+
+      return res.json({
+        success: true,
+        message: 'Admin Master atualizado com sucesso!',
+        action: 'updated',
+        user: {
+          id: user.id,
+          uuid: user.uuid,
+          name: user.name,
+          email: user.email,
+          phone: user.phone,
+          role: user.role,
+          status: user.status
+        },
+        credentials: {
+          email: user.email,
+          password: password,
+          loginUrl: process.env.FRONTEND_URL ? process.env.FRONTEND_URL + '/login' : 'https://giulianoa-frontend.onrender.com/login'
+        },
+        warning: '⚠️ IMPORTANTE: Altere a senha após o primeiro login!'
+      });
+    }
+
+    // 4. Criar novo admin master
+    console.log('📝 Criando novo admin master...');
+
+    // Gerar hash da senha
+    const password_hash = await bcrypt.hash(password, 12);
+
+    user = await User.create({
+      name: adminName,
+      email,
+      password_hash,
+      phone: adminPhone,
+      country: 'Brasil',
+      role: 'admin_master',
+      status: 'approved'
+    });
+
+    console.log('✅ Admin Master criado com sucesso!');
+    console.log('ID:', user.id);
+    console.log('UUID:', user.uuid);
+    console.log('Email:', user.email);
+    console.log('Role:', user.role);
+    console.log('\n');
+
+    res.json({
+      success: true,
+      message: 'Admin Master criado com sucesso!',
+      action: 'created',
+      user: {
+        id: user.id,
+        uuid: user.uuid,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        role: user.role,
+        status: user.status
+      },
+      credentials: {
+        email: user.email,
+        password: password,
+        loginUrl: process.env.FRONTEND_URL ? process.env.FRONTEND_URL + '/login' : 'https://giulianoa-frontend.onrender.com/login'
+      },
+      warning: '⚠️ IMPORTANTE: Altere a senha após o primeiro login!'
+    });
+
+  } catch (error) {
+    console.error('❌ Erro ao criar/atualizar admin master:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message,
+      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
+  }
+});
+
+/**
+ * @route   GET /api/setup/list-admins
+ * @desc    Listar todos os usuários admin (para debug)
+ * @access  Protegido por chave secreta
+ */
+router.get('/list-admins', async (req, res) => {
+  try {
+    const { secret } = req.query;
+
+    if (secret !== 'giuliano2025setup') {
+      return res.status(403).json({
+        success: false,
+        error: 'Chave secreta inválida'
+      });
+    }
+
+    const admins = await User.findAll({
+      where: {
+        role: ['admin', 'admin_master']
+      },
+      attributes: ['id', 'uuid', 'name', 'email', 'role', 'status', 'phone', 'created_at'],
+      order: [['created_at', 'DESC']]
+    });
+
+    res.json({
+      success: true,
+      count: admins.length,
+      admins
+    });
+
+  } catch (error) {
+    console.error('❌ Erro ao listar admins:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
 module.exports = router;
