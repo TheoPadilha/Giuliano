@@ -597,9 +597,10 @@ const AirbnbHeader = ({ onFilterButtonClick }) => {
               </div>
             ) : (
               <div className="flex items-center gap-2">
+                {/* Desktop: Botões de Login/Registro */}
                 <Link
                   to="/guest-login"
-                  className={`hidden sm:block px-4 font-semibold text-airbnb-black hover:bg-airbnb-grey-50 rounded-full transition-all duration-300 ease-in-out ${
+                  className={`hidden lg:block px-4 font-semibold text-airbnb-black hover:bg-airbnb-grey-50 rounded-full transition-all duration-300 ease-in-out ${
                     isScrolled ? "py-1.5 text-xs" : "py-2 text-sm"
                   }`}
                 >
@@ -607,12 +608,70 @@ const AirbnbHeader = ({ onFilterButtonClick }) => {
                 </Link>
                 <Link
                   to="/guest-register"
-                  className={`px-4 font-semibold text-white bg-rausch hover:bg-rausch-dark rounded-full transition-all duration-300 ease-in-out ${
+                  className={`hidden lg:block px-4 font-semibold text-white bg-rausch hover:bg-rausch-dark rounded-full transition-all duration-300 ease-in-out ${
                     isScrolled ? "py-1.5 text-xs" : "py-2 text-sm"
                   }`}
                 >
                   {t('header.register')}
                 </Link>
+
+                {/* Mobile: Menu Hambúrguer (sempre visível) */}
+                <div className="lg:hidden relative" ref={userMenuRef}>
+                  <button
+                    onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                    className={`flex items-center gap-3 border border-airbnb-grey-300 hover:shadow-md rounded-full pr-2 transition-all duration-300 ease-in-out ${
+                      isScrolled ? "pl-2 py-1.5" : "pl-3 py-2"
+                    }`}
+                  >
+                    <FiMenu
+                      className={`text-airbnb-black transition-all duration-300 ease-in-out ${
+                        isScrolled ? "text-base" : "text-lg"
+                      }`}
+                    />
+                    <div
+                      className={`bg-airbnb-grey-400 rounded-full flex items-center justify-center text-white transition-all duration-300 ease-in-out ${
+                        isScrolled ? "w-6 h-6" : "w-7 h-7"
+                      }`}
+                    >
+                      <FiUser className="text-sm" />
+                    </div>
+                  </button>
+
+                  {/* Dropdown Menu Mobile - Não Logado */}
+                  {isUserMenuOpen && (
+                    <div className="absolute right-0 mt-2 w-60 bg-white rounded-xlarge shadow-elevation-high border border-airbnb-grey-200 py-2 overflow-hidden z-50">
+                      {/* Links de Login/Registro */}
+                      <Link
+                        to="/guest-login"
+                        onClick={() => setIsUserMenuOpen(false)}
+                        className="block px-4 py-3 text-airbnb-black hover:bg-airbnb-grey-50 transition-colors text-sm font-semibold"
+                      >
+                        Entrar
+                      </Link>
+                      <Link
+                        to="/guest-register"
+                        onClick={() => setIsUserMenuOpen(false)}
+                        className="block px-4 py-3 text-airbnb-black hover:bg-airbnb-grey-50 transition-colors text-sm"
+                      >
+                        Cadastrar-se
+                      </Link>
+
+                      <div className="border-t border-airbnb-grey-200 my-2"></div>
+
+                      {/* Configurações: Idioma e Tema */}
+                      <div className="px-4 py-2 space-y-3">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-medium text-airbnb-grey-600">Idioma</span>
+                          <LanguageSwitch />
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-medium text-airbnb-grey-600">Tema</span>
+                          <ThemeToggle />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
           </div>
