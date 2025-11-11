@@ -48,8 +48,12 @@ const AdminBookings = () => {
         const bookingsResponse = await api.get("/api/bookings/owner/all");
         allBookings = bookingsResponse.data.bookings || [];
         setIsAdminMaster(bookingsResponse.data.isAdminMaster || false);
-        console.log("Reservas carregadas:", allBookings.length);
+        console.log("Reservas carregadas (total):", allBookings.length);
         console.log("Admin Master:", bookingsResponse.data.isAdminMaster);
+
+        // OPCIONAL: Filtrar reservas canceladas por padrão
+        // Descomente a linha abaixo para NÃO exibir reservas canceladas
+        // allBookings = allBookings.filter(b => b.status !== 'cancelled');
       } catch (error) {
         console.error("Erro ao buscar reservas:", error);
       }
