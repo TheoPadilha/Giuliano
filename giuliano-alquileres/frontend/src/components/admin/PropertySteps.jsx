@@ -32,192 +32,214 @@ import {
 
 // Step 2: Location
 export const Step2Location = ({ formData, handleInputChange, cities, handleGeocodeAddress, loading }) => (
-  <div className="space-y-6">
-    <div>
-      <h2 className="text-2xl font-black text-gray-900 mb-2">Localização</h2>
-      <p className="text-gray-600">Onde está localizado seu imóvel?</p>
+  <div className="space-y-8">
+    {/* Header Elegante */}
+    <div className="text-center">
+      <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl shadow-lg mb-4">
+        <MapPin className="w-8 h-8 text-white" />
+      </div>
+      <h2 className="text-3xl font-bold text-gray-900 mb-2">Localização do Imóvel</h2>
+      <p className="text-gray-600 text-lg">Adicione o endereço e encontramos as coordenadas automaticamente</p>
     </div>
 
-    {/* Caixa de Destaque - Busca Automática de Coordenadas */}
-    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-300 rounded-2xl p-6 shadow-lg">
-      <div className="flex items-start gap-4 mb-4">
-        <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0">
-          <MapPin className="w-6 h-6 text-white" />
+    {/* Card Principal - Endereço */}
+    <div className="bg-white border border-gray-200 rounded-2xl p-8 shadow-sm hover:shadow-md transition-shadow">
+      <div className="flex items-center gap-3 mb-6">
+        <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
+          <MapPin className="w-5 h-5 text-blue-600" />
         </div>
         <div>
-          <h3 className="text-xl font-bold text-gray-900 mb-2">🗺️ Busca Automática de Coordenadas</h3>
-          <p className="text-gray-700 font-medium leading-relaxed">
-            <strong>Não precisa buscar latitude e longitude manualmente!</strong><br />
-            Digite o endereço completo e clique em "Buscar Coordenadas" que o sistema encontra automaticamente.
-          </p>
+          <h3 className="text-lg font-bold text-gray-900">Endereço Completo</h3>
+          <p className="text-sm text-gray-500">Preencha os dados de localização do imóvel</p>
         </div>
       </div>
 
-      {/* Passo 1: Cidade */}
-      <div className="mb-4">
-        <label className="block text-base font-bold text-gray-900 mb-2 flex items-center gap-2">
-          <span className="w-7 h-7 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold">1</span>
-          Selecione a Cidade *
-        </label>
-        <select
-          name="city_id"
-          value={formData.city_id}
-          onChange={handleInputChange}
-          className="w-full px-5 py-4 text-lg border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white font-medium shadow-sm"
-        >
-          <option value="">📍 Escolha a cidade do imóvel</option>
-          {cities.map((city, idx) => (
-            <option key={city.id || `city-${idx}`} value={city.id}>
-              {city.name} - {city.state}
-            </option>
-          ))}
-        </select>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Cidade */}
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-2">
+            Cidade <span className="text-red-500">*</span>
+          </label>
+          <select
+            name="city_id"
+            value={formData.city_id}
+            onChange={handleInputChange}
+            className="w-full px-4 py-3.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900 transition-all hover:border-gray-400"
+          >
+            <option value="">Selecione a cidade</option>
+            {cities.map((city, idx) => (
+              <option key={city.id || `city-${idx}`} value={city.id}>
+                {city.name} - {city.state}
+              </option>
+            ))}
+          </select>
+          <p className="text-xs text-gray-500 mt-1.5">{cities.length} cidades disponíveis</p>
+        </div>
+
+        {/* Bairro */}
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-2">
+            Bairro <span className="text-red-500">*</span>
+          </label>
+          <input
+            type="text"
+            name="neighborhood"
+            value={formData.neighborhood}
+            onChange={handleInputChange}
+            placeholder="Ex: Centro, Praia Brava"
+            className="w-full px-4 py-3.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all hover:border-gray-400"
+          />
+        </div>
       </div>
 
-      {/* Passo 2: Endereço Completo */}
-      <div className="mb-4">
-        <label className="block text-base font-bold text-gray-900 mb-2 flex items-center gap-2">
-          <span className="w-7 h-7 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold">2</span>
-          Digite o Endereço Completo *
+      {/* Endereço Completo */}
+      <div className="mt-6">
+        <label className="block text-sm font-semibold text-gray-700 mb-2">
+          Endereço Completo <span className="text-red-500">*</span>
         </label>
         <input
           type="text"
           name="address"
           value={formData.address}
           onChange={handleInputChange}
-          placeholder="Exemplo: Rua das Flores, 123"
-          className="w-full px-5 py-4 text-lg border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-medium shadow-sm"
+          placeholder="Ex: Rua das Flores, 123, Apartamento 4B"
+          className="w-full px-4 py-3.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all hover:border-gray-400"
         />
-        <p className="text-sm text-gray-600 mt-2 ml-1 flex items-start gap-2">
-          <span className="text-blue-600 font-bold">💡 Dica:</span>
-          <span>Digite o endereço como: "Nome da Rua, Número" ou "Nome da Rua, Número, Bairro"</span>
-        </p>
+        <div className="mt-2 p-3 bg-blue-50 rounded-lg border border-blue-100">
+          <p className="text-xs text-blue-700 flex items-start gap-2">
+            <span className="font-semibold">💡 Dica:</span>
+            <span>Quanto mais completo o endereço, mais precisa será a localização no mapa</span>
+          </p>
+        </div>
       </div>
 
-      {/* Passo 3: Botão de Busca - GRANDE e DESTACADO */}
-      <button
-        type="button"
-        onClick={handleGeocodeAddress}
-        disabled={loading || !formData.city_id || !formData.address}
-        className="w-full py-5 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-xl font-bold text-lg hover:from-green-700 hover:to-green-800 transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transform hover:scale-[1.02] active:scale-[0.98]"
-      >
-        <span className="w-8 h-8 bg-white text-green-600 rounded-full flex items-center justify-center text-base font-bold">3</span>
-        {loading ? (
-          <>
-            <div className="w-6 h-6 border-3 border-white border-t-transparent rounded-full animate-spin" />
-            <span>Buscando coordenadas no mapa...</span>
-          </>
-        ) : (
-          <>
-            <Search className="w-6 h-6" />
-            <span>🔍 Buscar Coordenadas Automaticamente</span>
-          </>
+      {/* Botão de Busca Automática */}
+      <div className="mt-6">
+        <button
+          type="button"
+          onClick={handleGeocodeAddress}
+          disabled={loading || !formData.city_id || !formData.address}
+          className="w-full py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl font-semibold text-base hover:from-blue-700 hover:to-indigo-700 transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg transform hover:scale-[1.01] active:scale-[0.99]"
+        >
+          {loading ? (
+            <>
+              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              <span>Buscando coordenadas...</span>
+            </>
+          ) : (
+            <>
+              <Search className="w-5 h-5" />
+              <span>Buscar Coordenadas Automaticamente</span>
+            </>
+          )}
+        </button>
+
+        {(!formData.city_id || !formData.address) && (
+          <div className="mt-3 p-3 bg-amber-50 rounded-lg border border-amber-200">
+            <p className="text-xs text-amber-800 text-center font-medium">
+              Preencha a cidade e o endereço para buscar as coordenadas
+            </p>
+          </div>
         )}
-      </button>
-
-      {(!formData.city_id || !formData.address) && (
-        <p className="text-sm text-orange-700 mt-3 text-center font-medium bg-orange-100 py-2 px-4 rounded-lg">
-          ⚠️ Preencha a cidade e o endereço acima para buscar as coordenadas
-        </p>
-      )}
+      </div>
     </div>
 
-    {/* Bairro */}
-    <div>
-      <label className="block text-sm font-bold text-gray-700 mb-2">
-        Bairro *
-      </label>
-      <input
-        type="text"
-        name="neighborhood"
-        value={formData.neighborhood}
-        onChange={handleInputChange}
-        placeholder="Ex: Centro, Praia Brava"
-        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent"
-      />
-    </div>
-
-    {/* Coordenadas - Resultado da Busca Automática */}
-    <div className={`rounded-xl p-6 transition-all ${
+    {/* Card de Coordenadas GPS */}
+    <div className={`bg-white border rounded-2xl p-8 shadow-sm transition-all ${
       formData.latitude && formData.longitude
-        ? 'bg-green-50 border-2 border-green-300 shadow-lg'
-        : 'bg-gray-50 border border-gray-200'
+        ? 'border-green-300 ring-2 ring-green-100'
+        : 'border-gray-200 hover:shadow-md'
     }`}>
-      <div className="flex items-start gap-3 mb-4">
-        {formData.latitude && formData.longitude ? (
-          <div className="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center flex-shrink-0">
-            <CheckCircle2 className="w-6 h-6 text-white" />
-          </div>
-        ) : (
-          <div className="w-10 h-10 bg-gray-400 rounded-full flex items-center justify-center flex-shrink-0">
-            <MapPin className="w-6 h-6 text-white" />
-          </div>
-        )}
-        <div className="flex-1">
-          <h3 className="font-bold text-gray-900 text-lg">
-            {formData.latitude && formData.longitude ? '✅ Coordenadas Encontradas!' : '📍 Coordenadas GPS'}
+      <div className="flex items-center gap-3 mb-6">
+        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+          formData.latitude && formData.longitude
+            ? 'bg-green-100'
+            : 'bg-gray-100'
+        }`}>
+          {formData.latitude && formData.longitude ? (
+            <CheckCircle2 className="w-5 h-5 text-green-600" />
+          ) : (
+            <MapPin className="w-5 h-5 text-gray-500" />
+          )}
+        </div>
+        <div>
+          <h3 className="text-lg font-bold text-gray-900">
+            {formData.latitude && formData.longitude ? 'Coordenadas Encontradas' : 'Coordenadas GPS'}
           </h3>
-          <p className="text-sm text-gray-600 mt-1">
+          <p className="text-sm text-gray-500">
             {formData.latitude && formData.longitude
-              ? 'As coordenadas foram preenchidas automaticamente. Você pode editá-las se necessário.'
-              : 'As coordenadas serão preenchidas automaticamente quando você buscar o endereço acima. Opcional: você também pode digitá-las manualmente se preferir.'
+              ? 'Localização do imóvel definida no mapa'
+              : 'Preenchimento automático ou manual'
             }
           </p>
         </div>
       </div>
 
-      <div className="grid md:grid-cols-2 gap-4">
+      <div className="grid md:grid-cols-2 gap-6">
         <div>
-          <label className="block text-sm font-bold text-gray-700 mb-2">Latitude</label>
+          <label className="block text-sm font-semibold text-gray-700 mb-2">
+            Latitude
+          </label>
           <input
             type="text"
             name="latitude"
             value={formData.latitude}
             onChange={handleInputChange}
             placeholder="-26.9944"
-            className={`w-full px-4 py-3 border-2 rounded-xl focus:ring-2 focus:ring-blue-500 transition-all ${
+            className={`w-full px-4 py-3.5 border rounded-xl focus:ring-2 focus:ring-blue-500 transition-all ${
               formData.latitude
-                ? 'border-green-400 bg-white font-semibold'
-                : 'border-gray-300 bg-gray-100'
+                ? 'border-green-300 bg-green-50 text-green-900 font-medium'
+                : 'border-gray-300 bg-gray-50 hover:border-gray-400'
             }`}
-            readOnly={false}
           />
         </div>
 
         <div>
-          <label className="block text-sm font-bold text-gray-700 mb-2">Longitude</label>
+          <label className="block text-sm font-semibold text-gray-700 mb-2">
+            Longitude
+          </label>
           <input
             type="text"
             name="longitude"
             value={formData.longitude}
             onChange={handleInputChange}
             placeholder="-48.6386"
-            className={`w-full px-4 py-3 border-2 rounded-xl focus:ring-2 focus:ring-blue-500 transition-all ${
+            className={`w-full px-4 py-3.5 border rounded-xl focus:ring-2 focus:ring-blue-500 transition-all ${
               formData.longitude
-                ? 'border-green-400 bg-white font-semibold'
-                : 'border-gray-300 bg-gray-100'
+                ? 'border-green-300 bg-green-50 text-green-900 font-medium'
+                : 'border-gray-300 bg-gray-50 hover:border-gray-400'
             }`}
-            readOnly={false}
           />
         </div>
       </div>
 
       {formData.latitude && formData.longitude && (
-        <div className="mt-4 p-4 bg-white rounded-lg border-2 border-green-300 shadow-sm">
-          <div className="flex items-center justify-between">
-            <p className="text-base text-green-700 font-bold flex items-center gap-2">
-              <CheckCircle2 className="w-5 h-5" />
-              Localização no mapa definida com sucesso!
-            </p>
+        <div className="mt-6 p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-200">
+          <div className="flex items-center justify-between flex-wrap gap-3">
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className="w-5 h-5 text-green-600 flex-shrink-0" />
+              <span className="text-sm font-semibold text-green-800">
+                Localização confirmada no mapa
+              </span>
+            </div>
             <a
               href={`https://www.google.com/maps?q=${formData.latitude},${formData.longitude}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-sm text-blue-600 hover:text-blue-800 font-semibold underline flex items-center gap-1"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-white hover:bg-gray-50 text-blue-600 hover:text-blue-700 font-semibold text-sm rounded-lg border border-blue-200 transition-colors"
             >
-              🌐 Ver no Google Maps
+              <MapPin className="w-4 h-4" />
+              Visualizar no Google Maps
             </a>
           </div>
+        </div>
+      )}
+
+      {!formData.latitude && !formData.longitude && (
+        <div className="mt-6 p-4 bg-gray-50 rounded-xl border border-gray-200">
+          <p className="text-xs text-gray-600 text-center">
+            <span className="font-semibold">Opcional:</span> As coordenadas serão preenchidas automaticamente ao buscar o endereço, mas você também pode digitá-las manualmente se preferir.
+          </p>
         </div>
       )}
     </div>
