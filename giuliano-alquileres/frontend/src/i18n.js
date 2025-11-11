@@ -4,13 +4,20 @@ import LanguageDetector from 'i18next-browser-languagedetector';
 
 import translationPT from './locales/pt-BR/translation.json';
 import translationEN from './locales/en/translation.json';
+import translationES from './locales/es/translation.json';
 
 const resources = {
   'pt-BR': {
     translation: translationPT
   },
+  pt: {
+    translation: translationPT
+  },
   en: {
     translation: translationEN
+  },
+  es: {
+    translation: translationES
   }
 };
 
@@ -20,6 +27,7 @@ i18n
   .init({
     resources,
     fallbackLng: 'pt-BR',
+    supportedLngs: ['pt-BR', 'pt', 'en', 'es'],
     debug: false,
     interpolation: {
       escapeValue: false

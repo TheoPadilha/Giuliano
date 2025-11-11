@@ -43,16 +43,26 @@ const LanguageSwitch = () => {
 
       {/* Dropdown Menu */}
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-40 bg-white dark:bg-airbnb-grey-900 rounded-xlarge shadow-elevation-high border border-airbnb-grey-200 dark:border-airbnb-grey-700 py-1 overflow-hidden z-50">
+        <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-airbnb-grey-900 rounded-xlarge shadow-elevation-high border border-airbnb-grey-200 dark:border-airbnb-grey-700 py-1 overflow-hidden z-50">
           <button
           onClick={() => changeLanguage("pt-BR")}
           className={`block w-full text-left px-4 py-2 text-sm hover:bg-airbnb-grey-50 dark:hover:bg-airbnb-grey-800 transition-colors ${
-            currentLanguage === "pt-BR"
+            currentLanguage === "pt-BR" || currentLanguage === "pt"
               ? "font-bold text-rausch"
               : "text-airbnb-black dark:text-white"
           }`}
         >
-            🇧🇷 Português
+            🇧🇷 Português (BR)
+          </button>
+          <button
+          onClick={() => changeLanguage("es")}
+          className={`block w-full text-left px-4 py-2 text-sm hover:bg-airbnb-grey-50 dark:hover:bg-airbnb-grey-800 transition-colors ${
+            currentLanguage === "es"
+              ? "font-bold text-rausch"
+              : "text-airbnb-black dark:text-white"
+          }`}
+        >
+            🇪🇸 Español
           </button>
           <button
           onClick={() => changeLanguage("en")}
@@ -62,7 +72,7 @@ const LanguageSwitch = () => {
               : "text-airbnb-black dark:text-white"
           }`}
         >
-            🇺🇸 English
+            🇺🇸 English (US)
           </button>
         </div>
       )}
