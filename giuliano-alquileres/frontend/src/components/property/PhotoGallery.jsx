@@ -86,19 +86,22 @@ const PhotoGallery = ({ photos = [], propertyTitle = "", className = "" }) => {
 
   // URL da foto
   const getPhotoUrl = (photo) => {
-    // Prioridade para cloudinary_url
+    // PRIORIDADE 1: URL completa retornada pelo backend (já vem com Cloudinary)
+    if (photo.url && photo.url.startsWith("http")) {
+      return photo.url;
+    }
+
+    // PRIORIDADE 2: cloudinary_url (compatibilidade com dados antigos)
     if (photo.cloudinary_url) {
       return photo.cloudinary_url;
     }
-    // Se não houver cloudinary_url, usar a URL local.
-    // O VITE_API_URL deve ser configurado no ambiente de produção do frontend (Render).
-    // Se o VITE_API_URL não estiver configurado, ele usará http://localhost:5000, o que está errado em produção.
-    // O Render do frontend deve ter VITE_API_URL apontando para o backend (https://giuliano.onrender.com).
-    // A correção é garantir que o frontend use a URL do Cloudinary se existir.
-    // O código já faz isso. O problema é que as imagens foram salvas localmente no backend.
-    // A correção é garantir que o frontend use a URL do Cloudinary se existir.
-    // O código já está correto.
-    return `${import.meta.env.VITE_API_URL || "https://giuliano.onrender.com"}/uploads/properties/${photo.filename}`;
+
+    // PRIORIDADE 3: Construir URL local se tiver filename
+    if (photo.filename) {
+      return `${import.meta.env.VITE_API_URL || "https://giuliano.onrender.com"}/uploads/properties/${photo.filename}`;
+    }
+
+    return null;
   };
 
   // Placeholder para imagem com erro

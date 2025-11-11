@@ -57,30 +57,31 @@ const PropertyCard = ({ property, layout = "vertical", showPremiumBadge = false 
         image = images[0];
       }
 
-      // Prioridade: cloudinary_url > URL local > image_url/url
+      // Prioridade: url (do backend) > cloudinary_url > URL local
       if (image) {
-        // Se tem cloudinary_url, usar ela (CDN)
+        // PRIORIDADE 1: URL completa retornada pelo backend (já vem com Cloudinary)
+        if (image.url && image.url.startsWith("http")) {
+          console.log('✅ Imagem carregada:', image.url);
+          return image.url;
+        }
+
+        // PRIORIDADE 2: cloudinary_url (compatibilidade com dados antigos)
         if (image.cloudinary_url) {
-          console.log('🖼️ Cloudinary URL:', image.cloudinary_url);
+          console.log('✅ Imagem carregada:', image.cloudinary_url);
           return image.cloudinary_url;
         }
 
-        // Se tem filename, verificar se não é um publicId do Cloudinary
-        if (image.filename) {
-          // Se filename contém '/', é provavelmente um publicId antigo do Cloudinary
-          // Nesse caso, não construir URL local pois não existe arquivo local
-          if (image.filename.includes('/')) {
-            console.warn('⚠️ Filename parece ser publicId do Cloudinary, mas cloudinary_url está vazia');
-            return null;
-          }
-
+        // PRIORIDADE 3: Se tem filename e não contém '/', construir URL local
+        if (image.filename && !image.filename.includes('/')) {
           const url = `${UPLOADS_URL}/properties/${image.filename}`;
-          console.log('🖼️ Local URL:', url);
+          console.log('📁 URL local:', url);
           return url;
         }
 
-        // Tentar pegar de image_url, url ou o próprio objeto (string)
-        return image.image_url || image.url || image;
+        // Caso contrário, usar image_url se disponível
+        if (image.image_url) {
+          return image.image_url;
+        }
       }
 
       return "https://placehold.co/800x600/e0e0e0/666666?text=Sem+Imagem";

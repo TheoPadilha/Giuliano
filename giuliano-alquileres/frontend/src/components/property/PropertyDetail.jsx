@@ -38,12 +38,17 @@ const PropertyDetails = () => {
   const getPhotoUrl = (photo) => {
     if (!photo) return null;
 
-    // Prioridade para cloudinary_url
+    // PRIORIDADE 1: URL completa retornada pelo backend (já vem com Cloudinary)
+    if (photo.url && photo.url.startsWith("http")) {
+      return photo.url;
+    }
+
+    // PRIORIDADE 2: cloudinary_url (compatibilidade com dados antigos)
     if (photo.cloudinary_url) {
       return photo.cloudinary_url;
     }
 
-    // Se photo é uma string (filename)
+    // PRIORIDADE 3: Se photo é uma string (filename)
     if (typeof photo === "string") {
       // Se já é uma URL completa
       if (photo.startsWith("http")) return photo;
@@ -53,7 +58,7 @@ const PropertyDetails = () => {
       }/uploads/properties/${photo}`;
     }
 
-    // Se photo é um objeto com filename
+    // PRIORIDADE 4: Se photo é um objeto com filename
     if (photo.filename) {
       if (photo.filename.startsWith("http")) return photo.filename;
       return `${
