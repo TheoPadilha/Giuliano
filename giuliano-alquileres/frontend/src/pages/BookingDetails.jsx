@@ -49,14 +49,25 @@ const BookingDetails = () => {
     const reason = window.prompt("Por favor, informe o motivo do cancelamento:");
     if (!reason) return;
 
+    setCancelling(true);
+
     try {
-      setCancelling(true);
-      await api.put(`/api/bookings/${booking.uuid}/cancel`, { reason });
+      console.log('[BookingDetails] Cancelando reserva:', booking.uuid);
+      const response = await api.put(`/api/bookings/${booking.uuid}/cancel`, { reason });
+      console.log('[BookingDetails] Resposta do cancelamento:', response.data);
+
+      // Atualizar os detalhes da reserva
       await fetchBookingDetails();
-      alert("Reserva cancelada com sucesso!");
+
+      // Feedback de sucesso
+      alert("✅ Reserva cancelada com sucesso!");
+      console.log('[BookingDetails] Reserva cancelada e detalhes atualizados');
     } catch (error) {
-      console.error("Erro ao cancelar reserva:", error);
-      alert(error.response?.data?.error || "Erro ao cancelar reserva");
+      console.error("[BookingDetails] Erro ao cancelar reserva:", error);
+      console.error("[BookingDetails] Detalhes do erro:", error.response?.data);
+
+      const errorMessage = error.response?.data?.error || error.response?.data?.message || "Erro ao cancelar reserva";
+      alert(`❌ ${errorMessage}`);
     } finally {
       setCancelling(false);
     }

@@ -76,17 +76,29 @@ const AdminBookings = () => {
   const handleConfirmBooking = async (booking) => {
     if (!window.confirm("Deseja confirmar esta reserva?")) return;
 
-    try {
-      setActionLoading(true);
-      await api.put(`/api/bookings/${booking.uuid}/confirm`);
+    setActionLoading(true);
 
-      // Atualizar lista
-      await fetchBookings();
+    try {
+      console.log('[AdminBookings] Confirmando reserva:', booking.uuid);
+      const response = await api.put(`/api/bookings/${booking.uuid}/confirm`);
+      console.log('[AdminBookings] Resposta da confirmação:', response.data);
+
+      // Fechar modal ANTES de atualizar para evitar lag visual
       setShowModal(false);
-      alert("Reserva confirmada com sucesso!");
+      setSelectedBooking(null);
+
+      // Atualizar lista de reservas
+      await fetchBookings();
+
+      // Feedback de sucesso
+      alert("✅ Reserva confirmada com sucesso!");
+      console.log('[AdminBookings] Reserva confirmada e lista atualizada');
     } catch (error) {
-      console.error("Erro ao confirmar reserva:", error);
-      alert(error.response?.data?.error || "Erro ao confirmar reserva");
+      console.error("[AdminBookings] Erro ao confirmar reserva:", error);
+      console.error("[AdminBookings] Detalhes do erro:", error.response?.data);
+
+      const errorMessage = error.response?.data?.error || error.response?.data?.message || "Erro ao confirmar reserva";
+      alert(`❌ ${errorMessage}`);
     } finally {
       setActionLoading(false);
     }
@@ -96,17 +108,29 @@ const AdminBookings = () => {
     const reason = window.prompt("Motivo do cancelamento:");
     if (!reason) return;
 
-    try {
-      setActionLoading(true);
-      await api.put(`/api/bookings/${booking.uuid}/cancel`, { reason });
+    setActionLoading(true);
 
-      // Atualizar lista
-      await fetchBookings();
+    try {
+      console.log('[AdminBookings] Cancelando reserva:', booking.uuid);
+      const response = await api.put(`/api/bookings/${booking.uuid}/cancel`, { reason });
+      console.log('[AdminBookings] Resposta do cancelamento:', response.data);
+
+      // Fechar modal ANTES de atualizar para evitar lag visual
       setShowModal(false);
-      alert("Reserva cancelada com sucesso!");
+      setSelectedBooking(null);
+
+      // Atualizar lista de reservas
+      await fetchBookings();
+
+      // Feedback de sucesso
+      alert("✅ Reserva cancelada com sucesso!");
+      console.log('[AdminBookings] Reserva cancelada e lista atualizada');
     } catch (error) {
-      console.error("Erro ao cancelar reserva:", error);
-      alert(error.response?.data?.error || "Erro ao cancelar reserva");
+      console.error("[AdminBookings] Erro ao cancelar reserva:", error);
+      console.error("[AdminBookings] Detalhes do erro:", error.response?.data);
+
+      const errorMessage = error.response?.data?.error || error.response?.data?.message || "Erro ao cancelar reserva";
+      alert(`❌ ${errorMessage}`);
     } finally {
       setActionLoading(false);
     }
