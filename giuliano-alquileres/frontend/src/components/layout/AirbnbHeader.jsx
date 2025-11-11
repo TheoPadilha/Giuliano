@@ -571,6 +571,20 @@ const AirbnbHeader = ({ onFilterButtonClick }) => {
 
                     <div className="border-t border-airbnb-grey-200 my-2"></div>
 
+                    {/* Mobile: Seletor de Idioma e Tema */}
+                    <div className="lg:hidden px-4 py-2 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium text-airbnb-grey-600">Idioma</span>
+                        <LanguageSwitch />
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium text-airbnb-grey-600">Tema</span>
+                        <ThemeToggle />
+                      </div>
+                    </div>
+
+                    <div className="border-t border-airbnb-grey-200 my-2"></div>
+
                     <button
                       onClick={handleLogout}
                       className="flex items-center gap-3 px-4 py-3 text-airbnb-black hover:bg-airbnb-grey-50 transition-colors w-full text-left text-sm"
