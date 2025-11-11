@@ -268,6 +268,8 @@ const getProperties = async (req, res) => {
           attributes: [
             "id",
             "filename",
+            "cloudinary_url",
+            "cloudinary_public_id",
             "alt_text",
             "is_main",
             "display_order",
@@ -345,6 +347,8 @@ const getPropertyByUuid = async (req, res) => {
           attributes: [
             "id",
             "filename",
+            "cloudinary_url",
+            "cloudinary_public_id",
             "original_name",
             "alt_text",
             "is_main",
@@ -600,6 +604,8 @@ const getFeaturedProperties = async (req, res) => {
           attributes: [
             "id",
             "filename",
+            "cloudinary_url",
+            "cloudinary_public_id",
             "alt_text",
             "is_main",
             "display_order",

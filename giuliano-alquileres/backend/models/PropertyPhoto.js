@@ -53,6 +53,18 @@ const PropertyPhoto = sequelize.define(
         min: 0,
       },
     },
+    // Virtual field para URL completa
+    url: {
+      type: DataTypes.VIRTUAL,
+      get() {
+        // Prioridade para URL do Cloudinary
+        if (this.cloudinary_url) {
+          return this.cloudinary_url;
+        }
+        // Caso contrário, retorna null (frontend deve lidar)
+        return null;
+      },
+    },
   },
   {
     tableName: "property_photos",
