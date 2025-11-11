@@ -61,20 +61,17 @@ const PropertyCard = ({ property, layout = "vertical", showPremiumBadge = false 
       if (image) {
         // PRIORIDADE 1: URL completa retornada pelo backend (já vem com Cloudinary)
         if (image.url && image.url.startsWith("http")) {
-          console.log('✅ Imagem carregada:', image.url);
           return image.url;
         }
 
         // PRIORIDADE 2: cloudinary_url (compatibilidade com dados antigos)
         if (image.cloudinary_url) {
-          console.log('✅ Imagem carregada:', image.cloudinary_url);
           return image.cloudinary_url;
         }
 
         // PRIORIDADE 3: Se tem filename e não contém '/', construir URL local
         if (image.filename && !image.filename.includes('/')) {
           const url = `${UPLOADS_URL}/properties/${image.filename}`;
-          console.log('📁 URL local:', url);
           return url;
         }
 

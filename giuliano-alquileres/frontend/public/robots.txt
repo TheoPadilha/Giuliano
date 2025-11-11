@@ -1,0 +1,11 @@
+# robots.txt para Ziguealuga
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /admin/*
+
+# Sitemap
+Sitemap: https://giulianoa-frontend.onrender.com/sitemap.xml
+
+# Crawl-delay (opcional)
+Crawl-delay: 1

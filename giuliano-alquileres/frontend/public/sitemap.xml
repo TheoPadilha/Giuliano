@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <!-- Página Principal -->
+  <url>
+    <loc>https://giulianoa-frontend.onrender.com/</loc>
+    <lastmod>2025-01-11</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+
+  <!-- Busca de Propriedades -->
+  <url>
+    <loc>https://giulianoa-frontend.onrender.com/properties</loc>
+    <lastmod>2025-01-11</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <!-- Sobre -->
+  <url>
+    <loc>https://giulianoa-frontend.onrender.com/about</loc>
+    <lastmod>2025-01-11</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- Contato -->
+  <url>
+    <loc>https://giulianoa-frontend.onrender.com/contact</loc>
+    <lastmod>2025-01-11</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- Login -->
+  <url>
+    <loc>https://giulianoa-frontend.onrender.com/login</loc>
+    <lastmod>2025-01-11</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+
+  <!-- Registro -->
+  <url>
+    <loc>https://giulianoa-frontend.onrender.com/register</loc>
+    <lastmod>2025-01-11</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+</urlset>
