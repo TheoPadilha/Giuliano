@@ -8,6 +8,7 @@ import {
   FaCheckCircle, FaWhatsapp, FaClock
 } from "react-icons/fa";
 import api from "../services/api";
+import { useAuth } from "../contexts/AuthContext";
 import Loading from "../components/common/Loading";
 import DateRangePicker from "../components/search/DateRangePicker";
 import GuestsPicker from "../components/search/GuestsPicker";
@@ -20,6 +21,7 @@ import PropertyAmenities from "../components/property/PropertyAmenities";
 const PropertyDetails = () => {
   const { uuid } = useParams();
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
 
   // Estados
   const [property, setProperty] = useState(null);
@@ -532,17 +534,39 @@ const PropertyDetails = () => {
                       return;
                     }
 
+                    // Preparar dados da reserva
+                    const bookingDataToSave = {
+                      checkIn: bookingDates.checkIn,
+                      checkOut: bookingDates.checkOut,
+                      nights: totalNights,
+                      guests,
+                      totalGuests,
+                      rooms: [] // Adicionar array vazio de rooms por padrão
+                    };
+
+                    // Se não está autenticado, salvar dados e redirecionar para login
+                    if (!isAuthenticated) {
+                      sessionStorage.setItem('pendingBooking', JSON.stringify({
+                        property,
+                        bookingData: bookingDataToSave,
+                        timestamp: Date.now()
+                      }));
+                      navigate('/guest-login', {
+                        state: {
+                          from: {
+                            pathname: '/booking-checkout'
+                          },
+                          message: 'Faça login para continuar com sua reserva'
+                        }
+                      });
+                      return;
+                    }
+
+                    // Se está autenticado, ir direto para checkout
                     navigate('/booking-checkout', {
                       state: {
                         property,
-                        bookingData: {
-                          checkIn: bookingDates.checkIn,
-                          checkOut: bookingDates.checkOut,
-                          nights: totalNights,
-                          guests,
-                          totalGuests,
-                          rooms: [] // Adicionar array vazio de rooms por padrão
-                        }
+                        bookingData: bookingDataToSave
                       }
                     });
                   }}

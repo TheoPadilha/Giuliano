@@ -19,6 +19,7 @@ const GuestLogin = () => {
 
   // Redireciona para a página de origem ou para home após login
   const from = location.state?.from?.pathname || "/";
+  const redirectMessage = location.state?.message;
 
   const handleChange = (e) => {
     setFormData({
@@ -95,6 +96,16 @@ const GuestLogin = () => {
           {/* Card de Login */}
           <div className="card">
             <div className="card-body">
+              {/* Mensagem de Redirecionamento */}
+              {redirectMessage && (
+                <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
+                  <div className="flex items-start">
+                    <FiAlertCircle className="flex-shrink-0 mr-3 mt-0.5 text-blue-600" size={20} />
+                    <p className="text-sm text-blue-800 font-medium">{redirectMessage}</p>
+                  </div>
+                </div>
+              )}
+
               {/* Alerta de Erro */}
               {error && (
                 <div className="alert-error mb-6">
