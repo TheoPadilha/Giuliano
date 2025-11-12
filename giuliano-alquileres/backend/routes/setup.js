@@ -416,13 +416,10 @@ router.get('/create-custom-admin', async (req, res) => {
     if (user) {
       console.log('⚠️  Usuário já existe. Atualizando...');
 
-      // Gerar hash da nova senha
-      const password_hash = await bcrypt.hash(password, 12);
-
-      // Atualizar usuário existente
+      // Atualizar usuário existente (o hook beforeUpdate fará o hash automaticamente)
       await user.update({
         name: adminName,
-        password_hash,
+        password_hash: password, // ← Senha em texto puro, o hook fará o hash
         phone: adminPhone,
         role: 'admin_master',
         status: 'approved'
@@ -455,13 +452,11 @@ router.get('/create-custom-admin', async (req, res) => {
     // 4. Criar novo admin master
     console.log('📝 Criando novo admin master...');
 
-    // Gerar hash da senha
-    const password_hash = await bcrypt.hash(password, 12);
-
+    // Criar usuário (o hook beforeCreate fará o hash automaticamente)
     user = await User.create({
       name: adminName,
       email,
-      password_hash,
+      password_hash: password, // ← Senha em texto puro, o hook fará o hash
       phone: adminPhone,
       country: 'Brasil',
       role: 'admin_master',
