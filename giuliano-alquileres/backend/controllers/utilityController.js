@@ -1,4 +1,5 @@
 const { City, Amenity, Property } = require("../models");
+const axios = require("axios");
 
 // Listar todas as cidades
 const getCities = async (req, res) => {
@@ -144,9 +145,95 @@ const getAmenitiesByCategory = async (req, res) => {
   }
 };
 
+// Geocodificação de endereço usando OpenStreetMap Nominatim (GRÁTIS!)
+const geocodeAddress = async (req, res) => {
+  try {
+    const { address } = req.body;
+
+    // Validar entrada
+    if (!address) {
+      return res.status(400).json({
+        error: "Endereço é obrigatório",
+      });
+    }
+
+    console.log(`🗺️  Geocodificando endereço: ${address}`);
+
+    // Fazer requisição para OpenStreetMap Nominatim (100% GRATUITO)
+    const response = await axios.get(
+      "https://nominatim.openstreetmap.org/search",
+      {
+        params: {
+          q: address,
+          format: "json",
+          addressdetails: 1,
+          limit: 1,
+        },
+        headers: {
+          "User-Agent": "Ziguealuga-Platform/1.0", // Nominatim exige User-Agent
+        },
+        timeout: 10000, // 10 segundos timeout
+      }
+    );
+
+    const results = response.data;
+
+    // Verificar se encontrou resultados
+    if (results && results.length > 0) {
+      const result = results[0];
+
+      console.log(`✅ Coordenadas encontradas: ${result.lat}, ${result.lon}`);
+
+      return res.json({
+        success: true,
+        latitude: parseFloat(result.lat),
+        longitude: parseFloat(result.lon),
+        formatted_address: result.display_name,
+        place_id: result.place_id,
+        warning: "As coordenadas são aproximadas. Verifique a precisão no mapa e ajuste manualmente se necessário.",
+      });
+    } else {
+      console.log("⚠️  Nenhum resultado encontrado para o endereço");
+      return res.status(404).json({
+        error:
+          "Endereço não encontrado. Verifique o endereço e tente novamente.",
+      });
+    }
+  } catch (error) {
+    console.error("❌ Erro ao geocodificar endereço:", error.message);
+
+    // Tratamento específico para erros de rede/timeout
+    if (error.code === "ECONNABORTED" || error.code === "ETIMEDOUT") {
+      return res.status(504).json({
+        error:
+          "Tempo limite excedido ao conectar com o serviço de mapas. Tente novamente.",
+      });
+    }
+
+    if (error.response) {
+      // Erro da API
+      console.error("❌ Resposta de erro:", error.response.status, error.response.data);
+      return res.status(error.response.status || 500).json({
+        error: "Erro ao conectar com o serviço de mapas",
+        details:
+          process.env.NODE_ENV === "development"
+            ? error.response.data
+            : undefined,
+      });
+    }
+
+    res.status(500).json({
+      error: "Erro interno do servidor ao processar geocodificação",
+      details:
+        process.env.NODE_ENV === "development" ? error.message : undefined,
+    });
+  }
+};
+
 module.exports = {
   getCities,
   getCityById,
   getAmenities,
   getAmenitiesByCategory,
+  geocodeAddress,
 };

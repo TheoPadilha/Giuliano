@@ -21,4 +21,7 @@ router.get(
   utilityController.getAmenitiesByCategory
 );
 
+// POST /api/utilities/geocode - Geocodificar endereço
+router.post("/geocode", utilityController.geocodeAddress);
+
 module.exports = router;

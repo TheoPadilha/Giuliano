@@ -177,7 +177,7 @@ const AdminNewPropertyAirbnb = () => {
     }));
   };
 
-  // Geocodificação com Google Maps API
+  // Geocodificação usando endpoint do backend
   const handleGeocodeAddress = async () => {
     if (!formData.address || !formData.city_id) {
       setError("Preencha o endereço e selecione a cidade primeiro");
@@ -198,44 +198,38 @@ const AdminNewPropertyAirbnb = () => {
       setLoading(true);
       setError("");
 
-      const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
-      if (!apiKey) {
-        setError("Chave da API do Google Maps não configurada. Entre em contato com o suporte.");
-        setTimeout(() => setError(""), 7000);
-        setLoading(false);
-        return;
-      }
+      // Usar endpoint do backend ao invés de chamar Google Maps diretamente
+      const response = await api.post("/api/utilities/geocode", {
+        address: fullAddress
+      });
 
-      const response = await fetch(
-        `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(fullAddress)}&key=${apiKey}`
-      );
+      const data = response.data;
 
-      const data = await response.json();
-
-      if (data.status === "OK" && data.results && data.results.length > 0) {
-        const location = data.results[0].geometry.location;
-
+      if (data.success) {
         setFormData(prev => ({
           ...prev,
-          latitude: location.lat.toFixed(8),
-          longitude: location.lng.toFixed(8)
+          latitude: data.latitude.toFixed(8),
+          longitude: data.longitude.toFixed(8)
         }));
 
-        setSuccess(`Coordenadas encontradas! Latitude: ${location.lat.toFixed(6)}, Longitude: ${location.lng.toFixed(6)}`);
-        setTimeout(() => setSuccess(""), 5000);
-      } else if (data.status === "ZERO_RESULTS") {
-        setError("Não foi possível obter a localização exata. Verifique o endereço ou insira manualmente as coordenadas de latitude e longitude.");
-        setTimeout(() => setError(""), 8000);
-      } else if (data.status === "REQUEST_DENIED") {
-        setError("Acesso negado à API do Google Maps. Verifique a chave da API ou entre em contato com o suporte.");
-        setTimeout(() => setError(""), 8000);
-      } else {
-        setError(`Erro ao buscar localização (${data.status}). Tente novamente ou insira as coordenadas manualmente.`);
-        setTimeout(() => setError(""), 8000);
+        // Mensagem de sucesso com aviso de precisão
+        const successMessage = `Coordenadas encontradas! Latitude: ${data.latitude.toFixed(6)}, Longitude: ${data.longitude.toFixed(6)}`;
+        const warningMessage = data.warning ? `\n⚠️ ${data.warning}` : '';
+
+        setSuccess(successMessage + warningMessage);
+        setTimeout(() => setSuccess(""), 8000);
       }
-    } catch (err) {
-      console.error("Erro ao buscar coordenadas:", err);
-      setError("Erro de conexão ao buscar localização. Verifique sua internet ou insira as coordenadas manualmente.");
+    } catch (error) {
+      console.error("Erro ao geocodificar:", error);
+
+      if (error.response) {
+        // Erro retornado pelo backend
+        const errorMessage = error.response.data.error || "Erro ao buscar coordenadas";
+        setError(errorMessage);
+      } else {
+        // Erro de conexão ou outro erro
+        setError("Erro de conexão ao buscar localização. Verifique sua internet ou insira as coordenadas manualmente.");
+      }
       setTimeout(() => setError(""), 8000);
     } finally {
       setLoading(false);
