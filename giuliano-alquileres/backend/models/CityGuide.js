@@ -19,15 +19,15 @@ const CityGuide = sequelize.define(
       allowNull: false,
     },
     touristic_spots: {
-      type: DataTypes.JSONB, // Array de objetos { name, description, type, lat, lng }
+      type: DataTypes.JSON, // Array de objetos { name, description, type, lat, lng }
       allowNull: true,
     },
     restaurants: {
-      type: DataTypes.JSONB, // Array de objetos { name, description, type, address }
+      type: DataTypes.JSON, // Array de objetos { name, description, type, address }
       allowNull: true,
     },
     useful_info: {
-      type: DataTypes.JSONB, // Array de objetos { title, content }
+      type: DataTypes.JSON, // Array de objetos { title, content }
       allowNull: true,
     },
     image_url: {

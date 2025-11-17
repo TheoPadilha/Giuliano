@@ -1,4 +1,4 @@
-// database.js modificado
+// database.js modificado - Suporta PostgreSQL e MySQL
 
 const { Sequelize } = require("sequelize");
 require("dotenv").config();
@@ -34,13 +34,15 @@ if (process.env.DATABASE_URL) {
 } else {
   // Se não, estamos no ambiente de desenvolvimento (sua máquina local)
   // Usa as variáveis do seu arquivo .env
-  sequelize = new Sequelize({
+  const dialect = process.env.DB_DIALECT || "postgres";
+
+  const config = {
     host: process.env.DB_HOST || "localhost",
-    port: process.env.DB_PORT || 5432,
+    port: process.env.DB_PORT || (dialect === "mysql" ? 3306 : 5432),
     database: process.env.DB_NAME || "giuliano_alquileres",
     username: process.env.DB_USER || "postgres",
     password: process.env.DB_PASSWORD,
-    dialect: "postgres",
+    dialect: dialect,
     pool: {
       max: 10,
       min: 0,
@@ -54,17 +56,25 @@ if (process.env.DATABASE_URL) {
       freezeTableName: true,
     },
     timezone: "-03:00",
-  });
+  };
+
+  // Se for PostgreSQL, não precisa de configurações extras de SSL em desenvolvimento
+  // Se for MySQL, não precisa de dialectOptions
+  if (dialect === "postgres") {
+    config.dialectOptions = {};
+  }
+
+  sequelize = new Sequelize(config);
 }
 
 // O resto do seu arquivo permanece igual
 const testConnection = async () => {
   try {
     await sequelize.authenticate();
-    console.log("✅ Conexão PostgreSQL OK!");
+    console.log("✅ Conexão com banco de dados OK!");
     return true;
   } catch (error) {
-    console.error("❌ Erro na conexão PostgreSQL:", error.message);
+    console.error("❌ Erro na conexão com banco de dados:", error.message);
     return false;
   }
 };
