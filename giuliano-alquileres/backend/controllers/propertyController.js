@@ -307,8 +307,21 @@ const getProperties = async (req, res) => {
 
     const totalPages = Math.ceil(count / parseInt(limit));
 
+    // Adicionar URL completa nas fotos
+    const backendUrl = process.env.BACKEND_URL || `${req.protocol}://${req.get("host")}`;
+    const propertiesWithUrls = properties.map((property) => {
+      const propertyJSON = property.toJSON();
+      if (propertyJSON.photos && propertyJSON.photos.length > 0) {
+        propertyJSON.photos = propertyJSON.photos.map((photo) => ({
+          ...photo,
+          url: photo.cloudinary_url || `${backendUrl}/uploads/properties/${photo.filename}`,
+        }));
+      }
+      return propertyJSON;
+    });
+
     res.json({
-      properties,
+      properties: propertiesWithUrls,
       pagination: {
         currentPage: parseInt(page),
         totalPages,
@@ -396,7 +409,17 @@ const getPropertyByUuid = async (req, res) => {
       console.log(`👁️ Visualização registrada para imóvel ${property.uuid} (Total: ${property.view_count + 1})`);
     }
 
-    res.json({ property });
+    // Adicionar URL completa nas fotos
+    const backendUrl = process.env.BACKEND_URL || `${req.protocol}://${req.get("host")}`;
+    const propertyJSON = property.toJSON();
+    if (propertyJSON.photos && propertyJSON.photos.length > 0) {
+      propertyJSON.photos = propertyJSON.photos.map((photo) => ({
+        ...photo,
+        url: photo.cloudinary_url || `${backendUrl}/uploads/properties/${photo.filename}`,
+      }));
+    }
+
+    res.json({ property: propertyJSON });
   } catch (error) {
     console.error("Erro ao buscar imóvel:", error);
     res.status(500).json({
@@ -621,7 +644,20 @@ const getFeaturedProperties = async (req, res) => {
       limit: parseInt(limit),
     });
 
-    res.json({ properties });
+    // Adicionar URL completa nas fotos
+    const backendUrl = process.env.BACKEND_URL || `${req.protocol}://${req.get("host")}`;
+    const propertiesWithUrls = properties.map((property) => {
+      const propertyJSON = property.toJSON();
+      if (propertyJSON.photos && propertyJSON.photos.length > 0) {
+        propertyJSON.photos = propertyJSON.photos.map((photo) => ({
+          ...photo,
+          url: photo.cloudinary_url || `${backendUrl}/uploads/properties/${photo.filename}`,
+        }));
+      }
+      return propertyJSON;
+    });
+
+    res.json({ properties: propertiesWithUrls });
   } catch (error) {
     console.error("Erro ao buscar imóveis em destaque:", error);
     res.status(500).json({

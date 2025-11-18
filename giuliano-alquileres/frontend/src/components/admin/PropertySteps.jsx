@@ -576,7 +576,7 @@ export const Step5Pricing = ({ formData, handleInputChange }) => (
         </div>
         <div>
           <h3 className="font-bold text-gray-900">Preço de Final de Semana</h3>
-          <p className="text-sm text-gray-600">Sexta-feira, sábado e domingo (opcional)</p>
+          <p className="text-sm text-gray-600">Sexta-feira, sábado e domingo (obrigatório)</p>
         </div>
       </div>
       <div className="relative">
@@ -588,13 +588,13 @@ export const Step5Pricing = ({ formData, handleInputChange }) => (
           name="weekend_price"
           value={formData.weekend_price}
           onChange={handleInputChange}
-          placeholder="0,00 (deixe vazio para usar preço base)"
+          placeholder="0,00"
           step="0.01"
           min="0"
           className="w-full pl-12 pr-4 py-3 border border-blue-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent font-bold"
         />
       </div>
-      <p className="text-xs text-gray-600 mt-2">Se não definir, o preço base será usado automaticamente</p>
+      <p className="text-xs text-gray-600 mt-2">Digite o preço para sexta, sábado e domingo</p>
     </div>
 
     {/* Preço Alta Temporada */}
@@ -605,7 +605,7 @@ export const Step5Pricing = ({ formData, handleInputChange }) => (
         </div>
         <div>
           <h3 className="font-bold text-gray-900">Preço de Alta Temporada</h3>
-          <p className="text-sm text-gray-600">Dezembro, janeiro e fevereiro - verão (opcional)</p>
+          <p className="text-sm text-gray-600">Dezembro, janeiro e fevereiro - verão (obrigatório)</p>
         </div>
       </div>
       <div className="relative">
@@ -617,13 +617,13 @@ export const Step5Pricing = ({ formData, handleInputChange }) => (
           name="high_season_price"
           value={formData.high_season_price}
           onChange={handleInputChange}
-          placeholder="0,00 (deixe vazio para usar preço base)"
+          placeholder="0,00"
           step="0.01"
           min="0"
           className="w-full pl-12 pr-4 py-3 border border-orange-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent font-bold"
         />
       </div>
-      <p className="text-xs text-gray-600 mt-2">Tem prioridade sobre preço de fim de semana durante dez-jan-fev</p>
+      <p className="text-xs text-gray-600 mt-2">Digite o preço para dezembro, janeiro e fevereiro</p>
     </div>
 
     {/* Hierarquia de preços */}

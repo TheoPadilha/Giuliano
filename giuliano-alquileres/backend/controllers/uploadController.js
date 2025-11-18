@@ -107,8 +107,8 @@ const uploadPropertyPhotos = async (req, res) => {
       }
     }
 
-    // Montar base para URLs locais (fallback para FRONTEND_BASE_URL ou host da requisição)
-    const hostBase = process.env.FRONTEND_BASE_URL || `${req.protocol}://${req.get("host")}`;
+    // Montar base para URLs locais (fallback para BACKEND_URL ou host da requisição)
+    const backendUrl = process.env.BACKEND_URL || `${req.protocol}://${req.get("host")}`;
 
     res.status(201).json({
       message: `${createdPhotos.length} foto(s) enviada(s) com sucesso`,
@@ -121,7 +121,7 @@ const uploadPropertyPhotos = async (req, res) => {
         alt_text: photo.alt_text,
         is_main: photo.is_main,
         display_order: photo.display_order,
-        url: photo.cloudinary_url || `/uploads/properties/${photo.filename}`,
+        url: photo.cloudinary_url || `${backendUrl}/uploads/properties/${photo.filename}`,
       })),
     });
   } catch (error) {
@@ -169,12 +169,12 @@ const getPropertyPhotos = async (req, res) => {
       ],
     });
 
-    const hostBase = process.env.FRONTEND_BASE_URL || `${req.protocol}://${req.get("host")}`;
+    const backendUrl = process.env.BACKEND_URL || `${req.protocol}://${req.get("host")}`;
 
     res.json({
       photos: photos.map((photo) => ({
         ...photo.toJSON(),
-        url: photo.cloudinary_url || `/uploads/properties/${photo.filename}`,
+        url: photo.cloudinary_url || `${backendUrl}/uploads/properties/${photo.filename}`,
       })),
     });
   } catch (error) {

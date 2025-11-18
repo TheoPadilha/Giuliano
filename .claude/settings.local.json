@@ -29,7 +29,8 @@
       "Bash(git push:*)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
-      "Bash(if not exist scripts mkdir scripts)"
+      "Bash(if not exist scripts mkdir scripts)",
+      "Bash(ssh ziguealuga-api@82.180.136.126 \"cd ~/htdocs/backend && grep -A 20 ''const getProperties'' controllers/properties.js | head -30\")"
     ],
     "deny": [],
     "ask": []
