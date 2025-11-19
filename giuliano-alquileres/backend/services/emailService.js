@@ -47,6 +47,131 @@ const formatCurrency = (value) => {
 /**
  * Email de Confirmação de Reserva
  */
+/**
+ * Email de solicitação de reserva (quando o hóspede cria a reserva)
+ */
+const sendBookingRequest = async (booking, property, user) => {
+  if (!transporter) {
+    console.warn("⚠️  Email não enviado - Sistema não configurado");
+    return { success: false, error: "Email não configurado" };
+  }
+
+  const subject = `📩 Solicitação de Reserva Recebida - ${property.title}`;
+
+  const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+    .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+    .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }
+    .property-card { background: white; padding: 20px; border-radius: 8px; margin: 20px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    .detail-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #eee; }
+    .button { display: inline-block; background: #667eea; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; margin: 20px 0; }
+    .footer { text-align: center; color: #666; font-size: 12px; margin-top: 30px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>📩 Solicitação Recebida!</h1>
+      <p>Sua solicitação de reserva foi enviada</p>
+    </div>
+
+    <div class="content">
+      <p>Olá <strong>${booking.guest_name}</strong>,</p>
+
+      <p>Recebemos sua solicitação de reserva! Aguarde a confirmação do proprietário.</p>
+
+      <div class="property-card">
+        <h2 style="color: #667eea; margin-top: 0;">📍 ${property.title}</h2>
+        <p style="color: #666;">${property.address}</p>
+
+        <div style="margin: 20px 0;">
+          <div class="detail-row">
+            <span><strong>Check-in:</strong></span>
+            <span>${formatDate(booking.check_in)} (após 14h)</span>
+          </div>
+          <div class="detail-row">
+            <span><strong>Check-out:</strong></span>
+            <span>${formatDate(booking.check_out)} (até 12h)</span>
+          </div>
+          <div class="detail-row">
+            <span><strong>Noites:</strong></span>
+            <span>${booking.nights} noite${booking.nights > 1 ? "s" : ""}</span>
+          </div>
+          <div class="detail-row">
+            <span><strong>Hóspedes:</strong></span>
+            <span>${booking.guests} pessoa${booking.guests > 1 ? "s" : ""}</span>
+          </div>
+          <div class="detail-row" style="border-bottom: none; font-size: 18px; color: #667eea;">
+            <span><strong>Valor Total:</strong></span>
+            <span><strong>${formatCurrency(booking.total_price)}</strong></span>
+          </div>
+        </div>
+      </div>
+
+      <h3>📋 Próximos Passos:</h3>
+      <ul>
+        <li>⏰ Aguarde a confirmação do proprietário</li>
+        <li>📧 Você receberá um email assim que a reserva for confirmada</li>
+        <li>📱 O proprietário poderá entrar em contato para mais detalhes</li>
+      </ul>
+
+      ${booking.special_requests ? `
+      <div style="background: #fff3cd; padding: 15px; border-radius: 5px; margin: 20px 0;">
+        <strong>💬 Suas observações:</strong><br>
+        ${booking.special_requests}
+      </div>
+      ` : ""}
+
+      <div style="background: #e7f3ff; padding: 15px; border-radius: 5px; margin: 20px 0;">
+        <strong>📞 Precisa de ajuda?</strong><br>
+        Entre em contato conosco:
+        <ul style="margin: 10px 0;">
+          <li>📧 Email: ${process.env.SMTP_FROM_EMAIL}</li>
+          <li>📱 WhatsApp: <a href="https://wa.me/5547989105580">(47) 98910-5580</a></li>
+        </ul>
+      </div>
+
+      <center>
+        <a href="${process.env.FRONTEND_URL}/bookings" class="button">
+          Ver Detalhes da Reserva
+        </a>
+      </center>
+    </div>
+
+    <div class="footer">
+      <p>Zigué Aluga © ${new Date().getFullYear()}</p>
+      <p>Este é um email automático, por favor não responda.</p>
+    </div>
+  </div>
+</body>
+</html>
+  `;
+
+  try {
+    const info = await transporter.sendMail({
+      from: `"Zigué Aluga" <${process.env.SMTP_USER}>`,
+      to: booking.guest_email,
+      subject: subject,
+      html: html,
+    });
+
+    console.log("✅ Email de solicitação enviado:", info.messageId);
+    return { success: true, messageId: info.messageId };
+  } catch (error) {
+    console.error("❌ Erro ao enviar email de solicitação:", error);
+    return { success: false, error: error.message };
+  }
+};
+
+/**
+ * Email de confirmação de reserva (quando o proprietário confirma)
+ */
 const sendBookingConfirmation = async (booking, property, user) => {
   if (!transporter) {
     console.warn("⚠️  Email não enviado - Sistema não configurado");
@@ -81,7 +206,7 @@ const sendBookingConfirmation = async (booking, property, user) => {
     <div class="content">
       <p>Olá <strong>${booking.guest_name}</strong>,</p>
 
-      <p>Ótimas notícias! Sua reserva foi confirmada e o pagamento foi aprovado.</p>
+      <p>Ótimas notícias! Sua reserva foi confirmada pelo proprietário.</p>
 
       <div class="property-card">
         <h2 style="color: #667eea; margin-top: 0;">📍 ${property.title}</h2>
@@ -113,8 +238,7 @@ const sendBookingConfirmation = async (booking, property, user) => {
 
       <h3>📋 Próximos Passos:</h3>
       <ul>
-        <li>✅ Seu pagamento foi aprovado e processado</li>
-        <li>📱 O proprietário entrará em contato em breve</li>
+        <li>📱 O proprietário entrará em contato em breve com mais detalhes</li>
         <li>🗓️ Você receberá um lembrete 1 dia antes do check-in</li>
         <li>🔑 Instruções de check-in serão enviadas próximo à data</li>
       </ul>
@@ -130,7 +254,7 @@ const sendBookingConfirmation = async (booking, property, user) => {
         <strong>📞 Precisa de ajuda?</strong><br>
         Entre em contato conosco:
         <ul style="margin: 10px 0;">
-          <li>📧 Email: contato@giulianoalquileres.com</li>
+          <li>📧 Email: ${process.env.SMTP_FROM_EMAIL}</li>
           <li>📱 WhatsApp: <a href="https://wa.me/5547989105580">(47) 98910-5580</a></li>
         </ul>
       </div>
@@ -143,7 +267,7 @@ const sendBookingConfirmation = async (booking, property, user) => {
     </div>
 
     <div class="footer">
-      <p>Giuliano Alquileres © ${new Date().getFullYear()}</p>
+      <p>Zigué Aluga © ${new Date().getFullYear()}</p>
       <p>Este é um email automático, por favor não responda.</p>
     </div>
   </div>
@@ -153,7 +277,7 @@ const sendBookingConfirmation = async (booking, property, user) => {
 
   try {
     const info = await transporter.sendMail({
-      from: `"Giuliano Alquileres" <${process.env.SMTP_USER}>`,
+      from: `"Zigué Aluga" <${process.env.SMTP_USER}>`,
       to: booking.guest_email,
       subject: subject,
       html: html,
@@ -163,6 +287,129 @@ const sendBookingConfirmation = async (booking, property, user) => {
     return { success: true, messageId: info.messageId };
   } catch (error) {
     console.error("❌ Erro ao enviar email de confirmação:", error);
+    return { success: false, error: error.message };
+  }
+};
+
+/**
+ * Email de notificação de nova reserva para o proprietário
+ */
+const sendNewBookingToOwner = async (booking, property, owner) => {
+  if (!transporter) {
+    console.warn("⚠️  Email não enviado - Sistema não configurado");
+    return { success: false, error: "Email não configurado" };
+  }
+
+  const subject = `🔔 Nova Reserva Recebida - ${property.title}`;
+
+  const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+    .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+    .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }
+    .property-card { background: white; padding: 20px; border-radius: 8px; margin: 20px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    .detail-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #eee; }
+    .button { display: inline-block; background: #667eea; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; margin: 20px 0; }
+    .footer { text-align: center; color: #666; font-size: 12px; margin-top: 30px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🔔 Nova Reserva Recebida!</h1>
+      <p>Você tem uma nova solicitação de reserva</p>
+    </div>
+
+    <div class="content">
+      <p>Olá <strong>${owner.name}</strong>,</p>
+
+      <p>Você recebeu uma nova solicitação de reserva para sua propriedade.</p>
+
+      <div class="property-card">
+        <h2 style="color: #667eea; margin-top: 0;">📍 ${property.title}</h2>
+
+        <h3 style="color: #333; margin-top: 20px;">👤 Informações do Hóspede:</h3>
+        <div class="detail-row">
+          <span><strong>Nome:</strong></span>
+          <span>${booking.guest_name}</span>
+        </div>
+        <div class="detail-row">
+          <span><strong>Email:</strong></span>
+          <span>${booking.guest_email}</span>
+        </div>
+        <div class="detail-row">
+          <span><strong>Telefone:</strong></span>
+          <span>${booking.guest_phone}</span>
+        </div>
+
+        <h3 style="color: #333; margin-top: 20px;">📅 Detalhes da Reserva:</h3>
+        <div class="detail-row">
+          <span><strong>Check-in:</strong></span>
+          <span>${formatDate(booking.check_in)}</span>
+        </div>
+        <div class="detail-row">
+          <span><strong>Check-out:</strong></span>
+          <span>${formatDate(booking.check_out)}</span>
+        </div>
+        <div class="detail-row">
+          <span><strong>Noites:</strong></span>
+          <span>${booking.nights} noite${booking.nights > 1 ? "s" : ""}</span>
+        </div>
+        <div class="detail-row">
+          <span><strong>Hóspedes:</strong></span>
+          <span>${booking.guests} pessoa${booking.guests > 1 ? "s" : ""}</span>
+        </div>
+        <div class="detail-row" style="border-bottom: none; font-size: 18px; color: #667eea;">
+          <span><strong>Valor Total:</strong></span>
+          <span><strong>${formatCurrency(booking.total_price)}</strong></span>
+        </div>
+      </div>
+
+      ${booking.special_requests ? `
+      <div style="background: #fff3cd; padding: 15px; border-radius: 5px; margin: 20px 0;">
+        <strong>💬 Observações do hóspede:</strong><br>
+        ${booking.special_requests}
+      </div>
+      ` : ""}
+
+      <div style="background: #e7f3ff; padding: 15px; border-radius: 5px; margin: 20px 0;">
+        <strong>⏰ Próximo Passo:</strong><br>
+        Acesse o painel administrativo para confirmar ou recusar esta reserva.
+      </div>
+
+      <center>
+        <a href="${process.env.FRONTEND_URL}/admin/bookings" class="button">
+          Ver no Painel Admin
+        </a>
+      </center>
+    </div>
+
+    <div class="footer">
+      <p>Zigué Aluga © ${new Date().getFullYear()}</p>
+      <p>Este é um email automático, por favor não responda.</p>
+    </div>
+  </div>
+</body>
+</html>
+  `;
+
+  try {
+    const info = await transporter.sendMail({
+      from: `"Zigué Aluga" <${process.env.SMTP_USER}>`,
+      to: owner.email,
+      subject: subject,
+      html: html,
+    });
+
+    console.log("✅ Email de nova reserva enviado para proprietário:", info.messageId);
+    return { success: true, messageId: info.messageId };
+  } catch (error) {
+    console.error("❌ Erro ao enviar email para proprietário:", error);
     return { success: false, error: error.message };
   }
 };
@@ -232,7 +479,7 @@ const sendCheckInReminder = async (booking, property) => {
     </div>
 
     <div class="footer">
-      <p>Giuliano Alquileres © ${new Date().getFullYear()}</p>
+      <p>Zigué Aluga © ${new Date().getFullYear()}</p>
       <p>Tenha uma ótima estadia! 🌟</p>
     </div>
   </div>
@@ -242,7 +489,7 @@ const sendCheckInReminder = async (booking, property) => {
 
   try {
     const info = await transporter.sendMail({
-      from: `"Giuliano Alquileres" <${process.env.SMTP_USER}>`,
+      from: `"Zigué Aluga" <${process.env.SMTP_USER}>`,
       to: booking.guest_email,
       subject: subject,
       html: html,
@@ -318,7 +565,7 @@ const sendCancellationEmail = async (booking, property, refundAmount) => {
     </div>
 
     <div class="footer">
-      <p>Giuliano Alquileres © ${new Date().getFullYear()}</p>
+      <p>Zigué Aluga © ${new Date().getFullYear()}</p>
     </div>
   </div>
 </body>
@@ -327,7 +574,7 @@ const sendCancellationEmail = async (booking, property, refundAmount) => {
 
   try {
     const info = await transporter.sendMail({
-      from: `"Giuliano Alquileres" <${process.env.SMTP_USER}>`,
+      from: `"Zigué Aluga" <${process.env.SMTP_USER}>`,
       to: booking.guest_email,
       subject: subject,
       html: html,
@@ -350,7 +597,7 @@ const sendWelcomeEmail = async (user) => {
     return { success: false, error: "Email não configurado" };
   }
 
-  const subject = `🎉 Bem-vindo ao Giuliano Alquileres!`;
+  const subject = `🎉 Bem-vindo ao Zigué Aluga!`;
 
   const html = `
 <!DOCTYPE html>
@@ -376,7 +623,7 @@ const sendWelcomeEmail = async (user) => {
     <div class="content">
       <p>Olá <strong>${user.name}</strong>,</p>
 
-      <p>Sua conta foi criada com sucesso no <strong>Giuliano Alquileres</strong>!</p>
+      <p>Sua conta foi criada com sucesso no <strong>Zigué Aluga</strong>!</p>
 
       <p>Agora você pode:</p>
       <ul>
@@ -399,7 +646,7 @@ const sendWelcomeEmail = async (user) => {
     </div>
 
     <div class="footer">
-      <p>Giuliano Alquileres © ${new Date().getFullYear()}</p>
+      <p>Zigué Aluga © ${new Date().getFullYear()}</p>
     </div>
   </div>
 </body>
@@ -408,7 +655,7 @@ const sendWelcomeEmail = async (user) => {
 
   try {
     const info = await transporter.sendMail({
-      from: `"Giuliano Alquileres" <${process.env.SMTP_USER}>`,
+      from: `"Zigué Aluga" <${process.env.SMTP_USER}>`,
       to: user.email,
       subject: subject,
       html: html,
@@ -432,7 +679,7 @@ const sendPasswordResetEmail = async (user, resetToken) => {
   }
 
   const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
-  const subject = `🔐 Recuperação de Senha - Giuliano Alquileres`;
+  const subject = `🔐 Recuperação de Senha - Zigué Aluga`;
 
   const html = `
 <!DOCTYPE html>
@@ -487,7 +734,7 @@ const sendPasswordResetEmail = async (user, resetToken) => {
     </div>
 
     <div class="footer">
-      <p>Giuliano Alquileres © ${new Date().getFullYear()}</p>
+      <p>Zigué Aluga © ${new Date().getFullYear()}</p>
       <p>Este é um email automático, por favor não responda.</p>
     </div>
   </div>
@@ -497,7 +744,7 @@ const sendPasswordResetEmail = async (user, resetToken) => {
 
   try {
     const info = await transporter.sendMail({
-      from: `"Giuliano Alquileres" <${process.env.SMTP_USER}>`,
+      from: `"Zigué Aluga" <${process.env.SMTP_USER}>`,
       to: user.email,
       subject: subject,
       html: html,
@@ -515,7 +762,9 @@ const sendPasswordResetEmail = async (user, resetToken) => {
 // EXPORTAR FUNÇÕES
 // ============================================
 module.exports = {
+  sendBookingRequest,
   sendBookingConfirmation,
+  sendNewBookingToOwner,
   sendCheckInReminder,
   sendCancellationEmail,
   sendWelcomeEmail,

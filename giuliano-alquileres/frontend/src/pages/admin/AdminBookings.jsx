@@ -141,7 +141,9 @@ const AdminBookings = () => {
   };
 
   const formatDate = (date) => {
-    return new Date(date).toLocaleDateString("pt-BR", {
+    // Adiciona horário meio-dia para evitar problemas de timezone
+    const dateWithTime = date.includes('T') ? date : `${date}T12:00:00`;
+    return new Date(dateWithTime).toLocaleDateString("pt-BR", {
       day: "2-digit",
       month: "short",
       year: "numeric",
@@ -457,7 +459,9 @@ const BookingDetailsModal = ({ booking, onClose, onConfirm, onCancel, actionLoad
   };
 
   const formatDate = (date) => {
-    return new Date(date).toLocaleDateString("pt-BR", {
+    // Adiciona horário meio-dia para evitar problemas de timezone
+    const dateWithTime = date.includes('T') ? date : `${date}T12:00:00`;
+    return new Date(dateWithTime).toLocaleDateString("pt-BR", {
       weekday: "long",
       day: "2-digit",
       month: "long",

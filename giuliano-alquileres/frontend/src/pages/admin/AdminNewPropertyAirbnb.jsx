@@ -103,6 +103,7 @@ const AdminNewPropertyAirbnb = () => {
     price_per_night: "",
     weekend_price: "",
     high_season_price: "",
+    security_deposit: 0,
     status: "available",
     is_featured: false,
     amenities: [],
@@ -514,6 +515,7 @@ const AdminNewPropertyAirbnb = () => {
         price_per_night: parseFloat(formData.price_per_night),
         weekend_price: formData.weekend_price ? parseFloat(formData.weekend_price) : null,
         high_season_price: formData.high_season_price ? parseFloat(formData.high_season_price) : null,
+        security_deposit: parseFloat(formData.security_deposit) || 0,
         max_guests: parseInt(formData.max_guests),
         bedrooms: parseInt(formData.bedrooms),
         bathrooms: parseInt(formData.bathrooms),
@@ -563,6 +565,7 @@ const AdminNewPropertyAirbnb = () => {
       }
 
       setSuccess("✅ Imóvel publicado com sucesso! Redirecionando...");
+      window.scrollTo({ top: 0, behavior: "smooth" });
       setTimeout(() => {
         navigate("/admin/properties");
       }, 2000);
@@ -574,12 +577,8 @@ const AdminNewPropertyAirbnb = () => {
       const errorDetails = err.response?.data?.details || "";
 
       setError(`❌ ${errorMessage}${errorDetails ? `: ${errorDetails}` : ""}. Verifique os dados e tente novamente.`);
+      window.scrollTo({ top: 0, behavior: "smooth" });
       setTimeout(() => setError(""), 10000);
-
-      // Se houver erro específico de validação do backend, voltar para step relevante
-      if (err.response?.status === 400) {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      }
     } finally {
       setLoading(false);
     }

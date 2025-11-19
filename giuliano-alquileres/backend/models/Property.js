@@ -125,6 +125,16 @@ const Property = sequelize.define(
         min: { args: [0], msg: "Preço não pode ser negativo" },
       },
     },
+    security_deposit: {
+      type: DataTypes.DECIMAL(10, 2),
+      allowNull: true,
+      defaultValue: 0,
+      comment: "Valor da caução/depósito de segurança",
+      validate: {
+        min: { args: [0], msg: "Caução não pode ser negativa" },
+        max: { args: [99999.99], msg: "Caução muito alta" },
+      },
+    },
     status: {
       type: DataTypes.ENUM("available", "occupied", "maintenance", "inactive"),
       defaultValue: "available",

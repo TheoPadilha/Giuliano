@@ -27,6 +27,7 @@ const propertySchema = Joi.object({
   price_per_night: Joi.number().positive().precision(2).required(),
   weekend_price: Joi.number().positive().precision(2).optional(),
   high_season_price: Joi.number().positive().precision(2).optional(),
+  security_deposit: Joi.number().min(0).precision(2).optional(),
   status: Joi.string()
     .valid("available", "occupied", "maintenance", "inactive")
     .optional(),
@@ -50,6 +51,9 @@ const propertySchema = Joi.object({
     }
     if (value.high_season_price) {
       value.high_season_price = Math.round(value.high_season_price * 100) / 100;
+    }
+    if (value.security_deposit) {
+      value.security_deposit = Math.round(value.security_deposit * 100) / 100;
     }
     return value;
   })

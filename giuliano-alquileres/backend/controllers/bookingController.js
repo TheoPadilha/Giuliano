@@ -8,7 +8,8 @@ const {
 const Joi = require("joi");
 const logger = require("../utils/logger");
 const { isBetaMode, getBetaConfig, betaLog } = require("../config/betaMode");
-const { sendBookingConfirmation } = require("../services/emailService");
+const { sendBookingRequest, sendBookingConfirmation, sendNewBookingToOwner } = require("../services/emailService");
+const zapiService = require("../services/zapiService");
 
 // Esquema de validação para criar reserva
 const createBookingSchema = Joi.object({
@@ -236,12 +237,17 @@ const createBooking = async (req, res) => {
         {
           model: Property,
           as: "property",
-          attributes: ["id", "uuid", "title", "city_id"],
+          attributes: ["id", "uuid", "title", "city_id", "user_id"],
           include: [
             {
               model: City,
               as: "city",
               attributes: ["name"],
+            },
+            {
+              model: User,
+              as: "owner",
+              attributes: ["id", "name", "email", "phone"],
             },
           ],
         },
@@ -269,6 +275,34 @@ const createBooking = async (req, res) => {
       response.betaNotice = getBetaConfig("booking.betaNotice");
       response.paymentRequired = false;
     }
+
+    // Enviar notificações (não aguarda para não bloquear resposta)
+    setImmediate(async () => {
+      // Email para hóspede (solicitação)
+      try {
+        await sendBookingRequest(createdBooking, createdBooking.property, createdBooking.guest);
+        console.log("[Booking] Email de solicitação enviado para hóspede!");
+      } catch (err) {
+        console.error("[Booking] Erro ao enviar email para hóspede:", err.message);
+      }
+
+      // Email para proprietário
+      try {
+        await sendNewBookingToOwner(createdBooking, createdBooking.property, createdBooking.property.owner);
+        console.log("[Booking] Email de nova reserva enviado para proprietário!");
+      } catch (err) {
+        console.error("[Booking] Erro ao enviar email para proprietário:", err.message);
+      }
+
+      // WhatsApp
+      try {
+        await zapiService.notifyNewBooking(createdBooking, createdBooking.property, createdBooking.guest);
+        await zapiService.sendBookingConfirmation(createdBooking, createdBooking.property);
+        console.log("[Booking] WhatsApp enviado!");
+      } catch (err) {
+        console.error("[Booking] Erro ao enviar WhatsApp:", err.message);
+      }
+    });
 
     res.status(201).json(response);
   } catch (error) {
@@ -631,6 +665,11 @@ const confirmBooking = async (req, res) => {
               as: "city",
               attributes: ["name", "state"],
             },
+            {
+              model: User,
+              as: "owner",
+              attributes: ["id", "name", "email", "phone"],
+            },
           ],
         },
         {
@@ -686,6 +725,23 @@ const confirmBooking = async (req, res) => {
       // Não bloqueia a confirmação se o email falhar
       logger.error("Erro ao enviar email de confirmação", {
         error: emailError.message,
+        booking_id: booking.id
+      });
+    }
+
+    // Enviar notificação WhatsApp para admin e hóspede
+    try {
+      console.log("[Booking] Enviando notificações WhatsApp...");
+      // Notificar admin
+      await zapiService.notifyNewBooking(booking, booking.property, booking.guest);
+      // Notificar hóspede
+      await zapiService.sendBookingConfirmation(booking, booking.property);
+      console.log("[Booking] Notificações WhatsApp enviadas!");
+    } catch (zapiError) {
+      console.error("[Booking] Erro ao enviar WhatsApp:", zapiError);
+      // Não bloqueia a confirmação se o WhatsApp falhar
+      logger.error("Erro ao enviar notificação WhatsApp", {
+        error: zapiError.message,
         booking_id: booking.id
       });
     }

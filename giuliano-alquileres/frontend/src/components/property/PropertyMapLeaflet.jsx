@@ -41,14 +41,14 @@ const PropertyMapLeaflet = ({ lat, lng, address }) => {
           position: 'relative',
           overflow: 'hidden',
           borderRadius: '12px',
-          zIndex: 1
+          zIndex: 0
         }}
       >
         <MapContainer
           center={position}
           zoom={15}
           scrollWheelZoom={false}
-          style={{ height: "400px", width: "100%", borderRadius: "12px" }}
+          style={{ height: "400px", width: "100%", borderRadius: "12px", zIndex: 0 }}
         >
           {/* OpenStreetMap Tiles - 100% Gratuito */}
           <TileLayer

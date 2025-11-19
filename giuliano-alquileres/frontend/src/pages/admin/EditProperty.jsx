@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { FaShieldAlt } from "react-icons/fa";
 import AdminLayout from "../../components/admin/AdminLayout";
 import PhotoUpload from "../../components/admin/PhotoUpload";
 import PropertyAmenities from "../../components/property/PropertyAmenities";
@@ -40,6 +41,7 @@ const EditProperty = () => {
     price_per_night: "",
     weekend_price: "",
     high_season_price: "",
+    security_deposit: 0,
     status: "available",
     is_featured: false,
     amenities: [],
@@ -133,6 +135,9 @@ const EditProperty = () => {
           high_season_price: property.high_season_price
             ? String(property.high_season_price)
             : "",
+          security_deposit: property.security_deposit
+            ? String(property.security_deposit)
+            : "0",
           status: property.status || "available",
           is_featured: Boolean(property.is_featured),
           amenities: propertyAmenityIds,
@@ -159,7 +164,8 @@ const EditProperty = () => {
     let processedValue = value;
 
     if (type === "number") {
-      processedValue = value === "" ? "" : Number(value);
+      const trimmedValue = typeof value === 'string' ? value.trim() : value;
+      processedValue = trimmedValue === "" ? "" : trimmedValue;
     }
     if (type === "checkbox") {
       processedValue = checked;
@@ -218,17 +224,18 @@ const EditProperty = () => {
         city_id: parseInt(formData.city_id),
         address: formData.address.trim(),
         neighborhood: formData.neighborhood.trim() || undefined,
-        latitude: formData.latitude ? parseFloat(formData.latitude) : undefined,
+        latitude: formData.latitude ? parseFloat(String(formData.latitude).trim()) : undefined,
         longitude: formData.longitude
-          ? parseFloat(formData.longitude)
+          ? parseFloat(String(formData.longitude).trim())
           : undefined,
-        price_per_night: parseFloat(formData.price_per_night),
+        price_per_night: parseFloat(String(formData.price_per_night).trim()),
         weekend_price: formData.weekend_price
-          ? parseFloat(formData.weekend_price)
+          ? parseFloat(String(formData.weekend_price).trim())
           : undefined,
         high_season_price: formData.high_season_price
-          ? parseFloat(formData.high_season_price)
+          ? parseFloat(String(formData.high_season_price).trim())
           : undefined,
+        security_deposit: parseFloat(String(formData.security_deposit || 0).trim()) || 0,
         status: formData.status || "available",
         is_featured: Boolean(formData.is_featured),
         amenities: formData.amenities,
@@ -253,6 +260,7 @@ const EditProperty = () => {
 
       console.log("✅ Atualização bem-sucedida:", response.data);
       setSuccess("Imóvel atualizado com sucesso!");
+      window.scrollTo({ top: 0, behavior: "smooth" });
 
       setTimeout(() => navigate("/admin/properties"), 2000);
     } catch (err) {
@@ -270,6 +278,7 @@ const EditProperty = () => {
       }
 
       setError(errorMessage);
+      window.scrollTo({ top: 0, behavior: "smooth" });
     } finally {
       setLoading(false);
     }
@@ -785,6 +794,25 @@ const EditProperty = () => {
                       step="0.01"
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                      <FaShieldAlt className="text-teal-600" /> Caução / Depósito de Segurança (R$)
+                    </label>
+                    <input
+                      type="number"
+                      name="security_deposit"
+                      value={formData.security_deposit}
+                      onChange={handleInputChange}
+                      min="0"
+                      step="0.01"
+                      placeholder="0,00"
+                      className="w-full px-3 py-2 border border-teal-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      Valor cobrado como garantia (digite 0 se não houver caução)
+                    </p>
                   </div>
                 </div>
               </div>

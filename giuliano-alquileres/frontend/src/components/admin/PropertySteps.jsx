@@ -13,6 +13,7 @@ import {
   Waves,
   Tv,
   Snowflake,
+  Shield,
   ShieldCheck,
   Dumbbell,
   Martini,
@@ -624,6 +625,37 @@ export const Step5Pricing = ({ formData, handleInputChange }) => (
         />
       </div>
       <p className="text-xs text-gray-600 mt-2">Digite o preço para dezembro, janeiro e fevereiro</p>
+    </div>
+
+    {/* Caução/Depósito de Segurança */}
+    <div className="bg-teal-50 rounded-xl p-6 border border-teal-200">
+      <div className="flex items-center gap-3 mb-4">
+        <div className="w-12 h-12 bg-teal-600 rounded-xl flex items-center justify-center">
+          <Shield className="w-6 h-6 text-white" />
+        </div>
+        <div>
+          <h3 className="font-bold text-gray-900">Caução / Depósito de Segurança</h3>
+          <p className="text-sm text-gray-600">Valor opcional para garantia do imóvel</p>
+        </div>
+      </div>
+      <div className="relative">
+        <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500 font-bold">
+          R$
+        </span>
+        <input
+          type="number"
+          name="security_deposit"
+          value={formData.security_deposit || 0}
+          onChange={handleInputChange}
+          placeholder="0,00"
+          step="0.01"
+          min="0"
+          className="w-full pl-12 pr-4 py-3 border border-teal-300 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-transparent font-bold"
+        />
+      </div>
+      <p className="text-xs text-gray-600 mt-2">
+        Valor cobrado como garantia e devolvido ao hóspede após checkout sem danos (digite 0 se não houver caução)
+      </p>
     </div>
 
     {/* Hierarquia de preços */}

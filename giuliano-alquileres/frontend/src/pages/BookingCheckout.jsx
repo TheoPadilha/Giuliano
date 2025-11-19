@@ -220,7 +220,9 @@ const BookingCheckout = () => {
   };
 
   const formatDate = (date) => {
-    return new Date(date).toLocaleDateString("pt-BR", {
+    // Adiciona horário meio-dia para evitar problemas de timezone
+    const dateWithTime = date.includes('T') ? date : `${date}T12:00:00`;
+    return new Date(dateWithTime).toLocaleDateString("pt-BR", {
       weekday: "short",
       day: "2-digit",
       month: "short",
@@ -571,11 +573,18 @@ const BookingCheckout = () => {
               {/* Propriedade */}
               <div className="mb-6">
                 <h3 className="heading-3 mb-4">Resumo da Reserva</h3>
-                {property.photos && property.photos[0] && (
+                {property.photos && property.photos.length > 0 && (
                   <img
-                    src={property.photos[0].url}
+                    src={
+                      property.photos[0].url ||
+                      property.photos[0].cloudinary_url ||
+                      `${import.meta.env.VITE_API_URL || 'https://giuliano.onrender.com'}/uploads/properties/${property.photos[0].filename}`
+                    }
                     alt={property.title}
                     className="w-full h-40 object-cover rounded-xl mb-4"
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                    }}
                   />
                 )}
                 <h4 className="font-bold text-gray-900 mb-2">{property.title}</h4>
@@ -655,6 +664,15 @@ const BookingCheckout = () => {
                     {formatCurrency(cleaningFee)}
                   </span>
                 </div>
+
+                {property.security_deposit > 0 && (
+                  <div className="flex justify-between text-sm pt-3 border-t border-airbnb-grey-200">
+                    <span className="text-airbnb-grey-600">Caução (será devolvida)</span>
+                    <span className="font-semibold text-airbnb-black">
+                      {formatCurrency(property.security_deposit)}
+                    </span>
+                  </div>
+                )}
               </div>
 
               {/* Total */}

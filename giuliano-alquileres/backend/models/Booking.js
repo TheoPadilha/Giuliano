@@ -38,12 +38,17 @@ const Booking = sequelize.define(
       validate: {
         isDate: true,
         isAfterToday(value) {
+          // Usar comparação de strings YYYY-MM-DD para evitar problemas de timezone
           const today = new Date();
-          today.setHours(0, 0, 0, 0);
-          const checkInDate = new Date(value);
-          checkInDate.setHours(0, 0, 0, 0);
+          const year = today.getFullYear();
+          const month = String(today.getMonth() + 1).padStart(2, '0');
+          const day = String(today.getDate()).padStart(2, '0');
+          const todayStr = `${year}-${month}-${day}`;
 
-          if (checkInDate < today) {
+          // value já vem como string YYYY-MM-DD do DATEONLY
+          const checkInStr = value.toString().split('T')[0]; // Garante formato YYYY-MM-DD
+
+          if (checkInStr < todayStr) {
             throw new Error("Check-in deve ser hoje ou no futuro");
           }
         },

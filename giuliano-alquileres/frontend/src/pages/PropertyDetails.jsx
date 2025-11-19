@@ -5,7 +5,7 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import {
   FaArrowLeft, FaShare, FaStar, FaMapMarkerAlt,
   FaUsers, FaBed, FaBath, FaHome,
-  FaCheckCircle, FaWhatsapp, FaClock
+  FaCheckCircle, FaWhatsapp, FaClock, FaShieldAlt
 } from "react-icons/fa";
 import api from "../services/api";
 import { useAuth } from "../contexts/AuthContext";
@@ -345,6 +345,38 @@ const PropertyDetails = () => {
             {/* Comodidades */}
             <PropertyAmenities amenities={amenities} />
 
+            {/* Caução (se houver) */}
+            {property.security_deposit > 0 && (
+              <div className="border-b border-gray-200 pb-8">
+                <div className="bg-gradient-to-r from-teal-50 to-cyan-50 border-l-4 border-teal-500 rounded-lg p-6">
+                  <div className="flex items-start gap-4">
+                    <div className="flex-shrink-0">
+                      <div className="w-12 h-12 bg-teal-500 rounded-full flex items-center justify-center">
+                        <FaShieldAlt className="text-2xl text-white" />
+                      </div>
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-xl font-bold text-gray-900 mb-2">Depósito de Segurança (Caução)</h3>
+                      <p className="text-gray-700 mb-3">
+                        Este imóvel requer um depósito de segurança de <strong className="text-teal-700">R$ {Number(property.security_deposit).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</strong>
+                      </p>
+                      <div className="bg-white rounded-lg p-4 border border-teal-200">
+                        <p className="text-sm text-gray-600 mb-2">
+                          <strong>Como funciona:</strong>
+                        </p>
+                        <ul className="text-sm text-gray-600 space-y-1 ml-4">
+                          <li>• O valor da caução é cobrado separadamente no check-in</li>
+                          <li>• Serve como garantia contra danos ao imóvel</li>
+                          <li>• É devolvido integralmente após o check-out, se não houver danos</li>
+                          <li>• Prazo de devolução: até 7 dias após o check-out</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Localização no Mapa */}
             <div className="border-b border-gray-200 pb-8">
               <h2 className="text-2xl font-bold text-gray-900 mb-6">Onde você vai ficar</h2>
@@ -450,6 +482,31 @@ const PropertyDetails = () => {
                   </div>
                 </div>
 
+                {/* Modal de Seleção de Datas */}
+                {showDatePicker && property.status === 'available' && (
+                  <div
+                    className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
+                    style={{ zIndex: 9999 }}
+                    onClick={() => setShowDatePicker(false)}
+                  >
+                    <div onClick={(e) => e.stopPropagation()}>
+                      <DateRangePicker
+                        checkIn={bookingDates.checkIn}
+                        checkOut={bookingDates.checkOut}
+                        onChange={(dates) => {
+                          setBookingDates(dates);
+                          if (dates.checkIn && dates.checkOut) {
+                            setShowDatePicker(false);
+                          }
+                        }}
+                        onClose={() => setShowDatePicker(false)}
+                        occupiedDates={occupiedDates}
+                        compact={true}
+                      />
+                    </div>
+                  </div>
+                )}
+
                 {/* Seleção de Hóspedes */}
                 <div className="mb-6 relative">
                   <div
@@ -504,13 +561,24 @@ const PropertyDetails = () => {
                       return null;
                     })()}
                     <div className="flex justify-between text-gray-700 text-sm">
-                      <span>Taxa de serviço</span>
-                      <span>R$ {(totalPrice * 0.05).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</span>
+                      <span>Taxa de serviço (10%)</span>
+                      <span>R$ {(totalPrice * 0.10).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</span>
                     </div>
+                    {property.security_deposit > 0 && (
+                      <div className="flex justify-between text-gray-700 text-sm">
+                        <span>Caução (devolvida após checkout)</span>
+                        <span>R$ {Number(property.security_deposit).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</span>
+                      </div>
+                    )}
                     <div className="flex justify-between text-lg font-bold text-gray-900 pt-3 border-t border-gray-200">
                       <span>Total</span>
-                      <span>R$ {(totalPrice * 1.05).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</span>
+                      <span>R$ {(totalPrice * 1.10).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</span>
                     </div>
+                    {property.security_deposit > 0 && (
+                      <div className="text-xs text-gray-600 mt-2">
+                        + R$ {Number(property.security_deposit).toLocaleString("pt-BR", { minimumFractionDigits: 2 })} de caução (será devolvida)
+                      </div>
+                    )}
                   </div>
                 )}
 

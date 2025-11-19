@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useAuth } from "../../contexts/AuthContext";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import { FaHome, FaPlus, FaUsers, FaChartBar, FaGlobe, FaBars, FaTimes, FaCalendarAlt } from "react-icons/fa";
 
 const AdminLayout = ({ children }) => {
@@ -147,10 +147,10 @@ const SidebarContent = ({ navigation }) => (
         <div className="text-center w-full">
           <div className="text-2xl font-bold text-rausch flex items-center justify-center gap-2">
             <FaHome />
-            <span>Giuliano</span>
+            <span>Ziguealuga</span>
           </div>
           <div className="text-xs text-airbnb-grey-600 mt-1 font-medium">
-            Admin Panel
+            Admin Painel
           </div>
         </div>
       </div>
@@ -184,10 +184,8 @@ const SidebarContent = ({ navigation }) => (
 
     {/* Bottom section */}
     <div className="flex-shrink-0 p-4 border-t border-airbnb-grey-200 bg-airbnb-grey-50">
-      <a
-        href="/"
-        target="_blank"
-        rel="noopener noreferrer"
+      <Link
+        to="/"
         className="group -m-2 p-3 flex items-center text-sm font-semibold text-airbnb-grey-700 hover:text-rausch bg-white hover:bg-airbnb-grey-100 rounded-xl border border-airbnb-grey-200 hover:border-rausch/20 shadow-sm hover:shadow-md transition-all duration-200"
       >
         <FaGlobe className="text-lg mr-3" />
@@ -195,7 +193,7 @@ const SidebarContent = ({ navigation }) => (
         <span className="ml-auto text-xs opacity-0 group-hover:opacity-100 transition-opacity">
           →
         </span>
-      </a>
+      </Link>
     </div>
   </div>
 );
