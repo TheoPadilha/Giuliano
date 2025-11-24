@@ -509,6 +509,10 @@ const AdminNewPropertyAirbnb = () => {
       // Criar propriedade
       const propertyData = {
         ...formData,
+        // Se a descrição estiver vazia, usar descrição padrão
+        description: formData.description && formData.description.trim()
+          ? formData.description.trim()
+          : 'Imóvel disponível para aluguel. Entre em contato para mais informações sobre este imóvel.',
         city_id: formData.city_id ? parseInt(formData.city_id) : null,
         latitude: formData.latitude ? parseFloat(formData.latitude) : null,
         longitude: formData.longitude ? parseFloat(formData.longitude) : null,

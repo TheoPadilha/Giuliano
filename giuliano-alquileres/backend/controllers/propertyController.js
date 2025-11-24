@@ -12,7 +12,7 @@ const { Op, QueryTypes } = require("sequelize");
 // Esquemas de validação
 const propertySchema = Joi.object({
   title: Joi.string().min(5).max(200).required(),
-  description: Joi.string().optional(),
+  description: Joi.string().allow('').optional().default('Imóvel disponível para aluguel. Entre em contato para mais informações.'),
   type: Joi.string()
     .valid("house", "apartment", "studio", "penthouse")
     .required(),
