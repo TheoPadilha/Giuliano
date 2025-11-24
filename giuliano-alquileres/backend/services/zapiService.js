@@ -22,7 +22,9 @@ if (isConfigured()) {
 // FUNÇÃO AUXILIAR PARA FORMATAR DATA
 // ============================================
 const formatDate = (date) => {
-  return new Date(date).toLocaleDateString("pt-BR", {
+  // Adiciona horário meio-dia para evitar problemas de timezone
+  const dateWithTime = date.includes('T') ? date : `${date}T12:00:00`;
+  return new Date(dateWithTime).toLocaleDateString("pt-BR", {
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
@@ -123,6 +125,8 @@ ${title}
 💳 *Status Pagamento:* ${booking.payment_status === 'pending' ? 'Pendente' : booking.payment_status === 'paid' ? 'Pago' : 'Outros'}
 
 🔗 *Código da Reserva:* #${booking.id}
+
+🌐 *Site:* https://ziguealuga.com
   `.trim();
 
   return await sendMessage(ZAPI_PHONE, message);
@@ -171,6 +175,8 @@ ${title}
 📝 *Código da Reserva:* #${booking.id}
 
 ${additionalInfo}
+
+🌐 *Site:* https://ziguealuga.com
 
 _Ziguealuga - Sua melhor experiência em aluguéis_
   `.trim();

@@ -58,8 +58,14 @@ app.use(
 );
 
 // CORS Configuration - Remover null para maior segurança
+// Suporta múltiplas origens separadas por vírgula no .env
+const corsOrigins = process.env.CORS_ORIGIN
+  ? process.env.CORS_ORIGIN.split(',').map(origin => origin.trim())
+  : [];
+
 const allowedOrigins = [
-  process.env.CORS_ORIGIN || "http://localhost:5173", //https://ziguealuga.com
+  ...corsOrigins,
+  "http://localhost:5173",
   "http://localhost:3000",
   "http://localhost:3001",
   "http://localhost:3002",
