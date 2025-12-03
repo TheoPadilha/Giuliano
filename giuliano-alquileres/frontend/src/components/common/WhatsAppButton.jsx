@@ -4,7 +4,7 @@ import { FaWhatsapp } from "react-icons/fa";
 // Número de telefone para contato (substituir pelo número real)
 const WHATSAPP_NUMBER = "5547999951103"; // Giuliano Lorensatto Ferreira (Contratante)
 const DEFAULT_MESSAGE = encodeURIComponent(
-  "Olá, gostaria de mais informações sobre o ZigAluga."
+  "Olá, gostaria de mais informações sobre o ZigueAluga."
 );
 
 const WhatsAppButton = ({ message = DEFAULT_MESSAGE }) => {

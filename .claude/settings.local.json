@@ -34,7 +34,9 @@
       "Bash(bash deploy/deploy-rsync.sh)",
       "Bash(ssh:*)",
       "Bash(rsync:*)",
-      "Bash(scp:*)"
+      "Bash(scp:*)",
+      "Bash(bash:*)",
+      "Bash(ssh-keygen:*)"
     ],
     "deny": [],
     "ask": []
