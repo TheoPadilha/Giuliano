@@ -293,7 +293,7 @@ const getProperties = async (req, res) => {
         {
           model: User,
           as: "owner",
-          attributes: ["id", "name", "email"],
+          attributes: ["id", "name", "email", "phone"],
         },
       ],
       order: [
@@ -383,7 +383,7 @@ const getPropertyByUuid = async (req, res) => {
         {
           model: User,
           as: "owner",
-          attributes: ["id", "name", "email"],
+          attributes: ["id", "name", "email", "phone"],
         },
       ],
     });
@@ -476,7 +476,7 @@ const createProperty = async (req, res) => {
       include: [
         { model: City, as: "city" },
         { model: Amenity, as: "amenities", through: { attributes: [] } },
-        { model: User, as: "owner", attributes: ["id", "name", "email"] },
+        { model: User, as: "owner", attributes: ["id", "name", "email", "phone"] },
       ],
     });
 
@@ -565,7 +565,7 @@ const updateProperty = async (req, res) => {
       include: [
         { model: City, as: "city" },
         { model: Amenity, as: "amenities", through: { attributes: [] } },
-        { model: User, as: "owner", attributes: ["id", "name", "email"] },
+        { model: User, as: "owner", attributes: ["id", "name", "email", "phone"] },
       ],
     });
 

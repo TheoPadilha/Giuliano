@@ -1,13 +1,12 @@
 /**
  * Script para popular o banco de dados com cidades de SC e comodidades
- * Executar no servidor CloudPanel: node seed-data.js
+ * Executar: node seed-data.js
  */
 
 const { City, Amenity, sequelize } = require("./models");
 
 // Lista completa de cidades de Santa Catarina (72 cidades)
 const CITIES_SC = [
-  // Região Metropolitana de Balneário Camboriú (prioridade)
   { name: "Balneário Camboriú", state: "SC", region: "Litoral" },
   { name: "Camboriú", state: "SC", region: "Litoral" },
   { name: "Itajaí", state: "SC", region: "Litoral" },
@@ -22,8 +21,6 @@ const CITIES_SC = [
   { name: "Barra Velha", state: "SC", region: "Litoral" },
   { name: "Ilhota", state: "SC", region: "Vale do Itajaí" },
   { name: "Luiz Alves", state: "SC", region: "Vale do Itajaí" },
-
-  // Grande Florianópolis (região turística)
   { name: "Florianópolis", state: "SC", region: "Litoral" },
   { name: "São José", state: "SC", region: "Grande Florianópolis" },
   { name: "Palhoça", state: "SC", region: "Grande Florianópolis" },
@@ -33,8 +30,6 @@ const CITIES_SC = [
   { name: "Águas Mornas", state: "SC", region: "Grande Florianópolis" },
   { name: "Antônio Carlos", state: "SC", region: "Grande Florianópolis" },
   { name: "São Pedro de Alcântara", state: "SC", region: "Grande Florianópolis" },
-
-  // Sul do estado (litoral)
   { name: "Garopaba", state: "SC", region: "Sul" },
   { name: "Imbituba", state: "SC", region: "Sul" },
   { name: "Laguna", state: "SC", region: "Sul" },
@@ -43,8 +38,6 @@ const CITIES_SC = [
   { name: "Jaguaruna", state: "SC", region: "Sul" },
   { name: "Tubarão", state: "SC", region: "Sul" },
   { name: "Capivari de Baixo", state: "SC", region: "Sul" },
-
-  // Vale do Itajaí
   { name: "Blumenau", state: "SC", region: "Vale do Itajaí" },
   { name: "Brusque", state: "SC", region: "Vale do Itajaí" },
   { name: "Gaspar", state: "SC", region: "Vale do Itajaí" },
@@ -54,8 +47,6 @@ const CITIES_SC = [
   { name: "Rio dos Cedros", state: "SC", region: "Vale do Itajaí" },
   { name: "Ascurra", state: "SC", region: "Vale do Itajaí" },
   { name: "Apiúna", state: "SC", region: "Vale do Itajaí" },
-
-  // Norte do estado
   { name: "Joinville", state: "SC", region: "Norte" },
   { name: "São Francisco do Sul", state: "SC", region: "Norte" },
   { name: "Araquari", state: "SC", region: "Norte" },
@@ -64,8 +55,6 @@ const CITIES_SC = [
   { name: "Schroeder", state: "SC", region: "Norte" },
   { name: "Corupá", state: "SC", region: "Norte" },
   { name: "Massaranduba", state: "SC", region: "Norte" },
-
-  // Oeste (outras regiões importantes)
   { name: "Chapecó", state: "SC", region: "Oeste" },
   { name: "Lages", state: "SC", region: "Serra" },
   { name: "Criciúma", state: "SC", region: "Sul" },
@@ -76,8 +65,6 @@ const CITIES_SC = [
   { name: "Videira", state: "SC", region: "Meio Oeste" },
   { name: "São Bento do Sul", state: "SC", region: "Planalto Norte" },
   { name: "Mafra", state: "SC", region: "Planalto Norte" },
-
-  // Litoral adicional
   { name: "Balneário Arroio do Silva", state: "SC", region: "Sul" },
   { name: "Balneário Gaivota", state: "SC", region: "Sul" },
   { name: "Balneário Rincão", state: "SC", region: "Sul" },
@@ -172,21 +159,16 @@ async function main() {
     console.log("🌱 SEED DO BANCO DE DADOS");
     console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
 
-    // Conectar ao banco
     await sequelize.authenticate();
     console.log("✅ Conectado ao banco de dados");
 
-    // Popular cidades
     await seedCities();
-
-    // Popular comodidades
     await seedAmenities();
 
     console.log("\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
     console.log("✅ SEED CONCLUÍDO COM SUCESSO!");
     console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
 
-    // Mostrar estatísticas finais
     const totalCities = await City.count();
     const totalAmenities = await Amenity.count();
 
@@ -202,5 +184,4 @@ async function main() {
   }
 }
 
-// Executar
 main();

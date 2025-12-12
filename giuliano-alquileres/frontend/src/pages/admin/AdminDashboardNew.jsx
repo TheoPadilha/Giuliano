@@ -285,7 +285,11 @@ const AdminDashboardNew = () => {
                           <div className="w-16 h-16 rounded-xl overflow-hidden bg-airbnb-grey-100 flex-shrink-0">
                             {property.photos && property.photos[0] ? (
                               <img
-                                src={property.photos[0]}
+                                src={
+                                  property.photos[0].url ||
+                                  property.photos[0].cloudinary_url ||
+                                  `${import.meta.env.VITE_API_URL || 'https://giuliano.onrender.com'}/uploads/properties/${property.photos[0].filename}`
+                                }
                                 alt={property.title}
                                 className="w-full h-full object-cover"
                               />

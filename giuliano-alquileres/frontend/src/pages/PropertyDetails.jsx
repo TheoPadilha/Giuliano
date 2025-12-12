@@ -145,7 +145,8 @@ const PropertyDetails = () => {
     }
 
     const message = `Olá! Tenho interesse no imóvel: "${property.title}"${bookingDates.checkIn ? `\n📅 Check-in: ${bookingDates.checkIn}\n📅 Check-out: ${bookingDates.checkOut}` : ''}\n👥 ${totalGuests} hóspede${totalGuests > 1 ? 's' : ''}${guestsInfo}\n🔗 ${window.location.href}`;
-    const phoneNumber = "5547989105580";
+    // Usar telefone do proprietário ou fallback para número padrão
+    const phoneNumber = property?.owner?.phone || "5547989105580";
     window.open(`https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`, "_blank");
   };
 

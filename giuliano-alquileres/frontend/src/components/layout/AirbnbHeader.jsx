@@ -607,7 +607,7 @@ const AirbnbHeader = ({ onFilterButtonClick }) => {
                   {t('header.login')}
                 </Link>
                 <Link
-                  to="/guest-register"
+                  to="/register"
                   className={`hidden lg:block px-4 font-semibold text-white bg-rausch hover:bg-rausch-dark rounded-full transition-all duration-300 ease-in-out ${
                     isScrolled ? "py-1.5 text-xs" : "py-2 text-sm"
                   }`}
@@ -649,7 +649,7 @@ const AirbnbHeader = ({ onFilterButtonClick }) => {
                         Entrar
                       </Link>
                       <Link
-                        to="/guest-register"
+                        to="/register"
                         onClick={() => setIsUserMenuOpen(false)}
                         className="block px-4 py-3 text-airbnb-black hover:bg-airbnb-grey-50 transition-colors text-sm"
                       >
