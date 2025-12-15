@@ -186,7 +186,7 @@ const PropertyCard = ({ property, layout = "vertical", showPremiumBadge = false 
       >
         <div className="relative">
           {/* Container da Imagem */}
-          <div className="relative aspect-square rounded-xlarge overflow-hidden bg-airbnb-grey-100 mb-3">
+          <div className="relative aspect-square rounded-xl sm:rounded-xlarge overflow-hidden bg-airbnb-grey-100 mb-2 sm:mb-3">
             <img
               src={getImageUrl()}
               alt={property.title || property.name}
@@ -199,7 +199,7 @@ const PropertyCard = ({ property, layout = "vertical", showPremiumBadge = false 
             <button
               onClick={handleFavoriteClick}
               disabled={favoriteLoading}
-              className={`absolute top-3 right-3 w-8 h-8 flex items-center justify-center rounded-full hover:scale-110 active:scale-95 transition-all shadow-md z-10 ${
+              className={`absolute top-2 right-2 sm:top-3 sm:right-3 w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-full hover:scale-110 active:scale-95 transition-all shadow-md z-10 ${
                 isFavorite
                   ? 'bg-red-500 hover:bg-red-600'
                   : 'bg-white/90 backdrop-blur-sm hover:bg-white'
@@ -208,29 +208,30 @@ const PropertyCard = ({ property, layout = "vertical", showPremiumBadge = false 
               }`}
             >
               {isFavorite ? (
-                <FaHeart className={`text-white text-base ${favoriteLoading ? 'animate-pulse' : ''}`} />
+                <FaHeart className={`text-white text-sm sm:text-base ${favoriteLoading ? 'animate-pulse' : ''}`} />
               ) : (
-                <FaRegHeart className={`text-gray-700 text-base ${favoriteLoading ? 'animate-pulse' : ''}`} />
+                <FaRegHeart className={`text-gray-700 text-sm sm:text-base ${favoriteLoading ? 'animate-pulse' : ''}`} />
               )}
             </button>
 
             {/* Badge Preferido dos hóspedes */}
             {(property.is_featured || showPremiumBadge) && (
-              <div className="absolute top-3 left-3 px-2.5 py-1.5 bg-white text-airbnb-black text-[11px] font-semibold rounded-md shadow-md flex items-center gap-1 border border-airbnb-grey-200">
-                <FaCrown className="text-[10px] text-yellow-600" />
-                <span>Preferido dos hóspedes</span>
+              <div className="absolute top-2 left-2 sm:top-3 sm:left-3 px-2 py-1 sm:px-2.5 sm:py-1.5 bg-white/95 backdrop-blur-sm text-airbnb-black text-[10px] sm:text-[11px] font-semibold rounded-full sm:rounded-md shadow-md flex items-center gap-1 border border-airbnb-grey-200 z-10">
+                <FaCrown className="text-[9px] sm:text-[10px] text-yellow-600" />
+                <span className="hidden sm:inline">Preferido dos hóspedes</span>
+                <span className="sm:hidden">Top</span>
               </div>
             )}
 
             {/* Indicadores de Imagem */}
             {(property.photos || property.images)?.length > 1 && (
-              <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-1.5">
+              <div className="absolute bottom-2 sm:bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-1 sm:gap-1.5">
                 {(property.photos || property.images || []).slice(0, 5).map((_, idx) => (
                   <div
                     key={idx}
-                    className={`w-1.5 h-1.5 rounded-full transition-all ${
+                    className={`w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full transition-all ${
                       idx === 0
-                        ? "bg-white w-6"
+                        ? "bg-white w-4 sm:w-6"
                         : "bg-white/60"
                     }`}
                   />
@@ -240,17 +241,17 @@ const PropertyCard = ({ property, layout = "vertical", showPremiumBadge = false 
           </div>
 
           {/* Informações */}
-          <div className="space-y-1">
+          <div className="space-y-0.5 sm:space-y-1">
             {/* Localização e Avaliação */}
             <div className="flex items-center justify-between gap-2">
-              <h3 className="font-semibold text-airbnb-black text-[15px] truncate flex-1">
+              <h3 className="font-bold sm:font-semibold text-airbnb-black text-sm sm:text-[15px] truncate flex-1">
                 {property.city?.name || property.location || "Localização"}
               </h3>
-              
+
               {averageRating > 0 && (
-                <div className="flex items-center gap-1 flex-shrink-0">
-                  <FaStar className="text-xs text-airbnb-black" />
-                  <span className="text-sm font-medium text-airbnb-black">
+                <div className="hidden sm:flex items-center gap-1 flex-shrink-0">
+                  <FaStar className="text-xs text-yellow-500" />
+                  <span className="text-sm font-bold text-airbnb-black">
                     {averageRating.toFixed(1)}
                   </span>
                 </div>
@@ -258,39 +259,39 @@ const PropertyCard = ({ property, layout = "vertical", showPremiumBadge = false 
             </div>
 
             {/* Título */}
-            <p className="text-airbnb-grey-600 text-[15px] truncate">
+            <p className="text-airbnb-grey-600 text-xs sm:text-[15px] truncate">
               {property.title || property.name || "Propriedade"}
             </p>
 
             {/* Detalhes */}
-            <div className="flex items-center gap-3 text-airbnb-grey-600 text-sm">
+            <div className="flex items-center gap-2 sm:gap-3 text-airbnb-grey-600 text-xs sm:text-sm pt-0.5 sm:pt-0">
               {property.max_guests && (
-                <div className="flex items-center gap-1">
-                  <BsPeople className="text-sm" />
-                  <span>{property.max_guests}</span>
+                <div className="flex items-center gap-0.5 sm:gap-1">
+                  <BsPeople className="text-xs sm:text-sm" />
+                  <span className="font-medium sm:font-normal">{property.max_guests}</span>
                 </div>
               )}
-              
+
               {property.bedrooms > 0 && (
-                <div className="flex items-center gap-1">
-                  <IoBedOutline className="text-sm" />
-                  <span>{property.bedrooms}</span>
+                <div className="flex items-center gap-0.5 sm:gap-1">
+                  <IoBedOutline className="text-xs sm:text-sm" />
+                  <span className="font-medium sm:font-normal">{property.bedrooms}</span>
                 </div>
               )}
-              
+
               {property.bathrooms > 0 && (
-                <div className="flex items-center gap-1">
-                  <MdBathtub className="text-sm" />
-                  <span>{property.bathrooms}</span>
+                <div className="flex items-center gap-0.5 sm:gap-1">
+                  <MdBathtub className="text-xs sm:text-sm" />
+                  <span className="font-medium sm:font-normal">{property.bathrooms}</span>
                 </div>
               )}
             </div>
 
             {/* Preço */}
-            <div className="pt-1">
-              <p className="text-airbnb-black font-semibold text-[15px]">
+            <div className="pt-0.5 sm:pt-1">
+              <p className="text-airbnb-black font-bold sm:font-semibold text-sm sm:text-[15px]">
                 {formatPrice(property.price_per_night || property.price || 0)}
-                <span className="font-normal text-airbnb-grey-600"> / noite</span>
+                <span className="font-normal text-airbnb-grey-600 text-xs sm:text-[15px]"> /noite</span>
               </p>
             </div>
           </div>
@@ -307,10 +308,10 @@ const PropertyCard = ({ property, layout = "vertical", showPremiumBadge = false 
         className="group block"
         onClick={handleCardClick}
       >
-        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 p-3 sm:p-4 bg-white border border-airbnb-grey-200 rounded-xl hover:shadow-lg transition-all duration-200">
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 p-2.5 sm:p-4 bg-white border border-airbnb-grey-200 rounded-xl sm:rounded-2xl hover:shadow-lg active:scale-[0.98] sm:active:scale-100 transition-all duration-200">
           {/* Imagem */}
           <div className="relative w-full sm:w-48 md:w-64 flex-shrink-0">
-            <div className="aspect-[4/3] sm:aspect-square rounded-lg overflow-hidden bg-airbnb-grey-100">
+            <div className="aspect-[16/10] sm:aspect-square rounded-lg overflow-hidden bg-airbnb-grey-100">
               <img
                 src={getImageUrl()}
                 alt={property.title || property.name}
@@ -324,7 +325,7 @@ const PropertyCard = ({ property, layout = "vertical", showPremiumBadge = false 
             <button
               onClick={handleFavoriteClick}
               disabled={favoriteLoading}
-              className={`absolute top-2 right-2 w-8 h-8 flex items-center justify-center rounded-full hover:scale-110 active:scale-95 transition-all shadow-md ${
+              className={`absolute top-2 right-2 w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-full hover:scale-110 active:scale-95 transition-all shadow-md ${
                 isFavorite
                   ? 'bg-red-500 hover:bg-red-600'
                   : 'bg-white/90 backdrop-blur-sm hover:bg-white'
@@ -333,45 +334,46 @@ const PropertyCard = ({ property, layout = "vertical", showPremiumBadge = false 
               }`}
             >
               {isFavorite ? (
-                <FaHeart className={`text-white text-base ${favoriteLoading ? 'animate-pulse' : ''}`} />
+                <FaHeart className={`text-white text-sm sm:text-base ${favoriteLoading ? 'animate-pulse' : ''}`} />
               ) : (
-                <FaRegHeart className={`text-gray-700 text-base ${favoriteLoading ? 'animate-pulse' : ''}`} />
+                <FaRegHeart className={`text-gray-700 text-sm sm:text-base ${favoriteLoading ? 'animate-pulse' : ''}`} />
               )}
             </button>
 
             {/* Badge Premium ou Preferido dos hóspedes */}
             {(property.is_featured || showPremiumBadge) && (
-              <div className="absolute top-2 left-2 px-2.5 py-1.5 bg-white text-airbnb-black text-[11px] font-semibold rounded-md shadow-md flex items-center gap-1 border border-airbnb-grey-200">
-                <FaCrown className="text-[10px] text-yellow-600" />
-                <span>Preferido dos hóspedes</span>
+              <div className="absolute top-2 left-2 px-2 sm:px-2.5 py-1 sm:py-1.5 bg-white/95 backdrop-blur-sm text-airbnb-black text-[10px] sm:text-[11px] font-semibold rounded-full sm:rounded-md shadow-md flex items-center gap-1 border border-airbnb-grey-200">
+                <FaCrown className="text-[9px] sm:text-[10px] text-yellow-600" />
+                <span className="hidden sm:inline">Preferido dos hóspedes</span>
+                <span className="sm:hidden">Destaque</span>
               </div>
             )}
           </div>
 
           {/* Informações */}
-          <div className="flex-1 flex flex-col justify-between py-1">
+          <div className="flex-1 flex flex-col justify-between py-0 sm:py-1">
             {/* Topo */}
             <div>
-              <div className="flex items-start justify-between gap-4 mb-2">
-                <div className="flex-1">
-                  <h3 className="text-xl font-semibold text-airbnb-black mb-1 line-clamp-2">
+              <div className="flex items-start justify-between gap-2 sm:gap-4 mb-1 sm:mb-2">
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-base sm:text-xl font-bold sm:font-semibold text-airbnb-black mb-0.5 sm:mb-1 line-clamp-1 sm:line-clamp-2">
                     {property.title || property.name || "Propriedade"}
                   </h3>
-                  
-                  <div className="flex items-center gap-1 text-airbnb-grey-600 text-sm mb-3">
-                    <IoLocationOutline className="text-base" />
-                    <span>{property.city?.name || property.location || "Localização"}</span>
+
+                  <div className="flex items-center gap-1 text-airbnb-grey-600 text-xs sm:text-sm mb-2 sm:mb-3">
+                    <IoLocationOutline className="text-sm sm:text-base flex-shrink-0" />
+                    <span className="truncate">{property.city?.name || property.location || "Localização"}</span>
                   </div>
                 </div>
 
                 {averageRating > 0 && (
-                  <div className="flex items-center gap-1.5 flex-shrink-0">
-                    <FaStar className="text-sm text-airbnb-black" />
-                    <span className="text-base font-semibold text-airbnb-black">
+                  <div className="flex items-center gap-1 sm:gap-1.5 flex-shrink-0">
+                    <FaStar className="text-xs sm:text-sm text-yellow-500" />
+                    <span className="text-sm sm:text-base font-bold sm:font-semibold text-airbnb-black">
                       {averageRating.toFixed(1)}
                     </span>
                     {reviewsCount > 0 && (
-                      <span className="text-sm text-airbnb-grey-600">
+                      <span className="hidden sm:inline text-sm text-airbnb-grey-600">
                         ({reviewsCount})
                       </span>
                     )}
@@ -379,36 +381,45 @@ const PropertyCard = ({ property, layout = "vertical", showPremiumBadge = false 
                 )}
               </div>
 
-              {/* Descrição */}
+              {/* Descrição - Apenas Desktop */}
               {property.description && (
-                <p className="text-airbnb-grey-600 text-sm line-clamp-2 mb-4">
+                <p className="hidden sm:block text-airbnb-grey-600 text-sm line-clamp-2 mb-4">
                   {property.description}
                 </p>
               )}
 
               {/* Detalhes */}
-              <div className="flex items-center gap-4 text-airbnb-grey-600">
+              <div className="flex items-center gap-3 sm:gap-4 text-airbnb-grey-600 mb-3 sm:mb-0">
                 {property.max_guests && (
-                  <div className="flex items-center gap-1.5">
-                    <BsPeople className="text-base" />
-                    <span className="text-sm">{property.max_guests} hóspedes</span>
-                  </div>
-                )}
-                
-                {property.bedrooms > 0 && (
-                  <div className="flex items-center gap-1.5">
-                    <IoBedOutline className="text-base" />
-                    <span className="text-sm">
-                      {property.bedrooms} {property.bedrooms === 1 ? "quarto" : "quartos"}
+                  <div className="flex items-center gap-1 sm:gap-1.5">
+                    <BsPeople className="text-sm sm:text-base" />
+                    <span className="text-xs sm:text-sm font-medium sm:font-normal">
+                      <span className="sm:hidden">{property.max_guests}</span>
+                      <span className="hidden sm:inline">{property.max_guests} hóspedes</span>
                     </span>
                   </div>
                 )}
-                
+
+                {property.bedrooms > 0 && (
+                  <div className="flex items-center gap-1 sm:gap-1.5">
+                    <IoBedOutline className="text-sm sm:text-base" />
+                    <span className="text-xs sm:text-sm font-medium sm:font-normal">
+                      <span className="sm:hidden">{property.bedrooms}</span>
+                      <span className="hidden sm:inline">
+                        {property.bedrooms} {property.bedrooms === 1 ? "quarto" : "quartos"}
+                      </span>
+                    </span>
+                  </div>
+                )}
+
                 {property.bathrooms > 0 && (
-                  <div className="flex items-center gap-1.5">
-                    <MdBathtub className="text-base" />
-                    <span className="text-sm">
-                      {property.bathrooms} {property.bathrooms === 1 ? "banheiro" : "banheiros"}
+                  <div className="flex items-center gap-1 sm:gap-1.5">
+                    <MdBathtub className="text-sm sm:text-base" />
+                    <span className="text-xs sm:text-sm font-medium sm:font-normal">
+                      <span className="sm:hidden">{property.bathrooms}</span>
+                      <span className="hidden sm:inline">
+                        {property.bathrooms} {property.bathrooms === 1 ? "banheiro" : "banheiros"}
+                      </span>
                     </span>
                   </div>
                 )}
@@ -416,18 +427,28 @@ const PropertyCard = ({ property, layout = "vertical", showPremiumBadge = false 
             </div>
 
             {/* Rodapé - Preço */}
-            <div className="flex items-end justify-between pt-4 border-t border-airbnb-grey-200 mt-4">
+            <div className="flex items-end justify-between pt-2.5 sm:pt-4 border-t border-airbnb-grey-100 sm:border-airbnb-grey-200 mt-0 sm:mt-4">
               <div>
-                <p className="text-sm text-airbnb-grey-600 mb-1">A partir de</p>
-                <p className="text-2xl font-semibold text-airbnb-black">
+                <p className="text-[10px] sm:text-sm text-airbnb-grey-500 sm:text-airbnb-grey-600 mb-0.5 sm:mb-1">A partir de</p>
+                <p className="text-lg sm:text-2xl font-bold sm:font-semibold text-airbnb-black">
                   {formatPrice(property.price_per_night || property.price || 0)}
-                  <span className="text-base font-normal text-airbnb-grey-600"> / noite</span>
+                  <span className="text-xs sm:text-base font-normal text-airbnb-grey-600"> /noite</span>
                 </p>
               </div>
 
-              <button className="px-6 py-2.5 bg-rausch hover:bg-rausch-dark text-white font-semibold rounded-lg transition-colors">
-                Ver detalhes
-              </button>
+              <div className="hidden sm:block">
+                <button className="px-6 py-2.5 bg-rausch hover:bg-rausch-dark text-white font-semibold rounded-lg transition-colors">
+                  Ver detalhes
+                </button>
+              </div>
+
+              {/* Mobile CTA */}
+              <div className="flex sm:hidden items-center gap-1.5 text-rausch font-bold text-sm">
+                <span>Ver</span>
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+                </svg>
+              </div>
             </div>
           </div>
         </div>

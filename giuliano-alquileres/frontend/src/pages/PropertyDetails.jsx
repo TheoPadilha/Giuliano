@@ -35,6 +35,7 @@ const PropertyDetails = () => {
   const [guests, setGuests] = useState({ adults: 1, children: 0, infants: 0, pets: 0 });
   const [totalNights, setTotalNights] = useState(0);
   const [totalPrice, setTotalPrice] = useState(0);
+  const [currentPhotoIndex, setCurrentPhotoIndex] = useState(1);
 
   // Carregar propriedade
   useEffect(() => {
@@ -144,10 +145,41 @@ const PropertyDetails = () => {
       guestsInfo += `, ${guests.pets} pet${guests.pets > 1 ? 's' : ''}`;
     }
 
-    const message = `Olá! Tenho interesse no imóvel: "${property.title}"${bookingDates.checkIn ? `\n📅 Check-in: ${bookingDates.checkIn}\n📅 Check-out: ${bookingDates.checkOut}` : ''}\n👥 ${totalGuests} hóspede${totalGuests > 1 ? 's' : ''}${guestsInfo}\n🔗 ${window.location.href}`;
+    // Limpar título de caracteres problemáticos
+    const cleanTitle = property.title.replace(/['"]/g, '');
+
+    // Construir mensagem
+    const messageParts = [
+      `Olá! Tenho interesse no imóvel: *${cleanTitle}*`
+    ];
+
+    if (bookingDates.checkIn && bookingDates.checkOut) {
+      messageParts.push(`Check-in: ${bookingDates.checkIn}`);
+      messageParts.push(`Check-out: ${bookingDates.checkOut}`);
+    }
+
+    messageParts.push(`${totalGuests} hóspede${totalGuests > 1 ? 's' : ''}${guestsInfo}`);
+    messageParts.push(`${window.location.href}`);
+
+    const message = messageParts.join('\n');
+
     // Usar telefone do proprietário ou fallback para número padrão
-    const phoneNumber = property?.owner?.phone || "5547989105580";
-    window.open(`https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`, "_blank");
+    let phoneNumber = property?.owner?.phone || "5547989105580";
+
+    // Limpar: remover TUDO exceto números
+    phoneNumber = phoneNumber.replace(/\D/g, '');
+
+    // Se tiver menos de 10 dígitos, algo está errado - usar fallback
+    if (phoneNumber.length < 10) {
+      phoneNumber = "5547989105580";
+    }
+    // Se tiver 10 ou 11 dígitos, é um número sem código do país - adicionar 55
+    else if (phoneNumber.length === 10 || phoneNumber.length === 11) {
+      phoneNumber = '55' + phoneNumber;
+    }
+
+    const url = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+    window.open(url, "_blank");
   };
 
   const getTypeLabel = (type) => {
@@ -212,91 +244,143 @@ const PropertyDetails = () => {
   const amenities = property.amenities || [];
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white overflow-x-hidden">
       {/* Header Estilo Airbnb */}
       <AirbnbHeader />
 
       {/* Back Button Row */}
-      <div className="max-w-[1120px] mx-auto px-6 lg:px-12 py-6">
+      <div className="max-w-[1120px] mx-auto px-3 sm:px-6 lg:px-12 py-4 sm:py-6">
         <div className="flex items-center justify-between">
           <button
             onClick={() => navigate(-1)}
-            className="flex items-center gap-2 text-airbnb-black hover:text-airbnb-grey-1000 transition-colors font-medium"
+            className="flex items-center gap-2 text-airbnb-black hover:text-airbnb-grey-1000 transition-colors font-medium text-sm sm:text-base"
           >
-            <FaArrowLeft /> Voltar
+            <FaArrowLeft className="text-sm sm:text-base" /> <span className="hidden sm:inline">Voltar</span>
           </button>
-          <div className="flex items-center gap-4">
-            <button className="flex items-center gap-2 px-4 py-2 rounded-medium hover:bg-airbnb-grey-50 transition-colors font-medium">
-              <FaShare className="text-airbnb-black" /> Compartilhar
+          <div className="flex items-center gap-2 sm:gap-4">
+            <button className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 rounded-medium hover:bg-airbnb-grey-50 transition-colors font-medium text-sm sm:text-base">
+              <FaShare className="text-airbnb-black text-sm sm:text-base" /> <span className="hidden sm:inline">Compartilhar</span>
             </button>
             <FavoriteButton propertyId={property.id} size="lg" />
           </div>
         </div>
       </div>
 
-      {/* Galeria de Fotos - Estilo Airbnb */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      {/* Galeria de Fotos - Estilo Airbnb - RESPONSIVA */}
+      <div className="w-full max-w-7xl mx-auto px-0 sm:px-4 lg:px-8 pb-4 sm:pb-6 overflow-hidden">
         {photos.length > 0 ? (
-          <div className="grid grid-cols-4 grid-rows-2 gap-2 h-[500px] rounded-2xl overflow-hidden">
-            {/* Foto Principal */}
-            <div className="col-span-2 row-span-2 relative group cursor-pointer" onClick={() => setShowAllPhotos(true)}>
-              <img
-                src={photos[0].url || photos[0].cloudinary_url || `${import.meta.env.VITE_API_URL || 'https://giuliano.onrender.com'}/uploads/properties/${photos[0].filename}`}
-                alt={property.title}
-                className="w-full h-full object-cover group-hover:brightness-90 transition-all"
-              />
+          <div className="relative">
+            {/* MOBILE: Carrossel simples de fotos */}
+            <div
+              className="md:hidden overflow-x-auto snap-x snap-mandatory scrollbar-hide"
+              onScroll={(e) => {
+                const scrollLeft = e.target.scrollLeft;
+                const width = e.target.offsetWidth;
+                const index = Math.round(scrollLeft / width) + 1;
+                setCurrentPhotoIndex(Math.min(index, photos.length));
+              }}
+            >
+              <div className="flex gap-0">
+                {photos.map((photo, index) => (
+                  <div
+                    key={photo.id}
+                    className="flex-shrink-0 w-full snap-center relative"
+                    onClick={() => setShowAllPhotos(true)}
+                  >
+                    <img
+                      src={photo.url || photo.cloudinary_url || `${import.meta.env.VITE_API_URL || 'https://giuliano.onrender.com'}/uploads/properties/${photo.filename}`}
+                      alt={`Foto ${index + 1}`}
+                      className="w-full h-[300px] sm:h-[400px] object-cover"
+                    />
+                  </div>
+                ))}
+              </div>
+              {/* Indicador de fotos - Dinâmico */}
+              <div className="absolute bottom-4 right-4 bg-black/70 text-white px-3 py-1.5 rounded-full text-xs font-semibold backdrop-blur-sm">
+                {currentPhotoIndex}/{photos.length}
+              </div>
+              {/* Botão Ver todas fotos */}
+              <button
+                onClick={() => setShowAllPhotos(true)}
+                className="absolute bottom-4 left-4 bg-white text-gray-900 px-4 py-2 rounded-lg text-sm font-semibold shadow-lg hover:bg-gray-100 transition-colors"
+              >
+                Ver todas as fotos
+              </button>
             </div>
 
-            {/* Fotos Secundárias */}
-            {photos.slice(1, 5).map((photo, index) => (
-              <div
-                key={photo.id}
-                className="relative group cursor-pointer"
-                onClick={() => setShowAllPhotos(true)}
-              >
+            {/* DESKTOP: Grid de fotos */}
+            <div className="hidden md:grid grid-cols-4 grid-rows-2 gap-2 h-[500px] rounded-2xl overflow-hidden">
+              {/* Foto Principal */}
+              <div className="col-span-2 row-span-2 relative group cursor-pointer" onClick={() => setShowAllPhotos(true)}>
                 <img
-                  src={photo.url || photo.cloudinary_url || `${import.meta.env.VITE_API_URL || 'https://giuliano.onrender.com'}/uploads/properties/${photo.filename}`}
-                  alt={`Foto ${index + 2}`}
+                  src={photos[0].url || photos[0].cloudinary_url || `${import.meta.env.VITE_API_URL || 'https://giuliano.onrender.com'}/uploads/properties/${photos[0].filename}`}
+                  alt={property.title}
                   className="w-full h-full object-cover group-hover:brightness-90 transition-all"
                 />
-                {index === 3 && photos.length > 5 && (
-                  <div className="absolute inset-0 bg-black bg-opacity-70 flex items-center justify-center text-white font-bold text-xl hover:bg-opacity-60 transition-all">
-                    +{photos.length - 5} fotos
-                  </div>
-                )}
               </div>
-            ))}
+
+              {/* Fotos Secundárias */}
+              {photos.slice(1, 5).map((photo, index) => (
+                <div
+                  key={photo.id}
+                  className="relative group cursor-pointer"
+                  onClick={() => setShowAllPhotos(true)}
+                >
+                  <img
+                    src={photo.url || photo.cloudinary_url || `${import.meta.env.VITE_API_URL || 'https://giuliano.onrender.com'}/uploads/properties/${photo.filename}`}
+                    alt={`Foto ${index + 2}`}
+                    className="w-full h-full object-cover group-hover:brightness-90 transition-all"
+                  />
+                  {index === 3 && photos.length > 5 && (
+                    <div className="absolute inset-0 bg-black bg-opacity-70 flex items-center justify-center text-white font-bold text-xl hover:bg-opacity-60 transition-all">
+                      +{photos.length - 5} fotos
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
         ) : (
-          <div className="h-[500px] bg-gray-200 rounded-2xl flex items-center justify-center">
+          <div className="h-[300px] md:h-[500px] bg-gray-200 md:rounded-2xl flex items-center justify-center">
             <div className="text-center text-gray-500">
-              <div className="text-6xl mb-4">📷</div>
-              <p className="text-lg">Nenhuma foto disponível</p>
+              <div className="text-4xl md:text-6xl mb-4">📷</div>
+              <p className="text-base md:text-lg">Nenhuma foto disponível</p>
             </div>
           </div>
         )}
       </div>
 
+      {/* CSS para esconder scrollbar no carrossel mobile */}
+      <style>{`
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none;
+        }
+        .scrollbar-hide {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+      `}</style>
+
       {/* Conteúdo Principal */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="w-full max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-8 pb-24 lg:pb-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
           {/* Coluna Esquerda - Informações */}
           <div className="lg:col-span-2 space-y-8">
             {/* Título e Localização */}
             <div className="border-b border-gray-200 pb-6">
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex-1">
-                  <h1 className="text-3xl font-bold text-gray-900 mb-2">{property.title}</h1>
-                  <div className="flex items-center gap-4 text-gray-600 mb-3">
+              <div className="flex flex-col sm:flex-row items-start justify-between gap-4 mb-4">
+                <div className="flex-1 min-w-0">
+                  <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2 break-words">{property.title}</h1>
+                  <div className="flex flex-wrap items-center gap-3 sm:gap-4 text-gray-600 mb-3 text-sm sm:text-base">
                     <div className="flex items-center gap-1">
-                      <FaStar className="text-yellow-400" />
+                      <FaStar className="text-yellow-400 flex-shrink-0" />
                       <span className="font-medium">4.9</span>
-                      <span className="text-sm">(127 avaliações)</span>
+                      <span className="text-xs sm:text-sm">(127 avaliações)</span>
                     </div>
-                    <span>•</span>
+                    <span className="hidden sm:inline">•</span>
                     <div className="flex items-center gap-1">
-                      <FaMapMarkerAlt className="text-red-600" />
-                      <span>{property.city?.name}, {property.city?.state}</span>
+                      <FaMapMarkerAlt className="text-red-600 flex-shrink-0" />
+                      <span className="truncate">{property.city?.name}, {property.city?.state}</span>
                     </div>
                   </div>
                   {/* Status Badge */}
@@ -315,22 +399,22 @@ const PropertyDetails = () => {
               </div>
 
               {/* Características Rápidas */}
-              <div className="flex items-center gap-6 text-gray-700">
+              <div className="flex flex-wrap items-center gap-4 sm:gap-6 text-gray-700">
                 <div className="flex items-center gap-2">
-                  <FaUsers className="text-red-600" />
-                  <span className="font-medium">{property.max_guests} hóspedes</span>
+                  <FaUsers className="text-red-600 flex-shrink-0" />
+                  <span className="font-medium text-sm sm:text-base">{property.max_guests} hóspedes</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <FaBed className="text-red-600" />
-                  <span className="font-medium">{property.bedrooms} quartos</span>
+                  <FaBed className="text-red-600 flex-shrink-0" />
+                  <span className="font-medium text-sm sm:text-base">{property.bedrooms} quartos</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <FaBath className="text-red-600" />
-                  <span className="font-medium">{property.bathrooms} banheiros</span>
+                  <FaBath className="text-red-600 flex-shrink-0" />
+                  <span className="font-medium text-sm sm:text-base">{property.bathrooms} banheiros</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <FaHome className="text-red-600" />
-                  <span className="font-medium">{getTypeLabel(property.type)}</span>
+                  <FaHome className="text-red-600 flex-shrink-0" />
+                  <span className="font-medium text-sm sm:text-base">{getTypeLabel(property.type)}</span>
                 </div>
               </div>
             </div>
@@ -338,8 +422,8 @@ const PropertyDetails = () => {
             {/* Descrição */}
             {property.description && (
               <div className="border-b border-gray-200 pb-8">
-                <h2 className="text-2xl font-bold text-gray-900 mb-4">Sobre este espaço</h2>
-                <p className="text-gray-700 leading-relaxed whitespace-pre-line">{property.description}</p>
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4">Sobre este espaço</h2>
+                <p className="text-sm sm:text-base text-gray-700 leading-relaxed whitespace-pre-line break-words">{property.description}</p>
               </div>
             )}
 
@@ -349,23 +433,23 @@ const PropertyDetails = () => {
             {/* Caução (se houver) */}
             {property.security_deposit > 0 && (
               <div className="border-b border-gray-200 pb-8">
-                <div className="bg-gradient-to-r from-teal-50 to-cyan-50 border-l-4 border-teal-500 rounded-lg p-6">
-                  <div className="flex items-start gap-4">
+                <div className="bg-gradient-to-r from-teal-50 to-cyan-50 border-l-4 border-teal-500 rounded-lg p-4 sm:p-6">
+                  <div className="flex items-start gap-3 sm:gap-4">
                     <div className="flex-shrink-0">
-                      <div className="w-12 h-12 bg-teal-500 rounded-full flex items-center justify-center">
-                        <FaShieldAlt className="text-2xl text-white" />
+                      <div className="w-10 h-10 sm:w-12 sm:h-12 bg-teal-500 rounded-full flex items-center justify-center">
+                        <FaShieldAlt className="text-xl sm:text-2xl text-white" />
                       </div>
                     </div>
-                    <div className="flex-1">
-                      <h3 className="text-xl font-bold text-gray-900 mb-2">Depósito de Segurança (Caução)</h3>
-                      <p className="text-gray-700 mb-3">
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2">Depósito de Segurança (Caução)</h3>
+                      <p className="text-sm sm:text-base text-gray-700 mb-3 break-words">
                         Este imóvel requer um depósito de segurança de <strong className="text-teal-700">R$ {Number(property.security_deposit).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</strong>
                       </p>
-                      <div className="bg-white rounded-lg p-4 border border-teal-200">
-                        <p className="text-sm text-gray-600 mb-2">
+                      <div className="bg-white rounded-lg p-3 sm:p-4 border border-teal-200">
+                        <p className="text-xs sm:text-sm text-gray-600 mb-2">
                           <strong>Como funciona:</strong>
                         </p>
-                        <ul className="text-sm text-gray-600 space-y-1 ml-4">
+                        <ul className="text-xs sm:text-sm text-gray-600 space-y-1 ml-4">
                           <li>• O valor da caução é cobrado separadamente no check-in</li>
                           <li>• Serve como garantia contra danos ao imóvel</li>
                           <li>• É devolvido integralmente após o check-out, se não houver danos</li>
@@ -380,7 +464,7 @@ const PropertyDetails = () => {
 
             {/* Localização no Mapa */}
             <div className="border-b border-gray-200 pb-8">
-              <h2 className="text-2xl font-bold text-gray-900 mb-6">Onde você vai ficar</h2>
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-6">Onde você vai ficar</h2>
               <PropertyMapLeaflet
                 lat={property.latitude}
                 lng={property.longitude}
@@ -421,7 +505,7 @@ const PropertyDetails = () => {
           </div>
 
           {/* Coluna Direita - Card de Reserva */}
-          <div className="lg:block">
+          <div className="hidden lg:block">
             <div className="sticky top-24 space-y-4">
               {/* Card de Reserva */}
               <div className="border border-gray-300 rounded-2xl shadow-xl p-6">
@@ -690,30 +774,111 @@ const PropertyDetails = () => {
         </div>
       </div>
 
-      {/* Botão WhatsApp Flutuante */}
+      {/* Card de Reserva Mobile - Fixo no Bottom */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t-2 border-gray-200 shadow-2xl z-40 px-3 sm:px-4 py-3 overflow-x-hidden">
+        <div className="flex items-center justify-between gap-3 sm:gap-4">
+          {/* Preço */}
+          <div className="flex-shrink-0 min-w-0">
+            <div className="flex items-baseline gap-1">
+              <span className="text-lg sm:text-xl font-bold text-gray-900">
+                R$ {Number(property.price_per_night).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+              </span>
+              <span className="text-xs sm:text-sm text-gray-600 whitespace-nowrap">/ noite</span>
+            </div>
+            {totalNights > 0 && (
+              <div className="text-xs text-gray-600 truncate">
+                Total: R$ {(totalPrice * 1.10).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+              </div>
+            )}
+          </div>
+
+          {/* Botão de Reserva */}
+          <button
+            onClick={() => {
+              if (property.status !== 'available') {
+                alert("Este imóvel não está disponível para reservas no momento.");
+                return;
+              }
+
+              if (!bookingDates.checkIn || !bookingDates.checkOut) {
+                alert("Por favor, selecione as datas de check-in e check-out");
+                return;
+              }
+
+              const totalGuests = guests.adults + guests.children;
+
+              if (totalGuests > property.max_guests) {
+                alert(`Esta propriedade suporta no máximo ${property.max_guests} hóspedes`);
+                return;
+              }
+
+              const bookingDataToSave = {
+                checkIn: bookingDates.checkIn,
+                checkOut: bookingDates.checkOut,
+                nights: totalNights,
+                guests,
+                totalGuests,
+                rooms: []
+              };
+
+              if (!isAuthenticated) {
+                sessionStorage.setItem('pendingBooking', JSON.stringify({
+                  property,
+                  bookingData: bookingDataToSave,
+                  timestamp: Date.now()
+                }));
+                navigate('/guest-login', {
+                  state: {
+                    from: { pathname: '/booking-checkout' },
+                    message: 'Faça login para continuar com sua reserva'
+                  }
+                });
+                return;
+              }
+
+              navigate('/booking-checkout', {
+                state: {
+                  property,
+                  bookingData: bookingDataToSave
+                }
+              });
+            }}
+            disabled={property.status !== 'available' || !bookingDates.checkIn || !bookingDates.checkOut}
+            className="flex-1 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white py-3 px-4 sm:px-6 rounded-xl font-bold text-xs sm:text-sm shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-95 whitespace-nowrap"
+          >
+            {property.status !== 'available'
+              ? 'Indisponível'
+              : bookingDates.checkIn && bookingDates.checkOut
+                ? 'Reservar'
+                : 'Selecione Datas'}
+          </button>
+        </div>
+      </div>
+
+      {/* Botão WhatsApp Flutuante - Ajustado para não sobrepor o card mobile */}
       <button
         onClick={handleWhatsApp}
-        className="fixed bottom-6 right-6 bg-green-500 hover:bg-green-600 text-white w-16 h-16 rounded-full shadow-2xl hover:shadow-3xl transition-all transform hover:scale-110 z-50 flex items-center justify-center"
+        className="fixed bottom-20 lg:bottom-6 right-6 bg-green-500 hover:bg-green-600 text-white w-14 h-14 lg:w-16 lg:h-16 rounded-full shadow-2xl hover:shadow-3xl transition-all transform hover:scale-110 z-50 flex items-center justify-center"
         title="Contato via WhatsApp"
       >
-        <FaWhatsapp className="text-3xl" />
+        <FaWhatsapp className="text-2xl lg:text-3xl" />
       </button>
 
       {/* Modal de Galeria Completa */}
       {showAllPhotos && (
-        <div className="fixed inset-0 bg-black z-50 overflow-y-auto">
-          <div className="min-h-screen p-8">
+        <div className="fixed inset-0 bg-black z-50 overflow-y-auto overflow-x-hidden">
+          <div className="min-h-screen p-4 sm:p-8">
             <div className="max-w-4xl mx-auto">
-              <div className="flex justify-between items-center mb-8">
-                <h2 className="text-2xl font-bold text-white">Todas as fotos</h2>
+              <div className="flex justify-between items-center mb-4 sm:mb-8">
+                <h2 className="text-xl sm:text-2xl font-bold text-white">Todas as fotos</h2>
                 <button
                   onClick={() => setShowAllPhotos(false)}
-                  className="text-white hover:bg-white hover:bg-opacity-20 p-2 rounded-full transition-all"
+                  className="text-white hover:bg-white hover:bg-opacity-20 p-2 rounded-full transition-all flex-shrink-0"
                 >
-                  ✕ Fechar
+                  <span className="text-lg sm:text-xl">✕</span> <span className="hidden sm:inline ml-2">Fechar</span>
                 </button>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                 {photos.map((photo) => (
                   <img
                     key={photo.id}

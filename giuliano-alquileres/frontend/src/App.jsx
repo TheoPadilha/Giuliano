@@ -22,6 +22,19 @@ import TermsOfService from "./pages/TermsOfService";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import FAQ from "./pages/FAQ";
 import NotFoundPage from "./pages/NotFoundPage";
+import About from "./pages/About";
+import Contact from "./pages/Contact";
+import Help from "./pages/Help";
+import Cancellation from "./pages/Cancellation";
+import Sitemap from "./pages/Sitemap";
+import Diversity from "./pages/Diversity";
+import Accessibility from "./pages/Accessibility";
+import Host from "./pages/Host";
+import HostResources from "./pages/HostResources";
+import Refer from "./pages/Refer";
+import Visit from "./pages/Visit";
+import Forum from "./pages/Forum";
+import ResponsibleHosting from "./pages/ResponsibleHosting";
 
 // --- Lazy Loaded Pages (Code Splitting) ---
 // Páginas menos acessadas carregadas sob demanda
@@ -112,6 +125,23 @@ function App() {
             <Route path="/terms" element={<TermsOfService />} />
             <Route path="/privacy" element={<PrivacyPolicy />} />
             <Route path="/faq" element={<FAQ />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/help" element={<Help />} />
+            <Route path="/cancellation" element={<Cancellation />} />
+            <Route path="/sitemap" element={<Sitemap />} />
+
+            {/* Comunidade */}
+            <Route path="/diversity" element={<Diversity />} />
+            <Route path="/accessibility" element={<Accessibility />} />
+            <Route path="/refer" element={<Refer />} />
+            <Route path="/visit" element={<Visit />} />
+
+            {/* Anfitrião */}
+            <Route path="/host" element={<Host />} />
+            <Route path="/host-resources" element={<HostResources />} />
+            <Route path="/forum" element={<Forum />} />
+            <Route path="/responsible-hosting" element={<ResponsibleHosting />} />
 
             {/* Design System Style Guide */}
             <Route path="/style-guide" element={<StyleGuide />} />

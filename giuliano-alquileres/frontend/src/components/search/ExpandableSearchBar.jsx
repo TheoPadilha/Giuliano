@@ -18,6 +18,7 @@ const ExpandableSearchBar = ({ filters, onSearch, onFiltersClick }) => {
   const [activeField, setActiveField] = useState(null);
   const [localFilters, setLocalFilters] = useState(filters);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const searchBarRef = useRef(null);
   const datePickerRef = useRef(null);
@@ -222,32 +223,69 @@ const ExpandableSearchBar = ({ filters, onSearch, onFiltersClick }) => {
   };
 
   return (
-    <div className="sticky top-0 z-50 bg-white dark:bg-airbnb-grey-900 border-b border-airbnb-grey-200 dark:border-airbnb-grey-700 py-4">
-      <div className="max-w-[2520px] mx-auto px-5 sm:px-10 lg:px-20">
-        <div className="flex items-center justify-between gap-4">
-          {/* Logo/Site Name - Left */}
-          <Link
-            to="/"
-            className="flex-shrink-0 text-rausch hover:text-rausch-dark transition-colors"
-          >
-            <div className="flex items-center gap-2">
-              <svg
-                className="w-8 h-8"
-                viewBox="0 0 32 32"
-                fill="currentColor"
-                xmlns="http://www.w3.org/2000/svg"
+    <>
+      <div className="sticky top-0 z-50 bg-white dark:bg-airbnb-grey-900 border-b border-airbnb-grey-200 dark:border-airbnb-grey-700 py-3 lg:py-4">
+        <div className="max-w-[2520px] mx-auto px-3 sm:px-5 lg:px-10 xl:px-20">
+          <div className="flex items-center justify-between gap-2 sm:gap-4">
+            {/* MOBILE: Menu Hamburguer + Logo + Filtros */}
+            <div className="flex items-center justify-between w-full lg:hidden">
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                  className="p-2 hover:bg-airbnb-grey-50 rounded-lg transition-colors"
+                  aria-label="Menu"
+                >
+                  <FiMenu className="w-6 h-6 text-airbnb-black" />
+                </button>
+                <Link to="/" className="text-rausch hover:text-rausch-dark transition-colors">
+                  <div className="flex items-center gap-2">
+                    <svg
+                      className="w-7 h-7"
+                      viewBox="0 0 32 32"
+                      fill="currentColor"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path d="M16 1c-1.1 0-2 .9-2 2v26c0 1.1.9 2 2 2s2-.9 2-2V3c0-1.1-.9-2-2-2zM7 8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2s2-.9 2-2V10c0-1.1-.9-2-2-2zm18 0c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2s2-.9 2-2V10c0-1.1-.9-2-2-2z" />
+                    </svg>
+                    <span className="text-base font-bold">Ziguealuga</span>
+                  </div>
+                </Link>
+              </div>
+
+              {/* Botão de Filtros Mobile */}
+              <button
+                onClick={onFiltersClick}
+                className="flex items-center gap-2 px-3 py-2 border border-airbnb-grey-300 rounded-lg hover:bg-airbnb-grey-50 transition-colors"
               >
-                <path d="M16 1c-1.1 0-2 .9-2 2v26c0 1.1.9 2 2 2s2-.9 2-2V3c0-1.1-.9-2-2-2zM7 8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2s2-.9 2-2V10c0-1.1-.9-2-2-2zm18 0c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2s2-.9 2-2V10c0-1.1-.9-2-2-2z" />
-              </svg>
-              <span className="hidden md:block text-xl font-bold">
-                Ziguealuga
-              </span>
+                <MdTune className="w-5 h-5 text-airbnb-black" />
+                <span className="text-sm font-medium text-airbnb-black">Filtros</span>
+                {hasActiveFilters() && (
+                  <span className="w-2 h-2 bg-rausch rounded-full"></span>
+                )}
+              </button>
             </div>
-          </Link>
-          {/* Expandable Search Bar - Centered */}
+
+            {/* DESKTOP: Logo Normal */}
+            <Link
+              to="/"
+              className="hidden lg:flex flex-shrink-0 text-rausch hover:text-rausch-dark transition-colors"
+            >
+              <div className="flex items-center gap-2">
+                <svg
+                  className="w-8 h-8"
+                  viewBox="0 0 32 32"
+                  fill="currentColor"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path d="M16 1c-1.1 0-2 .9-2 2v26c0 1.1.9 2 2 2s2-.9 2-2V3c0-1.1-.9-2-2-2zM7 8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2s2-.9 2-2V10c0-1.1-.9-2-2-2zm18 0c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2s2-.9 2-2V10c0-1.1-.9-2-2-2z" />
+                </svg>
+                <span className="text-xl font-bold">Ziguealuga</span>
+              </div>
+            </Link>
+          {/* Expandable Search Bar - Centered - APENAS DESKTOP */}
           <div
             ref={searchBarRef}
-            className={`transition-all duration-200 ease-in-out ${
+            className={`hidden lg:block transition-all duration-200 ease-in-out ${
               isExpanded
                 ? "flex-1 max-w-[850px] mx-auto"
                 : "flex-1 max-w-[700px] mx-auto"
@@ -407,10 +445,10 @@ const ExpandableSearchBar = ({ filters, onSearch, onFiltersClick }) => {
             )}
           </div>
 
-          {/* Filters Button */}
+          {/* Filters Button - APENAS DESKTOP */}
           <button
             onClick={onFiltersClick}
-            className="relative flex items-center gap-2 px-4 py-3 border border-airbnb-grey-300 dark:border-airbnb-grey-600 rounded-xl hover:border-airbnb-black dark:hover:border-white transition-colors bg-white dark:bg-airbnb-grey-900"
+            className="hidden lg:flex relative items-center gap-2 px-4 py-3 border border-airbnb-grey-300 dark:border-airbnb-grey-600 rounded-xl hover:border-airbnb-black dark:hover:border-white transition-colors bg-white dark:bg-airbnb-grey-900"
           >
             <MdTune className="text-lg text-airbnb-black dark:text-white" />
             <span className="text-sm font-medium text-airbnb-black dark:text-white hidden md:inline">
@@ -432,9 +470,9 @@ const ExpandableSearchBar = ({ filters, onSearch, onFiltersClick }) => {
             )}
           </button>
 
-          {/* User Menu */}
+          {/* User Menu - APENAS DESKTOP */}
           {isAuthenticated ? (
-            <div className="relative" ref={userMenuRef}>
+            <div className="hidden lg:block relative" ref={userMenuRef}>
               <button
                 onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
                 className="flex items-center gap-2 border border-airbnb-grey-300 dark:border-airbnb-grey-600 hover:shadow-md rounded-full pl-3 pr-2 py-2 transition-all"
@@ -515,7 +553,7 @@ const ExpandableSearchBar = ({ filters, onSearch, onFiltersClick }) => {
           ) : (
             <Link
               to="/login"
-              className="flex items-center gap-2 border border-airbnb-grey-300 dark:border-airbnb-grey-600 hover:shadow-md rounded-full px-4 py-2 transition-all text-sm font-medium text-airbnb-black dark:text-white"
+              className="hidden lg:flex items-center gap-2 border border-airbnb-grey-300 dark:border-airbnb-grey-600 hover:shadow-md rounded-full px-4 py-2 transition-all text-sm font-medium text-airbnb-black dark:text-white"
             >
               <FiUser className="text-lg" />
               <span className="hidden md:inline">{t('header.login')}</span>
@@ -556,6 +594,167 @@ const ExpandableSearchBar = ({ filters, onSearch, onFiltersClick }) => {
         )}
       </div>
     </div>
+
+    {/* MOBILE: Menu Lateral */}
+    {isMobileMenuOpen && (
+      <>
+        {/* Overlay */}
+        <div
+          className="fixed inset-0 bg-black/50 z-[60] lg:hidden animate-fade-in"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+
+        {/* Menu Drawer */}
+        <div className="fixed top-0 left-0 bottom-0 w-[280px] bg-white shadow-2xl z-[70] lg:hidden overflow-y-auto animate-slide-in-left">
+          {/* Header do Menu */}
+          <div className="p-4 border-b border-airbnb-grey-200">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-bold text-airbnb-black">Menu</h2>
+              <button
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="p-2 hover:bg-airbnb-grey-50 rounded-lg transition-colors"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          {/* Menu Items */}
+          <nav className="p-4 space-y-2">
+            {isAuthenticated ? (
+              <>
+                {/* User Info */}
+                <div className="pb-4 mb-4 border-b border-airbnb-grey-200">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 bg-rausch text-white rounded-full flex items-center justify-center font-bold text-lg">
+                      {user?.name?.charAt(0)?.toUpperCase() || user?.email?.charAt(0)?.toUpperCase() || "U"}
+                    </div>
+                    <div>
+                      <p className="font-semibold text-airbnb-black">{user?.name || "Usuário"}</p>
+                      <p className="text-sm text-airbnb-grey-600">{user?.email}</p>
+                    </div>
+                  </div>
+                </div>
+
+                <Link
+                  to="/"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="flex items-center gap-3 p-3 hover:bg-airbnb-grey-50 rounded-lg transition-colors"
+                >
+                  <FaHome className="text-lg text-airbnb-grey-600" />
+                  <span className="font-medium">Início</span>
+                </Link>
+
+                <Link
+                  to="/guest/dashboard"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="flex items-center gap-3 p-3 hover:bg-airbnb-grey-50 rounded-lg transition-colors"
+                >
+                  <FiUser className="text-lg text-airbnb-grey-600" />
+                  <span className="font-medium">Meu Perfil</span>
+                </Link>
+
+                <Link
+                  to="/guest/reservations"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="flex items-center gap-3 p-3 hover:bg-airbnb-grey-50 rounded-lg transition-colors"
+                >
+                  <svg className="w-5 h-5 text-airbnb-grey-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                  </svg>
+                  <span className="font-medium">Minhas Reservas</span>
+                </Link>
+
+                <Link
+                  to="/guest/favorites"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="flex items-center gap-3 p-3 hover:bg-airbnb-grey-50 rounded-lg transition-colors"
+                >
+                  <svg className="w-5 h-5 text-airbnb-grey-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                  </svg>
+                  <span className="font-medium">Favoritos</span>
+                </Link>
+
+                <button
+                  onClick={() => {
+                    handleLogout();
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="w-full flex items-center gap-3 p-3 hover:bg-red-50 text-red-600 rounded-lg transition-colors mt-4"
+                >
+                  <FiLogOut className="text-lg" />
+                  <span className="font-medium">Sair</span>
+                </button>
+              </>
+            ) : (
+              <>
+                <Link
+                  to="/"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="flex items-center gap-3 p-3 hover:bg-airbnb-grey-50 rounded-lg transition-colors"
+                >
+                  <FaHome className="text-lg text-airbnb-grey-600" />
+                  <span className="font-medium">Início</span>
+                </Link>
+
+                <Link
+                  to="/guest-login"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="flex items-center gap-3 p-3 hover:bg-airbnb-grey-50 rounded-lg transition-colors"
+                >
+                  <FiUser className="text-lg text-airbnb-grey-600" />
+                  <span className="font-medium">Entrar</span>
+                </Link>
+
+                <Link
+                  to="/guest-register"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="flex items-center gap-3 p-3 bg-rausch text-white hover:bg-rausch-dark rounded-lg transition-colors mt-4"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                  </svg>
+                  <span className="font-medium">Criar Conta</span>
+                </Link>
+              </>
+            )}
+          </nav>
+        </div>
+      </>
+    )}
+
+    {/* Animações CSS */}
+    <style>{`
+      @keyframes fade-in {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+
+      @keyframes slide-in-left {
+        from {
+          transform: translateX(-100%);
+        }
+        to {
+          transform: translateX(0);
+        }
+      }
+
+      .animate-fade-in {
+        animation: fade-in 0.2s ease-out;
+      }
+
+      .animate-slide-in-left {
+        animation: slide-in-left 0.3s ease-out;
+      }
+    `}</style>
+  </>
   );
 };
 

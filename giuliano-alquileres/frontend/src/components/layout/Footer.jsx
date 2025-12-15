@@ -10,11 +10,6 @@ const Footer = () => {
       title: "Sobre",
       links: [
         { label: "Como funciona", href: "/about" },
-        { label: "Newsroom", href: "/news" },
-        { label: "Investidores", href: "/investors" },
-        { label: "Giuliano Plus", href: "/plus" },
-        { label: "Giuliano Luxo", href: "/luxe" },
-        { label: "Carreiras", href: "/careers" },
       ]
     },
     {
@@ -47,7 +42,7 @@ const Footer = () => {
   ];
 
   return (
-    <footer className="bg-airbnb-grey-50 border-t border-airbnb-grey-200">
+    <footer className="relative z-[100] bg-airbnb-grey-50 border-t border-airbnb-grey-200">
       {/* Main Footer Content */}
       <div className="max-w-7xl mx-auto px-6 py-12">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">

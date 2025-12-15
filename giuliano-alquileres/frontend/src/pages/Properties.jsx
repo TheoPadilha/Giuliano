@@ -1,7 +1,7 @@
 // Properties.jsx - Versão Corrigida
 import { useState, useEffect, useRef } from "react";
 import { useSearchParams, Link } from "react-router-dom";
-import api from "../services/api";
+import api, { UPLOADS_URL } from "../services/api";
 import PropertyCard from "../components/property/PropertyCard";
 import PropertyFiltersPro from "../components/property/PropertyFiltersPro";
 import SortDropdown from "../components/property/SortDropdown";
@@ -15,7 +15,12 @@ import {
   FaThLarge,
   FaList,
   FaMapMarkedAlt,
+  FaStar,
+  FaCrown,
 } from "react-icons/fa";
+import { IoLocationOutline, IoBedOutline } from "react-icons/io5";
+import { BsPeople } from "react-icons/bs";
+import { MdBathtub } from "react-icons/md";
 import { trackPageView, trackPropertySearch } from "../utils/googleAnalytics";
 
 const Properties = () => {
@@ -274,7 +279,7 @@ const Properties = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white dark:bg-airbnb-grey-900">
+    <div className="min-h-screen bg-white dark:bg-airbnb-grey-900 overflow-x-hidden">
       {/* Barra de Busca Expansível */}
       <ExpandableSearchBar
         filters={filters}
@@ -303,16 +308,16 @@ const Properties = () => {
       )}
 
       {/* Main Content - SEM A BARRA DE FILTROS STICKY */}
-      <div className="max-w-[2520px] mx-auto px-5 sm:px-10 lg:px-20">
+      <div className="max-w-[2520px] mx-auto px-3 sm:px-5 lg:px-10 xl:px-20">
         {/* Barra de Resultados e Controles */}
         {!loading && properties.length > 0 && (
-          <div className="flex items-center justify-between py-6 border-b border-airbnb-grey-200 flex-wrap gap-4">
+          <div className="flex items-center justify-between py-3 sm:py-6 border-b border-airbnb-grey-200 flex-wrap gap-3 sm:gap-4">
             {/* Info de Resultados */}
             <div className="flex items-center gap-4">
-              <h2 className="text-sm text-airbnb-grey-600">
+              <h2 className="text-xs sm:text-sm text-airbnb-grey-600">
                 {pagination.total > 0 ? (
                   <>
-                    <span className="font-semibold text-airbnb-black">
+                    <span className="font-bold text-airbnb-black text-sm sm:text-base">
                       {pagination.total}
                     </span>{" "}
                     {pagination.total === 1
@@ -324,7 +329,7 @@ const Properties = () => {
             </div>
 
             {/* Controles de Ordenação e Visualização */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3">
               {/* Dropdown de Ordenação */}
               <SortDropdown value={sortBy} onChange={setSortBy} />
 
@@ -371,7 +376,7 @@ const Properties = () => {
         )}
 
         {/* Área de Conteúdo */}
-        <div className="py-8">
+        <div className="py-4 sm:py-6 lg:py-8">
           {loading ? (
             // Loading State
             <div className="flex flex-col justify-center items-center py-32">
@@ -421,7 +426,7 @@ const Properties = () => {
             <>
               {/* Grid de Propriedades */}
               {viewMode === "grid" && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-x-6 gap-y-10">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 sm:gap-x-6 sm:gap-y-10">
                   {properties.map((property, index) => (
                     <PropertyCard
                       key={property.uuid || property.id || `property-${index}`}
@@ -434,7 +439,7 @@ const Properties = () => {
 
               {/* Lista de Propriedades */}
               {viewMode === "list" && (
-                <div className="space-y-6">
+                <div className="space-y-3 sm:space-y-6">
                   {properties.map((property, index) => (
                     <PropertyCard
                       key={property.uuid || property.id || `property-${index}`}
@@ -445,100 +450,269 @@ const Properties = () => {
                 </div>
               )}
 
-              {/* Visualização em Mapa - Layout Estilo Airbnb */}
+              {/* Visualização em Mapa - Layout Estilo Airbnb MELHORADO */}
               {viewMode === "map" && (
-                <div className="relative flex flex-col lg:flex-row h-auto lg:h-[calc(100vh-240px)] min-h-[600px] transition-all ease-in-out duration-300">
-                  {/* MOBILE: Mapa no topo */}
-                  <div className="lg:hidden w-full h-[50vh] sticky top-[72px] z-10 transition-all ease-in-out duration-300">
-                    <MapViewLeaflet
-                      properties={properties}
-                      hoveredPropertyId={hoveredPropertyId}
-                      onPropertyHover={setHoveredPropertyId}
-                      onPropertyClick={scrollToProperty}
-                    />
+                <div className="relative">
+                  {/* MOBILE: Layout Profissional Redesenhado */}
+                  <div className="lg:hidden">
+                    {/* Mapa Fixo no Topo - Sempre Visível */}
+                    <div className="fixed top-0 left-0 right-0 h-[65vh] z-10">
+                      <MapViewLeaflet
+                        properties={properties}
+                        hoveredPropertyId={hoveredPropertyId}
+                        onPropertyHover={setHoveredPropertyId}
+                        onPropertyClick={scrollToProperty}
+                      />
 
-                    {/* Badge de Contagem no Mapa Mobile */}
-                    <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-[1000] pointer-events-none">
-                      <div className="bg-white px-4 py-2 rounded-full shadow-lg border border-airbnb-grey-200 flex items-center gap-2">
-                        <div className="w-2 h-2 bg-rausch rounded-full animate-pulse"></div>
-                        <p className="text-sm font-semibold text-airbnb-black">
-                          {properties.filter(p => p.latitude && p.longitude).length} no mapa
-                        </p>
+                      {/* Badge de Contagem - Redesenhado */}
+                      <div className="absolute bottom-5 left-1/2 transform -translate-x-1/2 z-[1000] pointer-events-none">
+                        <div className="bg-airbnb-black text-white px-5 py-2.5 rounded-full shadow-2xl flex items-center gap-2.5 backdrop-blur-sm">
+                          <FaMapMarkedAlt className="text-sm" />
+                          <p className="text-sm font-semibold">
+                            {properties.filter(p => p.latitude && p.longitude).length} {properties.filter(p => p.latitude && p.longitude).length === 1 ? 'imóvel' : 'imóveis'}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Spacer para empurrar o conteúdo para baixo */}
+                    <div className="h-[65vh]"></div>
+
+                    {/* Container de Cards - Redesenhado - FULL WIDTH */}
+                    <div className="bg-gradient-to-b from-white to-airbnb-grey-50 rounded-t-[28px] shadow-2xl relative z-40 -mt-7 min-h-screen -mx-3">
+                      {/* Handle de arraste visual - Mais sutil */}
+                      <div className="sticky top-0 left-0 right-0 flex justify-center pt-4 pb-3 bg-white/95 backdrop-blur-md z-50 rounded-t-[28px] border-b border-airbnb-grey-100">
+                        <div className="w-10 h-1 bg-airbnb-grey-300 rounded-full"></div>
+                      </div>
+
+                      <div className="px-4 pb-24">
+                        {/* Header de Resultados - Melhorado */}
+                        <div className="mb-5 pt-4">
+                          <h2 className="text-2xl font-bold text-airbnb-black mb-1">
+                            {properties.length} {properties.length === 1 ? 'imóvel disponível' : 'imóveis disponíveis'}
+                          </h2>
+                          <p className="text-sm text-airbnb-grey-600">
+                            Toque nos pins do mapa para ver a localização
+                          </p>
+                        </div>
+
+                        {/* Cards Grid - Novo Layout Mobile */}
+                        <div className="space-y-4">
+                          {properties.map((property, index) => {
+                            const propertyId = property.uuid || property.id;
+                            const isHovered = hoveredPropertyId === propertyId;
+                            const imageUrl = (() => {
+                              const images = property.photos || property.images || property.property_images || [];
+                              if (images.length > 0) {
+                                let image = images.find(img => img.is_main === true);
+                                if (!image) {
+                                  image = images.reduce((prev, curr) =>
+                                    (curr.display_order < prev.display_order) ? curr : prev
+                                  );
+                                }
+                                if (!image) image = images[0];
+                                if (image) {
+                                  if (image.url && image.url.startsWith("http")) return image.url;
+                                  if (image.cloudinary_url) return image.cloudinary_url;
+                                  if (image.filename && !image.filename.includes('/')) {
+                                    return `${UPLOADS_URL}/properties/${image.filename}`;
+                                  }
+                                  if (image.image_url) return image.image_url;
+                                }
+                              }
+                              return "https://placehold.co/800x600/e0e0e0/666666?text=Sem+Imagem";
+                            })();
+
+                            return (
+                              <Link
+                                key={propertyId || `property-${index}`}
+                                to={`/property/${property.uuid || property.id}`}
+                                ref={(el) => (propertyRefs.current[propertyId] = el)}
+                                className={`
+                                  block bg-white rounded-2xl overflow-hidden
+                                  transition-all duration-300 ease-out
+                                  ${isHovered
+                                    ? 'shadow-2xl ring-2 ring-rausch/40 scale-[1.01]'
+                                    : 'shadow-md hover:shadow-xl active:scale-[0.98]'
+                                  }
+                                `}
+                              >
+                                {/* Imagem do Card - Proporção Otimizada */}
+                                <div className="relative aspect-[16/10] bg-airbnb-grey-100">
+                                  <img
+                                    src={imageUrl}
+                                    alt={property.title || property.name}
+                                    className="w-full h-full object-cover"
+                                    loading="lazy"
+                                  />
+
+                                  {/* Badge Premium */}
+                                  {property.is_featured && (
+                                    <div className="absolute top-3 left-3 px-3 py-1.5 bg-white/95 backdrop-blur-sm text-airbnb-black text-xs font-semibold rounded-full shadow-lg flex items-center gap-1.5">
+                                      <FaCrown className="text-xs text-yellow-600" />
+                                      <span>Destaque</span>
+                                    </div>
+                                  )}
+
+                                  {/* Rating Badge */}
+                                  {property.average_rating > 0 && (
+                                    <div className="absolute top-3 right-3 px-2.5 py-1.5 bg-white/95 backdrop-blur-sm rounded-full shadow-lg flex items-center gap-1">
+                                      <FaStar className="text-xs text-yellow-500" />
+                                      <span className="text-xs font-bold text-airbnb-black">
+                                        {property.average_rating.toFixed(1)}
+                                      </span>
+                                    </div>
+                                  )}
+
+                                  {/* Gradient Overlay Bottom */}
+                                  <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-black/20 to-transparent pointer-events-none"></div>
+                                </div>
+
+                                {/* Conteúdo do Card - Otimizado */}
+                                <div className="p-4">
+                                  {/* Título e Localização */}
+                                  <div className="mb-3">
+                                    <h3 className="text-base font-bold text-airbnb-black mb-1 line-clamp-1">
+                                      {property.title || property.name || "Propriedade"}
+                                    </h3>
+                                    <div className="flex items-center gap-1.5 text-airbnb-grey-600">
+                                      <IoLocationOutline className="text-base flex-shrink-0" />
+                                      <p className="text-sm truncate">
+                                        {property.city?.name || property.location || "Localização"}
+                                      </p>
+                                    </div>
+                                  </div>
+
+                                  {/* Características - Grid Compacto */}
+                                  <div className="flex items-center gap-4 mb-4 text-airbnb-grey-600">
+                                    {property.max_guests && (
+                                      <div className="flex items-center gap-1.5">
+                                        <BsPeople className="text-base" />
+                                        <span className="text-sm font-medium">{property.max_guests}</span>
+                                      </div>
+                                    )}
+
+                                    {property.bedrooms > 0 && (
+                                      <div className="flex items-center gap-1.5">
+                                        <IoBedOutline className="text-base" />
+                                        <span className="text-sm font-medium">{property.bedrooms}</span>
+                                      </div>
+                                    )}
+
+                                    {property.bathrooms > 0 && (
+                                      <div className="flex items-center gap-1.5">
+                                        <MdBathtub className="text-base" />
+                                        <span className="text-sm font-medium">{property.bathrooms}</span>
+                                      </div>
+                                    )}
+                                  </div>
+
+                                  {/* Preço e CTA */}
+                                  <div className="flex items-end justify-between pt-3 border-t border-airbnb-grey-100">
+                                    <div>
+                                      <p className="text-xs text-airbnb-grey-500 mb-0.5">A partir de</p>
+                                      <p className="text-xl font-bold text-airbnb-black">
+                                        {new Intl.NumberFormat("pt-BR", {
+                                          style: "currency",
+                                          currency: "BRL",
+                                          minimumFractionDigits: 0,
+                                          maximumFractionDigits: 0,
+                                        }).format(property.price_per_night || property.price || 0)}
+                                        <span className="text-sm font-normal text-airbnb-grey-600"> /noite</span>
+                                      </p>
+                                    </div>
+
+                                    {/* Botão CTA */}
+                                    <div className="flex items-center gap-2 text-rausch font-semibold text-sm">
+                                      <span>Ver</span>
+                                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+                                      </svg>
+                                    </div>
+                                  </div>
+                                </div>
+                              </Link>
+                            );
+                          })}
+                        </div>
+
+                        {/* Espaço final para scroll confortável */}
+                        <div className="h-8"></div>
+                      </div>
+
+                      {/* Footer integrado - Mobile */}
+                      <div className="lg:hidden">
+                        <Footer />
                       </div>
                     </div>
                   </div>
 
-                  {/* DESKTOP/MOBILE: Coluna Esquerda - Cards Scrollable */}
-                  <div className="w-full lg:w-[45%] overflow-y-auto px-4 py-6 lg:px-6 bg-white custom-scrollbar relative">
-                    {/* Barrinha cinza no topo (Mobile apenas) - Estilo Airbnb */}
-                    <div className="lg:hidden sticky top-0 left-0 right-0 flex justify-center pt-2 pb-4 bg-white z-10">
-                      <div className="w-10 h-1 bg-airbnb-grey-300 rounded-full"></div>
-                    </div>
+                  {/* DESKTOP: Layout Original */}
+                  <div className="hidden lg:flex flex-row h-[calc(100vh-240px)] min-h-[600px]">
+                    {/* Coluna Esquerda - Cards Scrollable */}
+                    <div className="w-[45%] overflow-y-auto px-6 py-6 bg-white custom-scrollbar relative">
+                      <div className="max-w-2xl mx-auto space-y-4">
+                        {/* Total de Resultados */}
+                        <div className="mb-4">
+                          <h2 className="text-xl font-semibold text-airbnb-black">
+                            {properties.length} {properties.length === 1 ? 'propriedade' : 'propriedades'}
+                          </h2>
+                          <p className="text-sm text-airbnb-grey-600 mt-1">
+                            Passe o mouse sobre os cards para destacar no mapa
+                          </p>
+                        </div>
 
-                    <div className="max-w-2xl mx-auto space-y-4">
-                      {/* Total de Resultados */}
-                      <div className="mb-4">
-                        <h2 className="text-xl font-semibold text-airbnb-black">
-                          {properties.length} {properties.length === 1 ? 'propriedade' : 'propriedades'}
-                        </h2>
-                        <p className="hidden lg:block text-sm text-airbnb-grey-600 mt-1">
-                          Passe o mouse sobre os cards para destacar no mapa
-                        </p>
-                        <p className="lg:hidden text-sm text-airbnb-grey-600 mt-1">
-                          Toque nos preços do mapa para ver detalhes
-                        </p>
-                      </div>
+                        {/* Cards com Animações */}
+                        {properties.map((property, index) => {
+                          const propertyId = property.uuid || property.id;
+                          const isHovered = hoveredPropertyId === propertyId;
 
-                      {/* Cards com Animações */}
-                      {properties.map((property, index) => {
-                        const propertyId = property.uuid || property.id;
-                        const isHovered = hoveredPropertyId === propertyId;
-
-                        return (
-                          <div
-                            key={propertyId || `property-${index}`}
-                            ref={(el) => (propertyRefs.current[propertyId] = el)}
-                            onMouseEnter={() => setHoveredPropertyId(propertyId)}
-                            onMouseLeave={() => setHoveredPropertyId(null)}
-                            className={`
-                              transition-all duration-300 ease-in-out
-                              ${isHovered ? 'transform scale-[1.02]' : 'transform scale-100'}
-                            `}
-                          >
-                            <div className={`
-                              rounded-xl overflow-hidden bg-white
-                              ${isHovered ? 'shadow-xl ring-2 ring-rausch/50' : 'shadow-sm hover:shadow-md'}
-                              transition-all duration-300 ease-in-out
-                            `}>
-                              <PropertyCard
-                                property={property}
-                                layout="horizontal"
-                              />
+                          return (
+                            <div
+                              key={propertyId || `property-${index}`}
+                              ref={(el) => (propertyRefs.current[propertyId] = el)}
+                              onMouseEnter={() => setHoveredPropertyId(propertyId)}
+                              onMouseLeave={() => setHoveredPropertyId(null)}
+                              className={`
+                                transition-all duration-300 ease-in-out
+                                ${isHovered ? 'transform scale-[1.02]' : 'transform scale-100'}
+                              `}
+                            >
+                              <div className={`
+                                rounded-xl overflow-hidden bg-white
+                                ${isHovered ? 'shadow-xl ring-2 ring-rausch/50' : 'shadow-sm hover:shadow-md'}
+                                transition-all duration-300 ease-in-out
+                              `}>
+                                <PropertyCard
+                                  property={property}
+                                  layout="horizontal"
+                                />
+                              </div>
                             </div>
-                          </div>
-                        );
-                      })}
+                          );
+                        })}
 
-                      {/* Espaço final para não ficar colado no fim */}
-                      <div className="h-20"></div>
+                        {/* Espaço final */}
+                        <div className="h-20"></div>
+                      </div>
                     </div>
-                  </div>
 
-                  {/* DESKTOP: Coluna Direita - Mapa Fixo (60%) */}
-                  <div className="hidden lg:block w-[55%] h-full sticky top-0">
-                    <MapViewLeaflet
-                      properties={properties}
-                      hoveredPropertyId={hoveredPropertyId}
-                      onPropertyHover={setHoveredPropertyId}
-                      onPropertyClick={scrollToProperty}
-                    />
+                    {/* Coluna Direita - Mapa Fixo */}
+                    <div className="w-[55%] h-full sticky top-0">
+                      <MapViewLeaflet
+                        properties={properties}
+                        hoveredPropertyId={hoveredPropertyId}
+                        onPropertyHover={setHoveredPropertyId}
+                        onPropertyClick={scrollToProperty}
+                      />
 
-                    {/* Badge de Contagem no Mapa Desktop */}
-                    <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-[1000] pointer-events-none">
-                      <div className="bg-white px-3 py-1.5 rounded-full shadow-md border border-airbnb-grey-200">
-                        <p className="text-xs font-semibold text-airbnb-black">
-                          {properties.filter(p => p.latitude && p.longitude).length} no mapa
-                        </p>
+                      {/* Badge de Contagem no Mapa Desktop */}
+                      <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-[1000] pointer-events-none">
+                        <div className="bg-white px-3 py-1.5 rounded-full shadow-md border border-airbnb-grey-200">
+                          <p className="text-xs font-semibold text-airbnb-black">
+                            {properties.filter(p => p.latitude && p.longitude).length} no mapa
+                          </p>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -621,7 +795,10 @@ const Properties = () => {
         </div>
       </div>
 
-      <Footer />
+      {/* Footer - Apenas Desktop */}
+      <div className="hidden lg:block relative z-[100]">
+        <Footer />
+      </div>
     </div>
   );
 };
