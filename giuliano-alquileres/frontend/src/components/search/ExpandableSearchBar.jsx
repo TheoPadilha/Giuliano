@@ -648,7 +648,7 @@ const ExpandableSearchBar = ({ filters, onSearch, onFiltersClick }) => {
                 </Link>
 
                 <Link
-                  to="/guest/dashboard"
+                  to="/profile"
                   onClick={() => setIsMobileMenuOpen(false)}
                   className="flex items-center gap-3 p-3 hover:bg-airbnb-grey-50 rounded-lg transition-colors"
                 >
@@ -657,7 +657,7 @@ const ExpandableSearchBar = ({ filters, onSearch, onFiltersClick }) => {
                 </Link>
 
                 <Link
-                  to="/guest/reservations"
+                  to="/my-bookings"
                   onClick={() => setIsMobileMenuOpen(false)}
                   className="flex items-center gap-3 p-3 hover:bg-airbnb-grey-50 rounded-lg transition-colors"
                 >
@@ -668,7 +668,7 @@ const ExpandableSearchBar = ({ filters, onSearch, onFiltersClick }) => {
                 </Link>
 
                 <Link
-                  to="/guest/favorites"
+                  to="/favorites"
                   onClick={() => setIsMobileMenuOpen(false)}
                   className="flex items-center gap-3 p-3 hover:bg-airbnb-grey-50 rounded-lg transition-colors"
                 >
