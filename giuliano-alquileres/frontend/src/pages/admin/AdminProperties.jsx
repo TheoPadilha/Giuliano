@@ -10,11 +10,17 @@ const AdminProperties = () => {
   const { user } = useAuth();
   const [properties, setProperties] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [searching, setSearching] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
 
-  const fetchProperties = useCallback(async () => {
+  const fetchProperties = useCallback(async (isInitialLoad = false) => {
     try {
-      setLoading(true);
+      if (isInitialLoad) {
+        setLoading(true);
+      } else {
+        setSearching(true);
+      }
+
       const params = {};
 
       // Se for admin normal, SEMPRE filtrar pelos próprios imóveis
@@ -38,14 +44,27 @@ const AdminProperties = () => {
       console.error("Erro ao carregar imóveis:", error);
     } finally {
       setLoading(false);
+      setSearching(false);
     }
   }, [user, searchTerm]);
 
+  // Carregamento inicial
   useEffect(() => {
     if (user) {
-      fetchProperties();
+      fetchProperties(true);
     }
-  }, [fetchProperties, user]);
+  }, [user]);
+
+  // Debounce para busca
+  useEffect(() => {
+    if (!loading) {
+      const timeoutId = setTimeout(() => {
+        fetchProperties(false);
+      }, 500); // 500ms de debounce
+
+      return () => clearTimeout(timeoutId);
+    }
+  }, [searchTerm]);
 
   const handleDelete = async (uuid) => {
     if (!window.confirm("Tem certeza que deseja excluir este imóvel?")) {
@@ -136,42 +155,51 @@ const AdminProperties = () => {
         <div className="card mb-8">
           <div className="flex flex-col md:flex-row gap-4 items-center">
             {/* Search */}
-            <div className="flex-1 w-full">
+            <div className="flex-1 w-full relative">
               <input
                 type="text"
                 placeholder="Buscar por título ou endereço..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="input"
+                className="input pr-10"
               />
+              {searching && (
+                <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-rausch"></div>
+                </div>
+              )}
             </div>
           </div>
         </div>
 
         {/* Properties Grid */}
-        {properties.length === 0 ? (
-          <div className="card text-center p-12 border-2 border-dashed">
-            <div className="text-airbnb-grey-400 mb-4">
-              <FaHome className="w-16 h-16 mx-auto text-airbnb-grey-300" />
+        <div className="relative">
+          {searching && (
+            <div className="absolute inset-0 bg-white/50 z-10 rounded-lg"></div>
+          )}
+          {properties.length === 0 ? (
+            <div className="card text-center p-12 border-2 border-dashed">
+              <div className="text-airbnb-grey-400 mb-4">
+                <FaHome className="w-16 h-16 mx-auto text-airbnb-grey-300" />
+              </div>
+              <h3 className="heading-4 text-airbnb-black mb-2">
+                Nenhum imóvel encontrado
+              </h3>
+              <p className="body-base text-airbnb-grey-600 mb-6">
+                {searchTerm
+                  ? "Tente ajustar os filtros ou fazer uma nova busca."
+                  : "Adicione seu primeiro imóvel para começar."}
+              </p>
+              <Link
+                to="/admin/properties/new"
+                className="btn-primary inline-flex items-center gap-2"
+              >
+                <FaPlus />
+                Adicionar Imóvel
+              </Link>
             </div>
-            <h3 className="heading-4 text-airbnb-black mb-2">
-              Nenhum imóvel encontrado
-            </h3>
-            <p className="body-base text-airbnb-grey-600 mb-6">
-              {searchTerm
-                ? "Tente ajustar os filtros ou fazer uma nova busca."
-                : "Adicione seu primeiro imóvel para começar."}
-            </p>
-            <Link
-              to="/admin/properties/new"
-              className="btn-primary inline-flex items-center gap-2"
-            >
-              <FaPlus />
-              Adicionar Imóvel
-            </Link>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {properties.map((property) => {
               const photoUrl = getPhotoUrl(property);
 
@@ -289,7 +317,8 @@ const AdminProperties = () => {
               );
             })}
           </div>
-        )}
+          )}
+        </div>
       </div>
     </AdminLayout>
   );

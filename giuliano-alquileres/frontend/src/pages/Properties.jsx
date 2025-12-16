@@ -39,29 +39,58 @@ const Properties = () => {
   const propertyRefs = useRef({}); // Refs para scroll até card
 
   // Estado dos filtros
-  const [filters, setFilters] = useState({
-    search: searchParams.get("search") || "",
-    city_id: searchParams.get("city_id") || "",
-    type: searchParams.get("type") || "",
-    max_guests:
-      searchParams.get("max_guests") || searchParams.get("guests") || "",
-    min_price: searchParams.get("min_price") || "",
-    max_price: searchParams.get("max_price") || "",
-    bedrooms: searchParams.get("bedrooms") || "",
-    bathrooms: searchParams.get("bathrooms") || "",
-    featured: searchParams.get("featured") || "",
-    amenities: searchParams.get("amenities")?.split(",").filter(Boolean) || [],
-    checkIn: searchParams.get("checkIn") || "",
-    checkOut: searchParams.get("checkOut") || "",
-    guests: {
-      adults: parseInt(searchParams.get("adults")) || 0,
-      children: parseInt(searchParams.get("children")) || 0,
-      infants: parseInt(searchParams.get("infants")) || 0,
-      pets: parseInt(searchParams.get("pets")) || 0,
-    },
-    rooms: [],
-    page: parseInt(searchParams.get("page")) || 1,
-    limit: parseInt(searchParams.get("limit")) || 20,
+  const [filters, setFilters] = useState(() => {
+    // Ler dados dos hóspedes - priorizar guestsData da URL
+    let guestsData = {
+      adults: 0,
+      children: 0,
+      infants: 0,
+      pets: 0,
+    };
+
+    // Tentar ler guestsData (vindo do AirbnbHeader)
+    const guestsDataParam = searchParams.get("guestsData");
+    if (guestsDataParam) {
+      try {
+        const parsed = JSON.parse(guestsDataParam);
+        guestsData = {
+          adults: parsed.adults || 0,
+          children: parsed.children || 0,
+          infants: parsed.infants || 0,
+          pets: parsed.pets || 0,
+        };
+      } catch (e) {
+        console.error("Erro ao fazer parse de guestsData:", e);
+      }
+    } else {
+      // Fallback: ler parâmetros individuais
+      guestsData = {
+        adults: parseInt(searchParams.get("adults")) || 0,
+        children: parseInt(searchParams.get("children")) || 0,
+        infants: parseInt(searchParams.get("infants")) || 0,
+        pets: parseInt(searchParams.get("pets")) || 0,
+      };
+    }
+
+    return {
+      search: searchParams.get("search") || "",
+      city_id: searchParams.get("city_id") || "",
+      type: searchParams.get("type") || "",
+      max_guests:
+        searchParams.get("max_guests") || searchParams.get("guests") || "",
+      min_price: searchParams.get("min_price") || "",
+      max_price: searchParams.get("max_price") || "",
+      bedrooms: searchParams.get("bedrooms") || "",
+      bathrooms: searchParams.get("bathrooms") || "",
+      featured: searchParams.get("featured") || "",
+      amenities: searchParams.get("amenities")?.split(",").filter(Boolean) || [],
+      checkIn: searchParams.get("checkIn") || "",
+      checkOut: searchParams.get("checkOut") || "",
+      guests: guestsData,
+      rooms: [],
+      page: parseInt(searchParams.get("page")) || 1,
+      limit: parseInt(searchParams.get("limit")) || 20,
+    };
   });
 
   // Estado de ordenação
@@ -641,7 +670,7 @@ const Properties = () => {
                       </div>
 
                       {/* Footer integrado - Mobile */}
-                      <div className="lg:hidden">
+                      <div className={`lg:hidden ${showFiltersModal ? 'hidden' : ''}`}>
                         <Footer />
                       </div>
                     </div>
@@ -796,7 +825,7 @@ const Properties = () => {
       </div>
 
       {/* Footer - Apenas Desktop */}
-      <div className="hidden lg:block relative z-[100]">
+      <div className={`hidden lg:block relative z-[100] ${showFiltersModal ? '!hidden' : ''}`}>
         <Footer />
       </div>
     </div>

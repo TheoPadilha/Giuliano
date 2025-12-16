@@ -1,0 +1,24 @@
+{
+  "name": "Ziguealuga - Aluguel de Imóveis para Temporada",
+  "short_name": "Ziguealuga",
+  "description": "Encontre o imóvel perfeito para suas férias no litoral catarinense",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#FF385C",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

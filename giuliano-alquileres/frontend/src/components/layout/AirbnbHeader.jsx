@@ -376,7 +376,7 @@ const AirbnbHeader = ({ onFilterButtonClick }) => {
                       isScrolled ? "text-xs" : "text-sm"
                     }`}
                   >
-                    <span className="text-airbnb-grey-400">{t('header.guests')}</span>
+                    <span className="text-airbnb-grey-400">{formatGuestsDisplay()}</span>
                   </div>
                 </div>
 

@@ -36,7 +36,8 @@
       "Bash(rsync:*)",
       "Bash(scp:*)",
       "Bash(bash:*)",
-      "Bash(ssh-keygen:*)"
+      "Bash(ssh-keygen:*)",
+      "Bash(ls:*)"
     ],
     "deny": [],
     "ask": []

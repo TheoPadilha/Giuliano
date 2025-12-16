@@ -114,12 +114,12 @@ const PropertyFiltersPro = ({
         <>
           {/* Overlay */}
           <div
-            className="fixed inset-0 bg-black/20 backdrop-blur-sm z-[59]"
+            className="fixed inset-0 bg-black/20 backdrop-blur-sm z-[150]"
             onClick={() => (isModal ? onClose() : setShowFilters(false))}
           />
 
           {/* Container do Popup */}
-          <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-3xl max-h-[90vh] bg-white rounded-xlarge shadow-2xl border border-airbnb-grey-200 z-[60] overflow-hidden flex flex-col">
+          <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-3xl max-h-[90vh] bg-white rounded-xlarge shadow-2xl border border-airbnb-grey-200 z-[160] overflow-hidden flex flex-col">
             {/* Header */}
             <div className="px-6 py-4 border-b border-airbnb-grey-200 bg-white flex items-center justify-between flex-shrink-0">
               <h2 className="text-xl font-semibold text-airbnb-black">

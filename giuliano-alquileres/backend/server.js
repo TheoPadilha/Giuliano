@@ -97,7 +97,7 @@ app.use(
 // Rate limiting geral para toda a API
 const generalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutos
-  max: process.env.NODE_ENV === "production" ? 100 : 1000, // Mais permissivo em dev
+  max: process.env.NODE_ENV === "production" ? 500 : 1000, // Aumentado de 100 para 500 em produção
   message: { error: "Muitas requisições. Tente novamente em 15 minutos." },
   standardHeaders: true,
   legacyHeaders: false,
