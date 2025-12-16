@@ -221,7 +221,7 @@ const Register = () => {
             {/* --- ALTERAÇÃO 5: Adicionar campo de Telefone --- */}
             <div>
               <label className="block text-sm font-bold text-gray-700 mb-2">
-                Telefone (WhatsApp)
+                Telefone (WhatsApp) *
               </label>
               <input
                 type="tel"
@@ -229,6 +229,7 @@ const Register = () => {
                 value={formData.phone}
                 onChange={handleChange}
                 placeholder="(XX) XXXXX-XXXX"
+                required
                 className="w-full px-4 py-4 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-primary-500 focus:ring-0 transition-all duration-300 hover:border-gray-300"
               />
             </div>

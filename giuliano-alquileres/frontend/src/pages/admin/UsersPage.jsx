@@ -69,6 +69,40 @@ const UsersPage = () => {
     }
   };
 
+  // Função para reverter usuário para pendente
+  const handleRevertUser = async (userId, userName) => {
+    if (!window.confirm(`Reverter "${userName}" de volta para PENDENTE? Você poderá aprovar ou rejeitar novamente.`)) {
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/admin/users/${userId}`,
+        {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Falha ao reverter o usuário.");
+      }
+
+      const data = await response.json();
+
+      // Atualiza o status do usuário para pending na lista local
+      setAllUsers((currentUsers) =>
+        currentUsers.map((user) =>
+          user.id === userId
+            ? { ...user, status: "pending" }
+            : user
+        )
+      );
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
   // Filtra a lista de usuários com base na aba ativa
   const filteredUsers = useMemo(() => {
     if (activeFilter === "all") return allUsers;
@@ -206,6 +240,20 @@ const UsersPage = () => {
                                 className="btn-danger py-2 px-4 text-sm"
                               >
                                 Rejeitar
+                              </button>
+                            </div>
+                          )}
+                          {(user.status === "approved" || user.status === "rejected") && (
+                            <div className="flex justify-end space-x-3">
+                              <button
+                                onClick={() => handleRevertUser(user.id, user.name)}
+                                className="px-4 py-2 text-sm font-medium text-white bg-amber-600 hover:bg-amber-700 rounded-lg transition-colors duration-200 flex items-center gap-2"
+                                title="Reverter para pendente"
+                              >
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                  <path fillRule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clipRule="evenodd" />
+                                </svg>
+                                Reverter
                               </button>
                             </div>
                           )}

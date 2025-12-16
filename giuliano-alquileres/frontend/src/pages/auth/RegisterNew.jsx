@@ -53,7 +53,7 @@ const RegisterNew = () => {
       return;
     }
 
-    if (!formData.name || !formData.email) {
+    if (!formData.name || !formData.email || !formData.phone) {
       setError("Por favor, preencha todos os campos obrigatórios");
       return;
     }
@@ -294,7 +294,7 @@ const RegisterNew = () => {
                   {/* Telefone */}
                   <div className="form-group">
                     <label className="label">
-                      Telefone (Opcional)
+                      Telefone (WhatsApp) *
                     </label>
                     <div className="relative">
                       <FaPhone className="absolute left-4 top-1/2 -translate-y-1/2 text-airbnb-grey-400" />
@@ -304,6 +304,7 @@ const RegisterNew = () => {
                         value={formData.phone}
                         onChange={handleChange}
                         placeholder="(XX) XXXXX-XXXX"
+                        required
                         className="input pl-12"
                         autoComplete="tel"
                       />

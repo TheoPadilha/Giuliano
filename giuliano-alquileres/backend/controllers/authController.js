@@ -3,6 +3,7 @@ const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 const User = require("../models/User");
 const { sendPasswordResetEmail } = require("../services/emailService");
+const zapiService = require("../services/zapiService");
 
 // Validação de registro
 const registerSchema = Joi.object({
@@ -20,7 +21,11 @@ const registerSchema = Joi.object({
     "string.max": "Senha deve ter no máximo 100 caracteres",
     "any.required": "Senha é obrigatória",
   }),
-  phone: Joi.string().min(10).max(20).optional().allow(""),
+  phone: Joi.string().min(10).max(20).required().messages({
+    "string.min": "Telefone deve ter no mínimo 10 caracteres",
+    "string.max": "Telefone deve ter no máximo 20 caracteres",
+    "any.required": "Telefone é obrigatório",
+  }),
   country: Joi.string().max(50).optional().allow(""),
   role: Joi.string().valid("client", "admin").optional(), // Apenas client ou admin podem se registrar
 });
@@ -86,11 +91,66 @@ exports.register = async (req, res) => {
       name,
       email: email.toLowerCase().trim(),
       password_hash: password,
-      phone: phone || null,
+      phone: phone,
       country: country || "Brasil",
       role: userRole,
       status: userStatus,
     });
+
+    // Se for proprietário (admin), enviar notificações WhatsApp
+    if (userRole === "admin") {
+      // Enviar notificações em background (não bloqueia o registro)
+      setImmediate(async () => {
+        try {
+          // Mensagem para o admin (proprietário da plataforma)
+          const adminPhone = process.env.ZAPI_PHONE || "5547989105580";
+          const adminMessage = `
+🏠 *NOVO CADASTRO DE PROPRIETÁRIO!*
+_Aguardando sua aprovação_
+
+👤 *Nome:* ${name}
+📧 *Email:* ${email}
+📞 *Telefone:* ${phone}
+🌍 *País:* ${country || "Brasil"}
+
+📝 *Status:* Pendente de Aprovação
+
+🌐 *Acesse o painel:* https://ziguealuga.com/admin/users
+
+_ZigueAluga - Sistema de Gestão_
+          `.trim();
+
+          await zapiService.sendMessage(adminPhone, adminMessage);
+          console.log("✅ WhatsApp enviado para admin sobre novo proprietário");
+
+          // Mensagem para o proprietário que está se cadastrando
+          const ownerMessage = `
+Olá *${name}*! 👋
+
+✅ *Cadastro Recebido com Sucesso!*
+
+Sua solicitação de cadastro como proprietário na plataforma *ZigueAluga* foi recebida e está sendo analisada.
+
+📋 *Próximos Passos:*
+• Nossa equipe irá revisar seu cadastro
+• Você receberá uma mensagem aqui no WhatsApp quando for aprovado
+• Após aprovação, você poderá anunciar seus imóveis
+
+📞 *Dúvidas?* Entre em contato conosco pelo WhatsApp ${adminPhone}
+
+🌐 *Site:* https://ziguealuga.com
+
+_Obrigado por escolher o ZigueAluga!_
+          `.trim();
+
+          await zapiService.sendMessage(phone, ownerMessage);
+          console.log("✅ WhatsApp de confirmação enviado para o proprietário");
+        } catch (whatsappError) {
+          console.error("❌ Erro ao enviar WhatsApp:", whatsappError.message);
+          // Não falha o registro se o WhatsApp não funcionar
+        }
+      });
+    }
 
     // Se for cliente, gerar token imediatamente (já está aprovado)
     // Se for admin, aguardar aprovação

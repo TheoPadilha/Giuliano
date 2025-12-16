@@ -13,7 +13,8 @@ router.use(verifyToken, requireAdminMaster);
 
 // --- Rotas de Gerenciamento de Usuários ---
 
-// GET /api/admin/users/pending - Listar todos os usuários com status 'pending'
+// GET /api/admin/users - Listar todos os usuários (com filtros, opcional)
+router.get("/users", adminController.getAllUsers);
 
 // PUT /api/admin/users/:id/approve - Aprovar o cadastro de um usuário
 router.put("/users/:id/approve", adminController.approveUser);
@@ -21,7 +22,7 @@ router.put("/users/:id/approve", adminController.approveUser);
 // PUT /api/admin/users/:id/reject - Rejeitar o cadastro de um usuário
 router.put("/users/:id/reject", adminController.rejectUser);
 
-// GET /api/admin/users - Listar todos os usuários (com filtros, opcional)
-router.get("/users", adminController.getAllUsers);
+// DELETE /api/admin/users/:id - Reverter usuário para pendente (corrigir aprovação/rejeição acidental)
+router.delete("/users/:id", adminController.deleteUser);
 
 module.exports = router;
