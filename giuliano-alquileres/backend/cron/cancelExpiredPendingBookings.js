@@ -1,6 +1,7 @@
 const cron = require("node-cron");
 const { Booking } = require("../models");
 const logger = require("../utils/logger");
+const { notifyBookingCancelled, notifyOwnerBookingCancelled } = require("../services/zapiService");
 
 // Função para cancelar reservas pendentes que expiraram (check-in passou e ainda estão pending)
 const cancelExpiredPendingBookings = async () => {
@@ -21,15 +22,42 @@ const cancelExpiredPendingBookings = async () => {
         })),
       });
 
-      // TODO: Enviar e-mails para hóspedes e proprietários notificando cancelamento
-      console.log("[CRON] 📧 Notificações de cancelamento devem ser enviadas para:");
-      result.bookings.forEach((booking) => {
-        console.log(`  - Hóspede: ${booking.guest_name} (${booking.guest_email})`);
-        console.log(`  - Proprietário: ${booking.owner_name} (${booking.owner_email})`);
-        console.log(`  - Propriedade: ${booking.property_title}`);
-        console.log(`  - Check-in que passou: ${booking.check_in}`);
-        console.log("  ---");
-      });
+      // Enviar notificações WhatsApp para hóspedes e proprietários
+      console.log("[CRON] 📧 Enviando notificações de cancelamento...");
+
+      for (const booking of result.bookings) {
+        const reason = booking.cancellation_reason || "Proprietário não confirmou a reserva a tempo";
+
+        // Criar objeto property com os dados necessários
+        const property = {
+          title: booking.property_title,
+          address: booking.property?.address || "Endereço não informado",
+        };
+
+        // Notificar hóspede
+        try {
+          const guestResult = await notifyBookingCancelled(booking, property, reason);
+          if (guestResult.success) {
+            console.log(`[CRON] ✅ WhatsApp enviado para hóspede: ${booking.guest_name}`);
+          } else {
+            console.log(`[CRON] ⚠️  Falha ao enviar WhatsApp para hóspede: ${guestResult.error}`);
+          }
+        } catch (error) {
+          console.error(`[CRON] ❌ Erro ao notificar hóspede: ${error.message}`);
+        }
+
+        // Notificar proprietário/admin
+        try {
+          const ownerResult = await notifyOwnerBookingCancelled(booking, property, reason);
+          if (ownerResult.success) {
+            console.log(`[CRON] ✅ WhatsApp enviado para proprietário`);
+          } else {
+            console.log(`[CRON] ⚠️  Falha ao enviar WhatsApp para proprietário: ${ownerResult.error}`);
+          }
+        } catch (error) {
+          console.error(`[CRON] ❌ Erro ao notificar proprietário: ${error.message}`);
+        }
+      }
     } else {
       console.log("[CRON] Nenhuma reserva pendente expirada encontrada");
     }

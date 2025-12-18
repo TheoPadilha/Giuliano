@@ -3,7 +3,14 @@ const router = express.Router();
 const dynamicPricingController = require("../controllers/dynamicPricingController");
 const { verifyToken } = require("../middleware/auth");
 
-// Todas as rotas requerem autenticação
+// Todas as rotas requerem autenticação (exceto cálculo de preço)
+
+// GET /api/properties/:propertyId/pricing/calculate - Calcular preço para período (público)
+// IMPORTANTE: Esta rota deve vir ANTES de /:propertyId/pricing para não conflitar
+router.get(
+  "/:propertyId/pricing/calculate",
+  dynamicPricingController.calculatePriceForPeriod
+);
 
 // GET /api/properties/:propertyId/pricing - Listar preços dinâmicos
 router.get(

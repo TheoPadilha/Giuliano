@@ -218,9 +218,109 @@ const deleteDynamicPricing = async (req, res) => {
   }
 };
 
+// Calcular preço para um período específico
+const calculatePriceForPeriod = async (req, res) => {
+  try {
+    const { propertyId } = req.params;
+    const { checkIn, checkOut } = req.query;
+
+    console.log("[DynamicPricing] Calculando preço para período:", { propertyId, checkIn, checkOut });
+
+    // Validar datas
+    if (!checkIn || !checkOut) {
+      return res.status(400).json({ error: "Datas de check-in e check-out são obrigatórias" });
+    }
+
+    const checkInDate = new Date(checkIn);
+    const checkOutDate = new Date(checkOut);
+
+    if (checkInDate >= checkOutDate) {
+      return res.status(400).json({ error: "Data de check-out deve ser posterior ao check-in" });
+    }
+
+    // Buscar propriedade
+    const property = await Property.findOne({
+      where: { uuid: propertyId },
+    });
+
+    if (!property) {
+      return res.status(404).json({ error: "Propriedade não encontrada" });
+    }
+
+    // Buscar preços dinâmicos que se sobrepõem com o período
+    const pricings = await DynamicPricing.findAll({
+      where: {
+        property_id: property.id,
+      },
+      order: [["priority", "DESC"]], // Maior prioridade primeiro
+    });
+
+    // Calcular preço noite por noite
+    const nightlyPrices = [];
+    let currentDate = new Date(checkInDate);
+    const basePrice = Number(property.price_per_night);
+
+    while (currentDate < checkOutDate) {
+      const dateStr = currentDate.toISOString().split("T")[0];
+
+      // Encontrar preço dinâmico aplicável para esta noite (maior prioridade)
+      const applicablePricing = pricings.find((pricing) => {
+        const start = new Date(pricing.start_date);
+        const end = new Date(pricing.end_date);
+        return currentDate >= start && currentDate < end;
+      });
+
+      const nightPrice = applicablePricing
+        ? Number(applicablePricing.price_per_night)
+        : basePrice;
+
+      nightlyPrices.push({
+        date: dateStr,
+        price: nightPrice,
+        isDynamic: !!applicablePricing,
+        description: applicablePricing?.description || null,
+      });
+
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+
+    // Calcular totais
+    const totalNights = nightlyPrices.length;
+    const totalPrice = nightlyPrices.reduce((sum, night) => sum + night.price, 0);
+    const averagePrice = totalPrice / totalNights;
+
+    console.log("[DynamicPricing] Cálculo concluído:", {
+      totalNights,
+      totalPrice,
+      averagePrice,
+      dynamicDays: nightlyPrices.filter((n) => n.isDynamic).length,
+    });
+
+    res.json({
+      propertyId: property.uuid,
+      checkIn,
+      checkOut,
+      totalNights,
+      basePrice,
+      totalPrice,
+      averagePrice,
+      nightlyPrices,
+      hasDynamicPricing: nightlyPrices.some((n) => n.isDynamic),
+    });
+  } catch (error) {
+    console.error("[DynamicPricing] Erro ao calcular preço:", error);
+    logger.error("Erro ao calcular preço para período", { error: error.message });
+    res.status(500).json({
+      error: "Erro interno do servidor",
+      details: process.env.NODE_ENV === "development" ? error.message : undefined,
+    });
+  }
+};
+
 module.exports = {
   createDynamicPricing,
   getPropertyPricing,
   updateDynamicPricing,
   deleteDynamicPricing,
+  calculatePriceForPeriod,
 };
