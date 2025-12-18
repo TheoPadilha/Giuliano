@@ -59,9 +59,15 @@ const PropertyDetails = () => {
     return new Date(year, month - 1, day);
   };
 
-  // Calcular preço total
+  // Calcular preço total com dynamic pricing
   useEffect(() => {
     if (bookingDates.checkIn && bookingDates.checkOut && property) {
+      calculatePrice();
+    }
+  }, [bookingDates, property, guests]);
+
+  const calculatePrice = async () => {
+    try {
       const checkIn = parseDate(bookingDates.checkIn);
       const checkOut = parseDate(bookingDates.checkOut);
       const nights = Math.ceil((checkOut - checkIn) / (1000 * 60 * 60 * 24));
@@ -69,28 +75,59 @@ const PropertyDetails = () => {
       // Calcular número total de hóspedes (adultos + crianças, bebês não contam)
       const totalGuests = guests.adults + guests.children;
 
-      // Preço base (para 2 hóspedes)
-      const basePrice = Number(property.price_per_night);
+      // Tentar buscar preço dinâmico do backend
+      try {
+        const response = await api.get(
+          `/api/properties/${property.uuid}/pricing/calculate`,
+          {
+            params: {
+              checkIn: bookingDates.checkIn,
+              checkOut: bookingDates.checkOut,
+            },
+          }
+        );
 
-      // Definir número mínimo de hóspedes incluídos no preço base (geralmente 2)
-      const minGuestsIncluded = 2;
+        // Usar preço total do backend (já considera dynamic pricing)
+        let baseTotalPrice = response.data.totalPrice;
 
-      // Calcular hóspedes adicionais
-      const additionalGuests = Math.max(0, totalGuests - minGuestsIncluded);
+        // Adicionar taxa por hóspedes extras
+        const minGuestsIncluded = 2;
+        const additionalGuests = Math.max(0, totalGuests - minGuestsIncluded);
 
-      // Valor por hóspede adicional (10% do preço base por hóspede extra)
-      const pricePerAdditionalGuest = basePrice * 0.10;
+        if (additionalGuests > 0) {
+          // 10% do preço médio por noite, por hóspede adicional
+          const avgPricePerNight = response.data.averagePrice;
+          const extraGuestFee = avgPricePerNight * 0.10 * additionalGuests * nights;
+          baseTotalPrice += extraGuestFee;
+        }
 
-      // Preço total por noite = preço base + (hóspedes adicionais * valor por hóspede adicional)
-      const pricePerNight = basePrice + (additionalGuests * pricePerAdditionalGuest);
+        setTotalNights(nights);
+        setTotalPrice(baseTotalPrice);
 
-      // Preço total = preço por noite * número de noites
-      const price = pricePerNight * nights;
+        console.log("[PropertyDetails] Preço calculado com dynamic pricing:", {
+          hasDynamicPricing: response.data.hasDynamicPricing,
+          baseTotal: response.data.totalPrice,
+          extraGuestFee: baseTotalPrice - response.data.totalPrice,
+          finalTotal: baseTotalPrice,
+        });
+      } catch (apiError) {
+        // Fallback: calcular manualmente se API falhar
+        console.warn("[PropertyDetails] Erro ao buscar preço dinâmico, usando cálculo manual:", apiError.message);
 
-      setTotalNights(nights);
-      setTotalPrice(price);
+        const basePrice = Number(property.price_per_night);
+        const minGuestsIncluded = 2;
+        const additionalGuests = Math.max(0, totalGuests - minGuestsIncluded);
+        const pricePerAdditionalGuest = basePrice * 0.10;
+        const pricePerNight = basePrice + (additionalGuests * pricePerAdditionalGuest);
+        const price = pricePerNight * nights;
+
+        setTotalNights(nights);
+        setTotalPrice(price);
+      }
+    } catch (error) {
+      console.error("[PropertyDetails] Erro ao calcular preço:", error);
     }
-  }, [bookingDates, property, guests]);
+  };
 
   const fetchProperty = async () => {
     try {
