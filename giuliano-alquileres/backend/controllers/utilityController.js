@@ -172,7 +172,7 @@ const geocodeAddress = async (req, res) => {
         headers: {
           "User-Agent": "Ziguealuga-Platform/1.0", // Nominatim exige User-Agent
         },
-        timeout: 10000, // 10 segundos timeout
+        timeout: 30000, // 30 segundos timeout (aumentado de 10s)
       }
     );
 
@@ -206,15 +206,26 @@ const geocodeAddress = async (req, res) => {
     if (error.code === "ECONNABORTED" || error.code === "ETIMEDOUT") {
       return res.status(504).json({
         error:
-          "Tempo limite excedido ao conectar com o serviço de mapas. Tente novamente.",
+          "Tempo limite excedido ao conectar com o serviço de mapas. Tente novamente em alguns segundos ou insira as coordenadas manualmente.",
+        canSkip: true,
       });
     }
 
     if (error.response) {
       // Erro da API
       console.error("❌ Resposta de erro:", error.response.status, error.response.data);
+
+      // Rate limiting do Nominatim
+      if (error.response.status === 429) {
+        return res.status(429).json({
+          error: "Muitas requisições ao serviço de mapas. Aguarde alguns segundos e tente novamente, ou insira as coordenadas manualmente.",
+          canSkip: true,
+        });
+      }
+
       return res.status(error.response.status || 500).json({
         error: "Erro ao conectar com o serviço de mapas",
+        canSkip: true,
         details:
           process.env.NODE_ENV === "development"
             ? error.response.data

@@ -15,20 +15,29 @@ const reviewSchema = Joi.object({
 // Criar avaliação
 const createReview = async (req, res) => {
   try {
+    console.log("[Review] Dados recebidos:", req.body);
+    console.log("[Review] Usuário:", req.user.id, req.user.email);
+
     const { error, value } = reviewSchema.validate(req.body);
     if (error) {
+      console.log("[Review] Erro de validação:", error.details[0].message);
       return res.status(400).json({ error: error.details[0].message });
     }
 
+    console.log("[Review] Dados validados:", value);
+
     // Verificar se booking existe e pertence ao usuário
+    console.log("[Review] Buscando booking ID:", value.booking_id, "para usuário:", req.user.id);
     const booking = await Booking.findOne({
-      where: { 
-        id: value.booking_id, 
+      where: {
+        id: value.booking_id,
         user_id: req.user.id,
         status: 'completed' // Só pode avaliar após check-out
       },
       include: [{ model: Property, as: 'property' }]
     });
+
+    console.log("[Review] Booking encontrada:", booking ? `Sim (ID: ${booking.id})` : "Não");
 
     if (!booking) {
       return res.status(404).json({ error: "Reserva não encontrada ou não finalizada" });
@@ -43,6 +52,8 @@ const createReview = async (req, res) => {
       return res.status(400).json({ error: "Você já avaliou esta reserva" });
     }
 
+    console.log("[Review] Criando review com property_id:", booking.property.id);
+
     // Criar avaliação
     const review = await Review.create({
       ...value,
@@ -54,14 +65,20 @@ const createReview = async (req, res) => {
       message: "Avaliação criada com sucesso",
       review: await Review.findByPk(review.id, {
         include: [
-          { model: User, as: 'user', attributes: ['name', 'avatar'] },
+          { model: User, as: 'user', attributes: ['name'] },
           { model: Property, as: 'property', attributes: ['title'] }
         ]
       })
     });
   } catch (error) {
     console.error("Erro ao criar avaliação:", error);
-    res.status(500).json({ error: "Erro interno do servidor" });
+    console.error("Stack trace:", error.stack);
+    console.error("Mensagem:", error.message);
+    res.status(500).json({
+      error: "Erro interno do servidor",
+      message: error.message,
+      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
   }
 };
 
@@ -108,7 +125,7 @@ const getPropertyReviews = async (req, res) => {
         {
           model: User,
           as: 'user',
-          attributes: ['name', 'avatar', 'created_at']
+          attributes: ['name', 'created_at']
         }
       ],
       order: [['created_at', 'DESC']],

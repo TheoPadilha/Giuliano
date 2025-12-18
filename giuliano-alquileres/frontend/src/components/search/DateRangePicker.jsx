@@ -76,7 +76,9 @@ const DateRangePicker = ({ checkIn, checkOut, onChange, onClose, occupiedDates =
       start.setHours(0, 0, 0, 0);
       end.setHours(0, 0, 0, 0);
 
-      return checkDate >= start && checkDate <= end;
+      // FIX: O dia de check-out não deve bloquear novos check-ins
+      // Apenas os dias entre check-in e (check-out - 1) estão ocupados
+      return checkDate >= start && checkDate < end;
     });
   };
 

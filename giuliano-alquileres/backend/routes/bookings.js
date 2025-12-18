@@ -44,4 +44,10 @@ router.put("/:uuid/cancel", verifyToken, bookingController.cancelBooking);
 // PUT /api/bookings/:uuid/confirm - Confirmar reserva (proprietário)
 router.put("/:uuid/confirm", verifyToken, bookingController.confirmBooking);
 
+// POST /api/bookings/test/complete-expired - TESTE: Executar cron job manualmente (admin only)
+router.post("/test/complete-expired", verifyToken, bookingController.testCompleteBookings);
+
+// POST /api/bookings/test/cancel-expired - TESTE: Cancelar reservas pendentes expiradas manualmente (admin only)
+router.post("/test/cancel-expired", verifyToken, bookingController.cancelExpiredBookings);
+
 module.exports = router;

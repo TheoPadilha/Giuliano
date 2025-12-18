@@ -37,7 +37,9 @@
       "Bash(scp:*)",
       "Bash(bash:*)",
       "Bash(ssh-keygen:*)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(npx sequelize-cli:*)",
+      "Bash(powershell -ExecutionPolicy Bypass -File deploy-migrations.ps1:*)"
     ],
     "deny": [],
     "ask": []

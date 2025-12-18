@@ -12,6 +12,8 @@ const PropertyAvailability = require("./PropertyAvailability");
 const Payment = require("./Payment");
 const Review = require("./Review");
 const CityGuide = require("./CityGuide");
+const DynamicPricing = require("./DynamicPricing");
+const GuestReview = require("./GuestReview");
 
 // ============================================
 // RELACIONAMENTOS
@@ -165,6 +167,46 @@ Review.belongsTo(Booking, {
   as: "booking",
 });
 
+// Property -> DynamicPricing (1:N) - PREÇOS DINÂMICOS
+Property.hasMany(DynamicPricing, {
+  foreignKey: "property_id",
+  as: "dynamicPricing",
+});
+DynamicPricing.belongsTo(Property, {
+  foreignKey: "property_id",
+  as: "property",
+});
+
+// GuestReview -> Booking (1:1) - AVALIAÇÃO DE HÓSPEDE
+GuestReview.belongsTo(Booking, {
+  foreignKey: "booking_id",
+  as: "booking",
+});
+Booking.hasOne(GuestReview, {
+  foreignKey: "booking_id",
+  as: "guestReview",
+});
+
+// GuestReview -> User (Guest) (N:1)
+GuestReview.belongsTo(User, {
+  foreignKey: "guest_id",
+  as: "guest",
+});
+User.hasMany(GuestReview, {
+  foreignKey: "guest_id",
+  as: "receivedReviews",
+});
+
+// GuestReview -> User (Host) (N:1)
+GuestReview.belongsTo(User, {
+  foreignKey: "host_id",
+  as: "host",
+});
+User.hasMany(GuestReview, {
+  foreignKey: "host_id",
+  as: "givenReviews",
+});
+
 // ============================================
 // SINCRONIZAR MODELS
 // ============================================
@@ -200,5 +242,7 @@ module.exports = {
   Payment,
   Review,
   CityGuide,
+  DynamicPricing,
+  GuestReview,
   syncModels,
 };

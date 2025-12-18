@@ -47,6 +47,11 @@ const User = sequelize.define(
       allowNull: true,
       defaultValue: "Brasil",
     },
+    avatar: {
+      type: DataTypes.STRING(500),
+      allowNull: true,
+      comment: "URL da imagem de avatar do usuário (Cloudinary)",
+    },
     password_hash: {
       type: DataTypes.STRING(255),
       allowNull: false,

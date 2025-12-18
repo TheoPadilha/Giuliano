@@ -633,7 +633,8 @@ const PropertyDetails = () => {
                     </div>
                     {(() => {
                       const totalGuests = guests.adults + guests.children;
-                      const additionalGuests = Math.max(0, totalGuests - 2);
+                      const maxGuests = property.max_guests || 2; // Usar max_guests do imóvel
+                      const additionalGuests = Math.max(0, totalGuests - maxGuests);
                       if (additionalGuests > 0) {
                         const extraGuestFee = Number(property.price_per_night) * 0.10 * additionalGuests * totalNights;
                         return (

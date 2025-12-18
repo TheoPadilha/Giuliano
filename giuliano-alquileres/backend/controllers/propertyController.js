@@ -150,10 +150,10 @@ const getProperties = async (req, res) => {
     // 10. Busca por texto
     if (search && search.trim()) {
       where[Op.or] = [
-        { title: { [Op.iLike]: `%${search.trim()}%` } },
-        { description: { [Op.iLike]: `%${search.trim()}%` } },
-        { address: { [Op.iLike]: `%${search.trim()}%` } },
-        { neighborhood: { [Op.iLike]: `%${search.trim()}%` } },
+        { title: { [Op.like]: `%${search.trim()}%` } },
+        { description: { [Op.like]: `%${search.trim()}%` } },
+        { address: { [Op.like]: `%${search.trim()}%` } },
+        { neighborhood: { [Op.like]: `%${search.trim()}%` } },
       ];
     }
 

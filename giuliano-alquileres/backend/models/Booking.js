@@ -181,6 +181,12 @@ const Booking = sequelize.define(
       type: DataTypes.ENUM("guest", "owner", "admin", "system"),
       allowNull: true,
     },
+    // Conclusão da reserva
+    completed_at: {
+      type: DataTypes.DATE,
+      allowNull: true,
+      comment: "Data em que a reserva foi marcada como concluída (após check-out)",
+    },
   },
   {
     tableName: "bookings",
@@ -275,36 +281,27 @@ Booking.prototype.canCheckIn = function () {
 
 // Métodos estáticos
 Booking.checkAvailability = async function (propertyId, checkIn, checkOut) {
-  // Verifica reservas que possam conflitar com as datas solicitadas
-  // Inclui: pending (aguardando confirmação), confirmed (confirmadas) e in_progress (em andamento)
+  // FIX: Permitir reservas consecutivas
+  // Se reserva existente: 20/12 a 21/12
+  // Nova reserva pode começar em 21/12 (dia do check-out)
   const conflictingBookings = await this.count({
     where: {
       property_id: propertyId,
       status: ["pending", "confirmed", "in_progress"],
       [sequelize.Sequelize.Op.or]: [
         {
-          // Nova reserva começa durante uma reserva existente
-          check_in: {
-            [sequelize.Sequelize.Op.between]: [checkIn, checkOut],
-          },
-        },
-        {
-          // Nova reserva termina durante uma reserva existente
-          check_out: {
-            [sequelize.Sequelize.Op.between]: [checkIn, checkOut],
-          },
-        },
-        {
-          // Nova reserva engloba uma reserva existente
+          // Nova reserva começa ANTES do check-out de uma existente
+          // E termina DEPOIS do check-in da existente
+          // Exemplo: Existente [20-22], Nova [21-23] = conflito
           [sequelize.Sequelize.Op.and]: [
             {
               check_in: {
-                [sequelize.Sequelize.Op.lte]: checkIn,
+                [sequelize.Sequelize.Op.lt]: checkOut, // Antes do check-out da nova
               },
             },
             {
               check_out: {
-                [sequelize.Sequelize.Op.gte]: checkOut,
+                [sequelize.Sequelize.Op.gt]: checkIn, // Depois do check-in da nova
               },
             },
           ],
@@ -334,17 +331,99 @@ Booking.getOccupiedDates = async function (propertyId, startDate, endDate) {
   });
 
   return bookings.map((booking) => {
-    // Adicionar +3 dias após checkout para limpeza e manutenção
+    // Adicionar +1 dia após checkout para limpeza e preparação
     const checkoutDate = new Date(booking.check_out);
-    checkoutDate.setDate(checkoutDate.getDate() + 3);
+    checkoutDate.setDate(checkoutDate.getDate() + 1);
     const extendedCheckout = checkoutDate.toISOString().split('T')[0];
 
     return {
       start: booking.check_in,
-      end: extendedCheckout, // Checkout original + 3 dias
-      status: booking.status, // Incluir status para referência
+      end: extendedCheckout, // Checkout original + 1 dia de limpeza
+      status: booking.status,
     };
   });
+};
+
+// Método para cancelar automaticamente reservas pendentes que expiraram
+Booking.cancelExpiredPendingBookings = async function () {
+  const { Op } = sequelize.Sequelize;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0); // Início do dia atual
+
+  try {
+    // Buscar reservas pendentes onde check_in < hoje
+    const expiredBookings = await this.findAll({
+      where: {
+        status: "pending",
+        check_in: {
+          [Op.lt]: today,
+        },
+      },
+      include: [
+        {
+          model: sequelize.models.Property,
+          as: "property",
+          attributes: ["id", "title", "user_id"],
+          include: [
+            {
+              model: sequelize.models.User,
+              as: "owner",
+              attributes: ["id", "name", "email"],
+            },
+          ],
+        },
+        {
+          model: sequelize.models.User,
+          as: "user",
+          attributes: ["id", "name", "email"],
+        },
+      ],
+    });
+
+    if (expiredBookings.length === 0) {
+      console.log("[Booking] Nenhuma reserva pendente expirada encontrada");
+      return { cancelled: 0, bookings: [] };
+    }
+
+    console.log(
+      `[Booking] Encontradas ${expiredBookings.length} reservas pendentes expiradas`
+    );
+
+    const cancelledBookings = [];
+
+    for (const booking of expiredBookings) {
+      // Cancelar a reserva
+      await booking.update({
+        status: "cancelled",
+        cancellation_reason:
+          "Reserva cancelada automaticamente - proprietário não confirmou a tempo",
+        cancelled_at: new Date(),
+      });
+
+      cancelledBookings.push({
+        uuid: booking.uuid,
+        guest_email: booking.guest_email,
+        guest_name: booking.guest_name,
+        owner_email: booking.property?.owner?.email,
+        owner_name: booking.property?.owner?.name,
+        property_title: booking.property?.title,
+        check_in: booking.check_in,
+      });
+
+      console.log(`[Booking] Reserva ${booking.uuid} cancelada automaticamente`);
+    }
+
+    return {
+      cancelled: cancelledBookings.length,
+      bookings: cancelledBookings,
+    };
+  } catch (error) {
+    console.error(
+      "[Booking] Erro ao cancelar reservas expiradas:",
+      error.message
+    );
+    throw error;
+  }
 };
 
 module.exports = Booking;

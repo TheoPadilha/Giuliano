@@ -6,6 +6,7 @@ import { FaShieldAlt } from "react-icons/fa";
 import AdminLayout from "../../components/admin/AdminLayout";
 import PhotoUpload from "../../components/admin/PhotoUpload";
 import PropertyAmenities from "../../components/property/PropertyAmenities";
+import DynamicPricingManager from "../../components/property/DynamicPricingManager";
 import api from "../../services/api";
 import Loading from "../../components/common/Loading";
 import { useAuth } from "../../contexts/AuthContext"; // 🎯 ADICIONAR ESTA LINHA
@@ -816,6 +817,24 @@ const EditProperty = () => {
                   </div>
                 </div>
               </div>
+
+              {/* Precificação Dinâmica - Por Período */}
+              {propertyData?.uuid && (
+                <div>
+                  <div className="mb-6">
+                    <h3 className="heading-4 text-airbnb-black mb-2">
+                      Precificação Dinâmica por Período
+                    </h3>
+                    <p className="text-sm text-airbnb-grey-600">
+                      Configure preços personalizados para datas específicas (feriados, alta temporada, eventos especiais, etc.)
+                    </p>
+                  </div>
+                  <DynamicPricingManager
+                    propertyUuid={propertyData.uuid}
+                    basePrice={formData.price_per_night}
+                  />
+                </div>
+              )}
 
               {/* Comodidades - Seleção */}
               {amenities.length > 0 && (

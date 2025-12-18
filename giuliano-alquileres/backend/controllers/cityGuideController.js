@@ -6,7 +6,7 @@ exports.getCityGuideByCity = async (req, res) => {
   try {
     const { city } = req.params;
     const guide = await CityGuide.findOne({
-      where: { city: { [Op.iLike]: city } },
+      where: { city: { [Op.like]: city } },
     });
 
     if (!guide) {

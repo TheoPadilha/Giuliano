@@ -184,9 +184,88 @@ _Ziguealuga - Sua melhor experiência em aluguéis_
   return await sendMessage(booking.guest_phone, message);
 };
 
+/**
+ * Notificar hóspede sobre cancelamento de reserva
+ */
+const notifyBookingCancelled = async (booking, property, reason) => {
+  if (!isConfigured()) {
+    console.warn("⚠️  Notificação de cancelamento não enviada - Sistema não configurado");
+    return { success: false, error: "ZAPI não configurado" };
+  }
+
+  if (!booking.guest_phone) {
+    console.warn("⚠️  Hóspede sem telefone cadastrado");
+    return { success: false, error: "Telefone não informado" };
+  }
+
+  const message = `
+Olá *${booking.guest_name}*, 👋
+
+❌ *Reserva Cancelada*
+
+Infelizmente sua reserva foi cancelada.
+
+🏠 *Imóvel:* ${property.title}
+📅 *Check-in:* ${formatDate(booking.check_in)}
+📅 *Check-out:* ${formatDate(booking.check_out)}
+📝 *Código da Reserva:* #${booking.id}
+
+📋 *Motivo:* ${reason}
+
+Se você realizou algum pagamento, ele será estornado em até 7 dias úteis.
+
+Para mais informações, entre em contato conosco.
+
+🌐 *Site:* https://ziguealuga.com
+
+_Ziguealuga - Sua melhor experiência em aluguéis_
+  `.trim();
+
+  return await sendMessage(booking.guest_phone, message);
+};
+
+/**
+ * Notificar admin sobre cancelamento automático
+ */
+const notifyOwnerBookingCancelled = async (booking, property, reason) => {
+  if (!isConfigured()) {
+    console.warn("⚠️  Notificação de cancelamento não enviada - Sistema não configurado");
+    return { success: false, error: "ZAPI não configurado" };
+  }
+
+  const message = `
+⚠️ *RESERVA CANCELADA AUTOMATICAMENTE*
+
+Uma reserva foi cancelada pelo sistema.
+
+👤 *Hóspede:* ${booking.guest_name}
+📧 *Email:* ${booking.guest_email}
+📞 *Telefone:* ${booking.guest_phone || 'Não informado'}
+
+🏠 *Imóvel:* ${property.title}
+📍 *Localização:* ${property.address}
+
+📅 *Check-in:* ${formatDate(booking.check_in)}
+📅 *Check-out:* ${formatDate(booking.check_out)}
+🌙 *Noites:* ${booking.nights}
+
+💰 *Valor:* ${formatCurrency(booking.total_price)}
+🔗 *Código da Reserva:* #${booking.id}
+
+📋 *Motivo do Cancelamento:*
+${reason}
+
+🌐 *Site:* https://ziguealuga.com
+  `.trim();
+
+  return await sendMessage(ZAPI_PHONE, message);
+};
+
 module.exports = {
   sendMessage,
   notifyNewBooking,
   sendBookingConfirmation,
+  notifyBookingCancelled,
+  notifyOwnerBookingCancelled,
   isConfigured,
 };

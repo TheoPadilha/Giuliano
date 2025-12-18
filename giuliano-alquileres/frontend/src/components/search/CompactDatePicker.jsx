@@ -55,7 +55,9 @@ const CompactDatePicker = ({
     return occupiedDates.some((range) => {
       const start = new Date(range.start);
       const end = new Date(range.end);
-      return date >= start && date <= end;
+      // FIX: O dia de check-out não deve bloquear novos check-ins
+      // Apenas os dias entre check-in e (check-out - 1) estão ocupados
+      return date >= start && date < end;
     });
   };
 

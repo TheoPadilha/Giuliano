@@ -63,9 +63,6 @@ const upload = multer({
 // Middleware para upload múltiplo
 const uploadMultiple = upload.array("photos", 20);
 
-// Middleware para upload único
-const uploadSingle = upload.single("photo");
-
 // Middleware com tratamento de erros
 const handleUpload = (req, res, next) => {
   uploadMultiple(req, res, (err) => {
@@ -175,9 +172,44 @@ const fileExists = (filename) => {
   return fs.existsSync(filePath);
 };
 
+// Função para criar middleware de upload único com campo customizável
+const uploadSingle = (fieldName = "photo") => {
+  const singleUpload = upload.single(fieldName);
+
+  return (req, res, next) => {
+    singleUpload(req, res, (err) => {
+      if (err instanceof multer.MulterError) {
+        if (err.code === "LIMIT_FILE_SIZE") {
+          return res.status(400).json({
+            error: "Arquivo muito grande",
+            details: "Tamanho máximo permitido: 20MB",
+          });
+        }
+
+        return res.status(400).json({
+          error: "Erro no upload",
+          details: err.message,
+        });
+      }
+
+      if (err) {
+        return res.status(400).json({
+          error: "Erro no upload",
+          details: err.message,
+        });
+      }
+
+      // Para upload de avatar, arquivo é opcional
+      // Não retornar erro se não houver arquivo
+      next();
+    });
+  };
+};
+
 module.exports = {
   handleUpload,
   handleSingleUpload,
+  uploadSingle, // Nova exportação
   deleteFile,
   fileExists,
   uploadsPath: path.join(__dirname, "../uploads/properties"),

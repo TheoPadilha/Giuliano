@@ -47,8 +47,17 @@ process.env.NODE_ENV = process.env.NODE_ENV || "production";
 const { sequelize } = require("./config/database");
 const { syncModels, User, City, Property, CityGuide } = require("./models");
 
+// Importar cron jobs
+const { initCompleteBookingsCron } = require("./cron/completeBookings");
+const { initCancelExpiredPendingBookingsCron } = require("./cron/cancelExpiredPendingBookings");
+
 const app = express();
 const PORT = process.env.PORT || 3001;
+
+// Configurar Express para confiar no proxy reverso (Nginx)
+// Necessário para rate-limit e headers X-Forwarded-*
+// 1 = confiar apenas no primeiro proxy (Nginx na frente do app)
+app.set('trust proxy', 1);
 
 // Middlewares de segurança
 app.use(
@@ -225,6 +234,7 @@ app.get("/health", async (req, res) => {
 app.use("/api/auth", require("./routes/auth")(authLimiter, registerLimiter));
 app.use("/api/users", require("./routes/users"));
 app.use("/api/properties", require("./routes/properties"));
+app.use("/api/properties", require("./routes/dynamicPricing")); // Rotas de preços dinâmicos
 app.use("/api/utilities", require("./routes/utilities"));
 app.use("/api/uploads", require("./routes/uploads"));
 app.use("/api/admin", require("./routes/admin"));
@@ -232,6 +242,7 @@ app.use("/api/stats", require("./routes/stats"));
 app.use("/api/bookings", require("./routes/bookings"));
 app.use("/api/payments", require("./routes/payments"));
 app.use("/api/reviews", require("./routes/reviews"));
+app.use("/api/guest-reviews", require("./routes/guestReviews"));
 app.use("/api/favorites", require("./routes/favorites"));
 app.use("/api/city-guides", require("./routes/cityGuides"));
 
@@ -292,6 +303,12 @@ const startServer = async () => {
     console.log("🔄 Sincronizando models com o banco de dados...");
     await syncModels();
     console.log("✅ Models sincronizados com sucesso!\n");
+
+    // ✅ INICIALIZAR CRON JOBS
+    console.log("⏰ Inicializando cron jobs...");
+    initCompleteBookingsCron();
+    initCancelExpiredPendingBookingsCron();
+    console.log("✅ Cron jobs inicializados com sucesso!\n");
 
     server = app.listen(PORT, () => {
       console.log(`🚀 Servidor rodando na porta ${PORT}`);

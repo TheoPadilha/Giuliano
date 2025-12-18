@@ -177,6 +177,18 @@ const AdminBookings = () => {
         color: "text-red-600",
         bg: "bg-red-100",
       },
+      in_progress: {
+        label: "Em Andamento",
+        icon: FaCheckCircle,
+        color: "text-blue-600",
+        bg: "bg-blue-100",
+      },
+      completed: {
+        label: "Concluída",
+        icon: FaCheckCircle,
+        color: "text-purple-600",
+        bg: "bg-purple-100",
+      },
     };
     return configs[status] || configs.pending;
   };
@@ -456,6 +468,8 @@ const BookingDetailsModal = ({ booking, onClose, onConfirm, onCancel, actionLoad
     pending: { label: "Pendente", color: "yellow" },
     confirmed: { label: "Confirmada", color: "green" },
     cancelled: { label: "Cancelada", color: "red" },
+    in_progress: { label: "Em Andamento", color: "blue" },
+    completed: { label: "Concluída", color: "purple" },
   };
 
   const formatDate = (date) => {

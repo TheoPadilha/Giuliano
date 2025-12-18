@@ -10,6 +10,7 @@ const logger = require("../utils/logger");
 const { isBetaMode, getBetaConfig, betaLog } = require("../config/betaMode");
 const { sendBookingRequest, sendBookingConfirmation, sendNewBookingToOwner } = require("../services/emailService");
 const zapiService = require("../services/zapiService");
+const { completeExpiredBookings } = require("../cron/completeBookings");
 
 // Esquema de validação para criar reserva
 const createBookingSchema = Joi.object({
@@ -328,6 +329,7 @@ const createBooking = async (req, res) => {
 const getUserBookings = async (req, res) => {
   try {
     const { status } = req.query;
+    const { Review } = require("../models");
     const where = { user_id: req.user.id };
 
     if (status) {
@@ -353,7 +355,25 @@ const getUserBookings = async (req, res) => {
       order: [["created_at", "DESC"]],
     });
 
-    res.json({ bookings });
+    // Verificar quais reservas já foram avaliadas
+    const bookingIds = bookings.map((b) => b.id);
+    const reviews = await Review.findAll({
+      where: {
+        booking_id: bookingIds,
+      },
+      attributes: ["booking_id"],
+    });
+
+    const reviewedBookingIds = new Set(reviews.map((r) => r.booking_id));
+
+    // Adicionar campo has_review em cada reserva
+    const bookingsWithReview = bookings.map((booking) => {
+      const bookingData = booking.toJSON();
+      bookingData.has_review = reviewedBookingIds.has(booking.id);
+      return bookingData;
+    });
+
+    res.json({ bookings: bookingsWithReview });
   } catch (error) {
     logger.error("Erro ao listar reservas", { error: error.message });
     res.status(500).json({ error: "Erro interno do servidor" });
@@ -880,6 +900,56 @@ const getAllOwnerBookings = async (req, res) => {
   }
 };
 
+// ROTA DE TESTE: Executar manualmente o cron de complete bookings
+const testCompleteBookings = async (req, res) => {
+  try {
+    // Verificar se é admin
+    if (req.user.role !== "admin_master" && req.user.role !== "admin") {
+      return res.status(403).json({ error: "Acesso negado. Apenas admins podem executar esta função." });
+    }
+
+    console.log("[TEST] Executando cron job de complete bookings manualmente...");
+
+    // Executar a função do cron
+    await completeExpiredBookings();
+
+    res.json({
+      message: "Cron job executado com sucesso! Verifique os logs do servidor para detalhes.",
+      success: true
+    });
+  } catch (error) {
+    console.error("[TEST] Erro ao executar cron job:", error);
+    res.status(500).json({
+      error: "Erro ao executar cron job",
+      details: process.env.NODE_ENV === "development" ? error.message : undefined
+    });
+  }
+};
+
+// Cancelar reservas pendentes expiradas
+const cancelExpiredBookings = async (req, res) => {
+  try {
+    console.log("[CancelExpired] Iniciando cancelamento de reservas expiradas...");
+
+    const result = await Booking.cancelExpiredPendingBookings();
+
+    console.log(`[CancelExpired] ${result.cancelled} reservas canceladas`);
+
+    res.json({
+      success: true,
+      message: `${result.cancelled} reserva(s) cancelada(s) automaticamente`,
+      cancelled: result.cancelled,
+      bookings: result.bookings,
+    });
+  } catch (error) {
+    console.error("[CancelExpired] Erro ao cancelar reservas expiradas:", error);
+    res.status(500).json({
+      error: "Erro ao cancelar reservas expiradas",
+      details: process.env.NODE_ENV === "development" ? error.message : undefined,
+    });
+  }
+};
+
 module.exports = {
   createBooking,
   getUserBookings,
@@ -890,4 +960,6 @@ module.exports = {
   getOccupiedDates,
   getPropertyBookings,
   getAllOwnerBookings,
+  testCompleteBookings,
+  cancelExpiredBookings,
 };

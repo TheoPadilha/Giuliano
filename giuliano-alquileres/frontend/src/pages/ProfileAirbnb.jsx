@@ -22,6 +22,7 @@ import {
 import api from '../services/api';
 import Loading from '../components/common/Loading';
 import AirbnbHeader from '../components/layout/AirbnbHeader';
+import AvatarUpload from '../components/user/AvatarUpload';
 
 const ProfileAirbnb = () => {
   const { user, updateUser } = useAuth();
@@ -193,12 +194,13 @@ const ProfileAirbnb = () => {
               >
                 {/* Avatar */}
                 <div className="flex flex-col items-center text-center mb-6">
-                  <div className="w-32 h-32 bg-gradient-to-br from-rausch to-rausch-dark rounded-full flex items-center justify-center border-4 border-white shadow-xl mb-4">
-                    <span className="text-5xl font-bold text-white">
-                      {user.name?.charAt(0).toUpperCase() || 'U'}
-                    </span>
-                  </div>
-                  <h2 className="text-2xl font-semibold text-airbnb-black mb-1">
+                  <AvatarUpload
+                    currentAvatar={user.avatar}
+                    onAvatarChange={(newAvatar) => {
+                      updateUser({ ...user, avatar: newAvatar });
+                    }}
+                  />
+                  <h2 className="text-2xl font-semibold text-airbnb-black mb-4 mt-4">
                     {user.name}
                   </h2>
                   <p className="text-sm text-airbnb-grey-600 mb-3">{user.email}</p>
