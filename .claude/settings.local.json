@@ -39,7 +39,12 @@
       "Bash(ssh-keygen:*)",
       "Bash(ls:*)",
       "Bash(npx sequelize-cli:*)",
-      "Bash(powershell -ExecutionPolicy Bypass -File deploy-migrations.ps1:*)"
+      "Bash(powershell -ExecutionPolicy Bypass -File deploy-migrations.ps1:*)",
+      "Bash(cmd /c deploy-frontend-simple.bat)",
+      "Bash(powershell -Command:*)",
+      "Bash(android)",
+      "Bash(apple \")",
+      "Bash(tar:*)"
     ],
     "deny": [],
     "ask": []
